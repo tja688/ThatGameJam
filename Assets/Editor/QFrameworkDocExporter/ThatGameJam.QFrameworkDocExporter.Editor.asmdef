@@ -1,0 +1,11 @@
+{
+  "name": "ThatGameJam.QFrameworkDocExporter.Editor",
+  "references": [
+    "QFramework",
+    "QFramework.CoreKit"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ]
+}
+
