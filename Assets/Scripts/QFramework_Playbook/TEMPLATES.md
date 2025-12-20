@@ -5,7 +5,7 @@
 > Copy/Paste templates for this project.
 > - **Single Root Architecture**: `GameRootApp : Architecture<GameRootApp>`
 > - **Vertical Slice**: `Assets/Scripts/Features/[FeatureName]/...`
-> - **Do NOT** write logic in generated `*.Designer.cs` / `*.Generated.cs`.
+> - **Do NOT** write logic in generated `*.Generated.cs`.
 
 ---
 
@@ -58,16 +58,8 @@ public static class ProjectToolkitBootstrap
         _ = GameRootApp.Interface;
 
         // Optional (project-specific):
-        // - If your project mandates explicit toolkit initialization, do it here
-        //   BEFORE any usage happens in your scenes.
-        //
-        // Example (only if you truly need explicit init in your project):
-        // ResKit.Init();
-        //
-        // Note:
-        // - UIKit/AudioKit may already configure their loader pools via QFramework's
-        //   own BeforeSceneLoad initializers when using ResKit-based defaults.
-        // - Keep this file project-owned; do not modify framework sources.
+        // - Add project-owned deterministic startup wiring here.
+        // - Keep responsibilities minimal; do not modify framework sources.
     }
 }
 ```
@@ -181,7 +173,7 @@ public class GetSomethingQuery : AbstractQuery<int>
 }
 ```
 
-### 5.2 Calling Command/Query from a Controller / UI Panel
+### 5.2 Calling Command/Query from a Controller / View (MonoBehaviour)
 
 ```csharp
 // Command:
@@ -313,42 +305,49 @@ Count.Register(v => { /* update UI */ })
 
 ---
 
-## 9. UIKit Panel Logic Skeleton (Partial Class Only)
+## 9. Unity UGUI View Skeleton (MonoBehaviour + CQRS)
 
-**Files created by UIKit generator:**
+**File (recommended):**
 
-* `[PanelName].cs` (write logic here)
-* `[PanelName].Designer.cs` (generated; do NOT edit)
+* `Assets/Scripts/Features/[FeatureName]/Views/[FeatureName]View.cs`
 
 ```csharp
 using QFramework;
 using UnityEngine;
+using UnityEngine.UI;
 
-public partial class MyUIPanel : UIPanel, IController
+public class FeatureNameView : MonoBehaviour, IController
 {
+    [SerializeField] private Button AddButton;
+    [SerializeField] private Text CountText;
+
+    private IUnRegister _countUnregister;
+
     public IArchitecture GetArchitecture() => GameRootApp.Interface;
 
-    protected override void OnInit(IUIData uiData = null)
+    private void OnEnable()
     {
-        // Use generated fields (from Designer):
-        // BtnClose.onClick.AddListener(() => CloseSelf());
+        AddButton.onClick.AddListener(OnAddClicked);
 
-        // Send command:
-        // this.SendCommand<DoThingCommand>();
-
-        // Subscribe event (auto cleanup):
-        // this.RegisterEvent<SomethingChangedEvent>(e => { /* refresh */ })
-        //     .UnRegisterWhenGameObjectDestroyed(gameObject);
+        // Bindable-driven refresh (notify path).
+        var model = this.GetModel<IFeatureNameModel>();
+        _countUnregister = model.Count.Register(v => CountText.text = v.ToString());
     }
 
-    protected override void OnOpen(IUIData uiData = null) { }
-    protected override void OnShow() { }
-    protected override void OnHide() { }
-    protected override void OnClose() { }
+    private void OnDisable()
+    {
+        AddButton.onClick.RemoveListener(OnAddClicked);
+        _countUnregister?.UnRegister();
+        _countUnregister = null;
+    }
+
+    private void OnAddClicked()
+    {
+        // Write path: MUST be a Command.
+        this.SendCommand<AddOneCommand>();
+    }
 }
 ```
-
-> Note: Never write business logic in `*.Designer.cs` / `*.Generated.cs`.
 
 ---
 
@@ -366,8 +365,4 @@ protected override void Init()
     // Utility (optional)
     // this.RegisterUtility<IFeatureNameUtility>(new FeatureNameUtility());
 }
-```
-
-```
-::contentReference[oaicite:1]{index=1}
 ```

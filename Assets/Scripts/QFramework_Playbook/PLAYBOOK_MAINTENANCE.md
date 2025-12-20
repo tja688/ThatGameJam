@@ -110,6 +110,17 @@ Output:
 
 Add newest entries at the top.
 
+### 2025-12-20
+- Summary: Slimmed Playbook to QFramework Core CQRS only; added hard ban on extension toolkits; replaced UI workflow/templates with Unity native UGUI.
+- Files:
+  - `Assets/Scripts/QFramework_Playbook/AGENTS.md`
+  - `Assets/Scripts/QFramework_Playbook/RULES.md`
+  - `Assets/Scripts/QFramework_Playbook/RECIPES.md`
+  - `Assets/Scripts/QFramework_Playbook/TEMPLATES.md`
+  - `Assets/Scripts/QFramework_Playbook/INDEX_TASKS.md`
+  - `Assets/Scripts/QFramework_Playbook/INDEX_MAP_QFRAMEWORK_LOCATIONS.md`
+- Notes: This is a contract-level change for game-jam stability; existing legacy dependencies are “no new / no expand” unless user grants an exception.
+
 ### YYYY-MM-DD
 - Summary:
 - Files:

@@ -59,45 +59,20 @@
 
 ---
 
-## 4. UI & Toolkit Rules
+## 4. Extension Toolkits Policy (BANNED)
 
-### 4.1 UIKit Field Access
-- **MUST**: Prefer using generated binding fields (Designer files) in UI Panels.
-- **MUST NOT** use `transform.Find` to access child components unless the object is dynamically generated.
-- **Reason**: Type safety and performance.
+### 4.1 Hard Ban (New Code)
 
-### 4.2 Code Generation Protection
-- **MUST NOT** write business logic in `*.Designer.cs` or `*.Generated.cs` files.
-- **MUST** write logic in the partial class file.
-
----
-
-## 5. Toolkit Initialization (Preserved)
-
-### 5.1 Toolkit Initialization Routine (Project Hard Rule)
-
-- **Context**:
-  - UIKit / AudioKit 默认会在 `BeforeSceneLoad` 把 LoaderPool 设为 ResKit（框架侧自动行为）。
-  - 官方自定义加载示例在 `Start()` 设置一次，并建议注释掉 `*WithResKitInit`；但本项目禁止修改 `Assets/QFramework/**`，因此不可走“注释源码”的路线。
-
-- **MUST** (Startup Determinism):
-  1) 若项目需要“自定义 UIKit PanelLoaderPool / AudioKit AudioLoaderPool”（非 ResKit 默认）：
-     - **MUST** 在“任何 UIKit/AudioKit 首次使用之前”完成覆盖设置（越早越好）。
-     - **MUST** 提供一个项目侧的 `ProjectToolkitBootstrap`（放在 `Assets/Scripts/...`），使用
-       `[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]`
-       来设置：
-       - `UIKit.Config.PanelLoaderPool = ...;`
-       - `AudioKit.Config.AudioLoaderPool = ...;`
-     - **NOTE**：因为框架会先把它们设为 ResKit，所以项目侧必须保证覆盖发生在你任何调用 UIKit/AudioKit API 之前。
-
-  2) 若项目使用 ResKit 且会在启动期加载资源/场景：
-     - **MUST** 在任何 ResKit 资源加载前调用一次 `ResKit.Init()` 或（需要时）`ResKit.InitAsync()`。
-     - WebGL + AB 等需要异步初始化的场景，按官方说明使用 `InitAsync()`。
-
-- **Evidence (Official)**:
-  - UIKit 自定义加载：`UIKit.Config.PanelLoaderPool = ...`（示例在 Start 设置一次）。
-  - UIKit 默认 ResKit 初始化：`UIKitWithResKitInit`（BeforeSceneLoad）。
-  - AudioKit 自定义加载：`AudioKit.Config.AudioLoaderPool = ...`（示例在 Start 设置一次）。
-  - AudioKit 默认 ResKit 初始化：`AudioKitWithResKitInit`（BeforeSceneLoad）。
-  - ResKit 初始化：`ResKit.Init()` / `ResKit.InitAsync()`（快速入门示例 + WebGL 说明）。
+- **MUST NOT**: In any new code, introduce, reference, call, or require any QFramework extension toolkits / solution components, including (but not limited to) the following identifiers:
+  - `UIKit`, `UIPanel`, `IUIData`, `UIData`
+  - `ResKit`, `ResLoader`
+  - `AudioKit`
+  - `ActionKit`
+  - `CodeGenKit`
+  - `LoaderPool`, `PanelLoaderPool`, `AudioLoaderPool`
+  - `UIKitWithResKitInit`, `AudioKitWithResKitInit`, `*WithResKitInit`
+- **MUST**: UI MUST use Unity native solutions only (recommended: UGUI — `Canvas` + `MonoBehaviour` + `UnityEngine.UI`).
+- **EXCEPTION**: Only if the user explicitly requests “allow using a specific toolkit”, the ban may be lifted for that request; the Agent MUST label it in the output as `EXCEPTION granted by user`.
+- **Compatibility (legacy code)**: If the repo already contains historical usage of banned toolkits, maintenance policy is: **do not add new usages, do not expand dependency surface, do not refactor more code to depend on them**, unless the user explicitly requests it.
+- Source: Project Playbook policy (maintenance directive, 2025-12-20; game-jam stability-first).
 
