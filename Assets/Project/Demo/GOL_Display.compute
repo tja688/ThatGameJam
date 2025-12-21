@@ -1,0 +1,19 @@
+#pragma kernel CSMain
+
+StructuredBuffer<uint> _Cells;
+RWTexture2D<float4> Result;
+
+int _Width;
+int _Height;
+
+[numthreads(8, 8, 1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= (uint)_Width || id.y >= (uint)_Height) return;
+
+    uint idx = id.x + id.y * (uint)_Width;
+    uint alive = _Cells[idx];
+
+    // 最基础色块：活=白，死=黑（你后期想加渐变/颜色/年龄都从这里扩展）
+    Result[int2(id.x, id.y)] = alive == 1 ? float4(1,1,1,1) : float4(0,0,0,1);
+}
