@@ -1,3 +1,4 @@
+using ThatGameJam.Features.PlayerCharacter2D.Models;
 using UnityEngine;
 using UnityEngine.InputSystem;
 

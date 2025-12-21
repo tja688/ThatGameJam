@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
+namespace ThatGameJam.Features.PlayerCharacter2D.Models
 {
     public struct PlatformerFrameInput
     {

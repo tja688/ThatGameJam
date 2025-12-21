@@ -1,7 +1,10 @@
 using System;
 using QFramework;
+using ThatGameJam.Features.PlayerCharacter2D.Commands;
 using ThatGameJam.Features.PlayerCharacter2D.Configs;
 using ThatGameJam.Features.PlayerCharacter2D.Events;
+using ThatGameJam.Features.PlayerCharacter2D.Models;
+using ThatGameJam.Features.PlayerCharacter2D.Queries;
 using UnityEngine;
 
 namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
@@ -17,19 +20,16 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
         [SerializeField] private MonoBehaviour _inputSource;
 
         private IPlatformerFrameInputSource _resolvedInputSource;
-
         private Rigidbody2D _rb;
         private CapsuleCollider2D _col;
-        private PlatformerFrameInput _frameInput;
-        private Vector2 _frameVelocity;
         private bool _cachedQueriesStartInColliders;
-
         private float _time;
 
         public IArchitecture GetArchitecture() => GameRootApp.Interface;
 
-        public Vector2 MoveInput => _frameInput.Move;
-        public bool IsGrounded => _grounded;
+        // Reads through Model or Query
+        public Vector2 MoveInput => this.GetModel<IPlayerCharacter2DModel>().FrameInput.Move;
+        public bool IsGrounded => this.GetModel<IPlayerCharacter2DModel>().Grounded.Value;
 
         public bool UseExternalInput
         {
@@ -43,6 +43,7 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
             set => _externalInput = value;
         }
 
+        // Action events for backward compatibility or Unity-side listeners
         public event Action<bool, float> GroundedChanged;
         public event Action Jumped;
 
@@ -65,6 +66,17 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
                     }
                 }
             }
+
+            // Register event listeners for the Actions
+            this.RegisterEvent<PlayerGroundedChangedEvent>(e =>
+            {
+                GroundedChanged?.Invoke(e.Grounded, e.ImpactSpeed);
+            }).UnRegisterWhenGameObjectDestroyed(gameObject);
+
+            this.RegisterEvent<PlayerJumpedEvent>(e =>
+            {
+                Jumped?.Invoke();
+            }).UnRegisterWhenGameObjectDestroyed(gameObject);
         }
 
         private void Update()
@@ -73,43 +85,25 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
 
             _time += Time.deltaTime;
 
-            _frameInput = _useExternalInput
+            var frameInput = _useExternalInput
                 ? _externalInput
                 : (_resolvedInputSource != null ? _resolvedInputSource.ReadInput() : default);
 
             if (_stats.SnapInput)
             {
-                _frameInput.Move.x = Mathf.Abs(_frameInput.Move.x) < _stats.HorizontalDeadZoneThreshold ? 0 : Mathf.Sign(_frameInput.Move.x);
-                _frameInput.Move.y = Mathf.Abs(_frameInput.Move.y) < _stats.VerticalDeadZoneThreshold ? 0 : Mathf.Sign(_frameInput.Move.y);
+                frameInput.Move.x = Mathf.Abs(frameInput.Move.x) < _stats.HorizontalDeadZoneThreshold ? 0 : Mathf.Sign(frameInput.Move.x);
+                frameInput.Move.y = Mathf.Abs(frameInput.Move.y) < _stats.VerticalDeadZoneThreshold ? 0 : Mathf.Sign(frameInput.Move.y);
             }
 
-            if (_frameInput.JumpDown)
-            {
-                _jumpToConsume = true;
-                _timeJumpWasPressed = _time;
-            }
+            // Write input to Model via Command
+            this.SendCommand(new SetFrameInputCommand(frameInput, _time));
         }
 
         private void FixedUpdate()
         {
             if (_stats == null) return;
 
-            CheckCollisions();
-
-            HandleJump();
-            HandleDirection();
-            HandleGravity();
-
-            ApplyMovement();
-        }
-
-        #region Collisions
-
-        private float _frameLeftGrounded = float.MinValue;
-        private bool _grounded;
-
-        private void CheckCollisions()
-        {
+            // Physics queries (allowed in Controller)
             Physics2D.queriesStartInColliders = false;
 
             bool groundHit = Physics2D.CapsuleCast(
@@ -130,113 +124,14 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
                 _stats.GrounderDistance,
                 ~_stats.PlayerLayer);
 
-            if (ceilingHit) _frameVelocity.y = Mathf.Min(0, _frameVelocity.y);
-
-            if (!_grounded && groundHit)
-            {
-                _grounded = true;
-                _coyoteUsable = true;
-                _bufferedJumpUsable = true;
-                _endedJumpEarly = false;
-
-                var impact = Mathf.Abs(_frameVelocity.y);
-                GroundedChanged?.Invoke(true, impact);
-                GetArchitecture().SendEvent(new PlayerGroundedChangedEvent { Grounded = true, ImpactSpeed = impact });
-            }
-            else if (_grounded && !groundHit)
-            {
-                _grounded = false;
-                _frameLeftGrounded = _time;
-
-                GroundedChanged?.Invoke(false, 0);
-                GetArchitecture().SendEvent(new PlayerGroundedChangedEvent { Grounded = false, ImpactSpeed = 0 });
-            }
-
             Physics2D.queriesStartInColliders = _cachedQueriesStartInColliders;
+
+            // Advance Model state
+            this.SendCommand(new TickFixedStepCommand(groundHit, ceilingHit, Time.fixedDeltaTime, _stats));
+
+            // Read result and apply
+            _rb.linearVelocity = this.SendQuery(new GetDesiredVelocityQuery());
         }
-
-        #endregion
-
-        #region Jumping
-
-        private bool _jumpToConsume;
-        private bool _bufferedJumpUsable;
-        private bool _endedJumpEarly;
-        private bool _coyoteUsable;
-        private float _timeJumpWasPressed;
-
-        private bool HasBufferedJump => _bufferedJumpUsable && _time < _timeJumpWasPressed + _stats.JumpBuffer;
-        private bool CanUseCoyote => _coyoteUsable && !_grounded && _time < _frameLeftGrounded + _stats.CoyoteTime;
-
-        private void HandleJump()
-        {
-            if (!_endedJumpEarly && !_grounded && !_frameInput.JumpHeld && _rb.linearVelocity.y > 0)
-                _endedJumpEarly = true;
-
-            if (!_jumpToConsume && !HasBufferedJump) return;
-
-            if (_grounded || CanUseCoyote) ExecuteJump();
-
-            _jumpToConsume = false;
-        }
-
-        private void ExecuteJump()
-        {
-            _endedJumpEarly = false;
-            _timeJumpWasPressed = 0;
-            _bufferedJumpUsable = false;
-            _coyoteUsable = false;
-
-            _frameVelocity.y = _stats.JumpPower;
-
-            Jumped?.Invoke();
-            GetArchitecture().SendEvent<PlayerJumpedEvent>();
-        }
-
-        #endregion
-
-        #region Horizontal
-
-        private void HandleDirection()
-        {
-            if (_frameInput.Move.x == 0)
-            {
-                var deceleration = _grounded ? _stats.GroundDeceleration : _stats.AirDeceleration;
-                _frameVelocity.x = Mathf.MoveTowards(_frameVelocity.x, 0, deceleration * Time.fixedDeltaTime);
-            }
-            else
-            {
-                _frameVelocity.x = Mathf.MoveTowards(
-                    _frameVelocity.x,
-                    _frameInput.Move.x * _stats.MaxSpeed,
-                    _stats.Acceleration * Time.fixedDeltaTime);
-            }
-        }
-
-        #endregion
-
-        #region Gravity
-
-        private void HandleGravity()
-        {
-            if (_grounded && _frameVelocity.y <= 0f)
-            {
-                _frameVelocity.y = _stats.GroundingForce;
-                return;
-            }
-
-            var inAirGravity = _stats.FallAcceleration;
-            if (_endedJumpEarly && _frameVelocity.y > 0) inAirGravity *= _stats.JumpEndEarlyGravityModifier;
-
-            _frameVelocity.y = Mathf.MoveTowards(
-                _frameVelocity.y,
-                -_stats.MaxFallSpeed,
-                inAirGravity * Time.fixedDeltaTime);
-        }
-
-        #endregion
-
-        private void ApplyMovement() => _rb.linearVelocity = _frameVelocity;
 
 #if UNITY_EDITOR
         private void OnValidate()
