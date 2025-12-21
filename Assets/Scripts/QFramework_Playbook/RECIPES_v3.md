@@ -35,7 +35,7 @@ Before writing code, the agent MUST output a `PLAN` using this exact structure:
 - **Risks / assumptions:**
   - anything uncertain or version-dependent (mark as `UNVERIFIED` + add `NEXT_SEARCH` if needed)
 
-After implementation, the agent MUST output:
+Agents may output PLAN and Implementation in a single response to maintain workflow continuity:
 
 - `CHANGES` (files + summary)
 - `VERIFY` (steps)
