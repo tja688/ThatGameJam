@@ -33,6 +33,9 @@
 | :--- | :--- |
 | **QFramework Architecture** | `Assets/QFramework/QFramework_Docs_用户手册.md` |
 | **4-Layer Rules** | `Assets/QFramework/Toolkits/_CoreKit/Internal/Guidline/Editor/Resources/EditorGuideline/2. 架构篇：QFramework.cs/10. 架构规范 与 推荐用法.md` |
+| **UIKit Usage** | `Assets/QFramework/Toolkits/_CoreKit/Internal/Guidline/Editor/Resources/EditorGuideline/4. 解决方案篇/02. UIKit：界面管理&快速开发解决方案/01. 简介与快速入门.md` |
+| **ResKit Usage** | `Assets/QFramework/Toolkits/_CoreKit/Internal/Guidline/Editor/Resources/EditorGuideline/4. 解决方案篇/01. ResKit：资源管理&开发解决方案/01. 简介与快速入门.md` |
+| **ActionKit Usage** | `Assets/QFramework/Toolkits/_CoreKit/Internal/Guidline/Editor/Resources/EditorGuideline/3. 工具篇：QFramework.Toolkits/04. ActionKit 时序动作执行系统/01. 简介.md` |
 
 ---
 
@@ -55,4 +58,4 @@
 - **Vertical Slice Strategy**: Implementation preference for this project.
 - **RootApp Singleton**: Enforced by Project Rules to avoid container fragmentation.
 - **Singleton Restriction**: Architecture is the source of truth; `SingletonKit` is infrastructure only.
-- **Unity Native UI Bindings**: UI binding strategy is project-owned (UGUI + MonoBehaviour). It is not part of QFramework extension toolkit scope.
+- **UIKit Bindings**: Standardized by QFramework CodeGenKit to minimize `transform.Find`.

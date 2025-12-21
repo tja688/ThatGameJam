@@ -122,26 +122,19 @@ You are introducing a new vertical slice feature.
 
 ---
 
-## 3. Create a UI View (Unity UGUI)
-
-### Goal
-
-Build UI using Unity native UGUI, while keeping all state changes strictly CQRS-compliant.
+## 3. Create a UI Panel (UIKit)
 
 ### Steps
 
-1. **Preflight Plan (MUST)**
-2. **Create a View `MonoBehaviour`**
-   - Place it under your feature slice (recommended: `Views/`).
-   - Implement `IController` and return `GameRootApp.Interface` from `GetArchitecture()`.
-3. **Input → Command (write path)**
-   - For any user input (`Button.onClick`, toggles, input fields), call `SendCommand(...)`.
-   - All state mutations MUST happen inside Commands (see `RULES.md` → “2.3 CQRS”).
-4. **UI refresh from Event / Bindable (notify path)**
-   - Register UI updates via `BindableProperty.Register(...)` and/or `RegisterEvent<T>(...)`.
-   - Ensure registrations are paired with unregistration using `OnEnable/OnDisable` OR QFramework auto helpers (`UnRegisterWhenDisabled`, `UnRegisterWhenGameObjectDestroyed`).
-5. **Hard rule alignment**
-   - This workflow MUST NOT introduce any QFramework extension toolkit UI APIs (see `RULES.md` → “4. Extension Toolkits Policy (BANNED)”).
+1. Preflight Plan (MUST)
+2. Create panel via UIKit pattern (see `TEMPLATES.md` UIKit Panel template)
+3. Bind UI events → Commands (preferred) or Systems
+4. Ensure panel lifecycle cleanup is correct
+
+### Notes
+
+* Prefer explicit open/close paths
+* Avoid long-lived event subscriptions without unregister strategy
 
 ---
 
@@ -206,8 +199,8 @@ You need deterministic init order or project-side startup wiring without modifyi
 4. Keep bootstrap responsibilities minimal:
 
    * environment setup
-   * RootApp warmup / deterministic ordering
-   * safe project-owned overrides (no framework edits)
+   * toolkit configuration
+   * safe overrides
 5. Verify in Unity:
 
    * confirm bootstrap runs first

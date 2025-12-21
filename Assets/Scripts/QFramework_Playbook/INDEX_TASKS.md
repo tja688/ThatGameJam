@@ -26,10 +26,10 @@ Go to:
 
 ---
 
-## If you want UI (Unity UGUI)
+## If you want UI (UIKit panel / open-close flow)
 Go to:
-- `RECIPES.md` → “Create a UI View (Unity UGUI)”
-- `TEMPLATES.md` → Unity UGUI View template
+- `RECIPES.md` → “Create a UI Panel (UIKit)”
+- `TEMPLATES.md` → UIKit Panel template
 
 ---
 

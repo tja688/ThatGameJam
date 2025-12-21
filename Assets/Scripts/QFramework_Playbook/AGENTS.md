@@ -30,9 +30,6 @@ Agents MUST NOT modify the following unless the user explicitly requests:
 
 If a change is required in a forbidden zone, the Agent MUST output a `MANUAL_ACTIONS` list for the user.
 
-Additional hard policy:
-- QFramework extension toolkits / solution components are **BANNED** by `RULES.md` §4; do not propose or use them unless the user explicitly requests an exception.
-
 ---
 
 ## 2. Quick Task Index (Start Here)
