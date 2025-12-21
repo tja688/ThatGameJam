@@ -22,7 +22,6 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
         private IPlatformerFrameInputSource _resolvedInputSource;
         private Rigidbody2D _rb;
         private CapsuleCollider2D _col;
-        private bool _cachedQueriesStartInColliders;
         private float _time;
 
         public IArchitecture GetArchitecture() => GameRootApp.Interface;
@@ -52,8 +51,6 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
             _rb = GetComponent<Rigidbody2D>();
             _col = GetComponent<CapsuleCollider2D>();
 
-            _cachedQueriesStartInColliders = Physics2D.queriesStartInColliders;
-
             _resolvedInputSource = _inputSource as IPlatformerFrameInputSource;
             if (_resolvedInputSource == null)
             {
@@ -66,17 +63,20 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
                     }
                 }
             }
+        }
 
-            // Register event listeners for the Actions
+        private void OnEnable()
+        {
+            // Register event listeners tied to Enable/Disable lifecycle
             this.RegisterEvent<PlayerGroundedChangedEvent>(e =>
             {
                 GroundedChanged?.Invoke(e.Grounded, e.ImpactSpeed);
-            }).UnRegisterWhenGameObjectDestroyed(gameObject);
+            }).UnRegisterWhenDisabled(gameObject);
 
             this.RegisterEvent<PlayerJumpedEvent>(e =>
             {
                 Jumped?.Invoke();
-            }).UnRegisterWhenGameObjectDestroyed(gameObject);
+            }).UnRegisterWhenDisabled(gameObject);
         }
 
         private void Update()
@@ -104,30 +104,36 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
             if (_stats == null) return;
 
             // Physics queries (allowed in Controller)
+            var previousQueriesStartInColliders = Physics2D.queriesStartInColliders;
             Physics2D.queriesStartInColliders = false;
 
-            bool groundHit = Physics2D.CapsuleCast(
-                _col.bounds.center,
-                _col.size,
-                _col.direction,
-                0,
-                Vector2.down,
-                _stats.GrounderDistance,
-                ~_stats.PlayerLayer);
+            try
+            {
+                bool groundHit = Physics2D.CapsuleCast(
+                    _col.bounds.center,
+                    _col.size,
+                    _col.direction,
+                    0,
+                    Vector2.down,
+                    _stats.GrounderDistance,
+                    ~_stats.PlayerLayer);
 
-            bool ceilingHit = Physics2D.CapsuleCast(
-                _col.bounds.center,
-                _col.size,
-                _col.direction,
-                0,
-                Vector2.up,
-                _stats.GrounderDistance,
-                ~_stats.PlayerLayer);
+                bool ceilingHit = Physics2D.CapsuleCast(
+                    _col.bounds.center,
+                    _col.size,
+                    _col.direction,
+                    0,
+                    Vector2.up,
+                    _stats.GrounderDistance,
+                    ~_stats.PlayerLayer);
 
-            Physics2D.queriesStartInColliders = _cachedQueriesStartInColliders;
-
-            // Advance Model state
-            this.SendCommand(new TickFixedStepCommand(groundHit, ceilingHit, Time.fixedDeltaTime, _stats));
+                // Advance Model state
+                this.SendCommand(new TickFixedStepCommand(groundHit, ceilingHit, Time.fixedDeltaTime, _stats));
+            }
+            finally
+            {
+                Physics2D.queriesStartInColliders = previousQueriesStartInColliders;
+            }
 
             // Read result and apply
             _rb.linearVelocity = this.SendQuery(new GetDesiredVelocityQuery());

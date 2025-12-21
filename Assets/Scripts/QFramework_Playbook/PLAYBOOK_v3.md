@@ -84,6 +84,12 @@ Any architectural decision that changes module placement, boundaries, or initial
 - cite a local QFramework doc path, or
 - mark as `UNVERIFIED` + provide `NEXT_SEARCH`.
 
+### 3.3 Logging and Debugging (MUST)
+
+- **PROHIBITED:** Direct use of `UnityEngine.Debug.Log`, `LogWarning`, `LogError`.
+- **REQUIRED:** Use `QFramework.LogKit` APIs (Static: `LogKit.I/W/E` or Fluent: `.LogInfo()/.LogWarning()/.LogError()`).
+- **Rationale:** `LogKit` handles Unity Console stack trace navigation (click-to-jump) correctly via `[OnOpenAsset]` and supports global log level filtering (`LogKit.Level`).
+
 ---
 
 ## 4. Project foundation
