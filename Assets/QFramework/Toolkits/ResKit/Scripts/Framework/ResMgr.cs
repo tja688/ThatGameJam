@@ -251,23 +251,23 @@ namespace QFramework
 
         private void OnGUI()
         {
-            if (PlatformCheck.IsEditor && Input.GetKey(KeyCode.F1))
-            {
-                GUILayout.BeginVertical("box");
-
-                GUILayout.Label("ResKit", new GUIStyle {fontSize = 30});
-                GUILayout.Space(10);
-                GUILayout.Label("ResInfo", new GUIStyle {fontSize = 20});
-                mTable.ToList().ForEach(res => { GUILayout.Label((res as Res).ToString()); });
-                GUILayout.Space(10);
-
-                GUILayout.Label("Pools", new GUIStyle() {fontSize = 20});
-                GUILayout.Label(string.Format("ResSearchRule:{0}",
-                    SafeObjectPool<ResSearchKeys>.Instance.CurCount));
-                GUILayout.Label(string.Format("ResLoader:{0}",
-                    SafeObjectPool<ResLoader>.Instance.CurCount));
-                GUILayout.EndVertical();
-            }
+            // if (PlatformCheck.IsEditor && Input.GetKey(KeyCode.F1))
+            // {
+            //     GUILayout.BeginVertical("box");
+            //
+            //     GUILayout.Label("ResKit", new GUIStyle {fontSize = 30});
+            //     GUILayout.Space(10);
+            //     GUILayout.Label("ResInfo", new GUIStyle {fontSize = 20});
+            //     mTable.ToList().ForEach(res => { GUILayout.Label((res as Res).ToString()); });
+            //     GUILayout.Space(10);
+            //
+            //     GUILayout.Label("Pools", new GUIStyle() {fontSize = 20});
+            //     GUILayout.Label(string.Format("ResSearchRule:{0}",
+            //         SafeObjectPool<ResSearchKeys>.Instance.CurCount));
+            //     GUILayout.Label(string.Format("ResLoader:{0}",
+            //         SafeObjectPool<ResLoader>.Instance.CurCount));
+            //     GUILayout.EndVertical();
+            // }
         }
 
         private void OnIEnumeratorTaskFinish()
