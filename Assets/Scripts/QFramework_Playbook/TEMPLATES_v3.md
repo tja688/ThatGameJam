@@ -1,11 +1,11 @@
-# TEMPLATES.md — Code Skeletons (Project Standard)
+# TEMPLATES — Code Skeletons (v3)
 
-### Attention, if you have not read AGENTS.md yet, please read AGENTS.md before reading this document
-
-> Copy/Paste templates for this project.
+> Read `PLAYBOOK.md` first.  
+> Copy/paste templates for this project.
+>
 > - **Single Root Architecture**: `GameRootApp : Architecture<GameRootApp>`
 > - **Vertical Slice**: `Assets/Scripts/Features/[FeatureName]/...`
-> - **Do NOT** write logic in generated `*.Designer.cs` / `*.Generated.cs`.
+> - Do NOT write logic in generated `*.Designer.cs` / `*.Generated.cs`.
 
 ---
 
@@ -21,7 +21,7 @@ public class GameRootApp : Architecture<GameRootApp>
 {
     protected override void Init()
     {
-        // Register Global Systems/Models/Utilities here.
+        // Register global Systems/Models/Utilities here.
         //
         // Example:
         // this.RegisterModel<IMyModel>(new MyModel());
@@ -29,52 +29,45 @@ public class GameRootApp : Architecture<GameRootApp>
         // this.RegisterUtility<IMyUtility>(new MyUtility());
     }
 }
-````
+```
 
 ---
 
-## 1.1 ProjectToolkitBootstrap (Startup Bootstrap / Deterministic Init)
+## 2. ProjectToolkitBootstrap (Startup Bootstrap / Deterministic Init)
 
 **Purpose**
 
-* Run project-side startup wiring **without touching** `Assets/QFramework/**`.
-* Can force the RootApp to initialize early (Architecture.Init runs lazily on first `Interface` access).
+- Run project-side startup wiring **without touching** `Assets/QFramework/**`.
+- Optionally force the Root Architecture to initialize early
+  (`Architecture<T>.Interface` triggers `Init()` once, lazily).
 
 **File (recommended):**
-
-* `Assets/Scripts/Root/ProjectToolkitBootstrap.cs`
+- `Assets/Scripts/Root/ProjectToolkitBootstrap.cs`
 
 ```csharp
 using QFramework;
-using UnityEngine;
 
 public static class ProjectToolkitBootstrap
 {
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void BeforeSceneLoad()
     {
         // Force Root Architecture initialization early.
-        // (Architecture<T>.Interface triggers Init() once.)
         _ = GameRootApp.Interface;
 
-        // Optional (project-specific):
-        // - If your project mandates explicit toolkit initialization, do it here
-        //   BEFORE any usage happens in your scenes.
-        //
-        // Example (only if you truly need explicit init in your project):
+        // Optional project-side initialization (only if required):
         // ResKit.Init();
         //
-        // Note:
-        // - UIKit/AudioKit may already configure their loader pools via QFramework's
-        //   own BeforeSceneLoad initializers when using ResKit-based defaults.
-        // - Keep this file project-owned; do not modify framework sources.
+        // Optional toolkit overrides (only if required):
+        // UIKit.Config.PanelLoaderPool = ...;
+        // AudioKit.Config.AudioLoaderPool = ...;
     }
 }
 ```
 
 ---
 
-## 2. Feature Skeleton (Folder Structure)
+## 3. Feature Skeleton (Folder Structure)
 
 ```text
 Assets/Scripts/Features/[FeatureName]/
@@ -92,11 +85,10 @@ Assets/Scripts/Features/_Shared/   (optional: shared cross-feature types)
 
 ---
 
-## 3. Controller Skeleton (MonoBehaviour Entry)
+## 4. Controller Skeleton (MonoBehaviour Entry)
 
 **File (recommended):**
-
-* `Assets/Scripts/Features/[FeatureName]/Controllers/[FeatureName]Controller.cs`
+- `Assets/Scripts/Features/[FeatureName]/Controllers/[FeatureName]Controller.cs`
 
 ```csharp
 using QFramework;
@@ -113,19 +105,20 @@ public class FeatureNameController : MonoBehaviour, IController
         //     .UnRegisterWhenDisabled(gameObject);
     }
 
-    // private void OnSomeEvent(SomeEvent e) { }
+    private void OnSomeEvent(SomeEvent e)
+    {
+    }
 }
 ```
 
 ---
 
-## 4. Command Templates
+## 5. Command Templates
 
-### 4.1 Command (No Return)
+### 5.1 Command (No Return)
 
 **File (recommended):**
-
-* `Assets/Scripts/Features/[FeatureName]/Commands/[Verb][Noun]Command.cs`
+- `Assets/Scripts/Features/[FeatureName]/Commands/[Verb][Noun]Command.cs`
 
 ```csharp
 using QFramework;
@@ -137,13 +130,11 @@ public class DoThingCommand : AbstractCommand
         // State mutation ONLY (write path)
         // var model = this.GetModel<IMyModel>();
         // model.DoSomething();
-        //
-        // Notify upward via Event/BindableProperty inside Model/System if needed.
     }
 }
 ```
 
-### 4.2 Command (Return Value)
+### 5.2 Command (Return Value)
 
 ```csharp
 using QFramework;
@@ -160,13 +151,12 @@ public class DoThingCommand : AbstractCommand<int>
 
 ---
 
-## 5. Query Templates
+## 6. Query Templates
 
-### 5.1 Query (Return Value)
+### 6.1 Query (Return Value)
 
 **File (recommended):**
-
-* `Assets/Scripts/Features/[FeatureName]/Queries/Get[Something]Query.cs`
+- `Assets/Scripts/Features/[FeatureName]/Queries/Get[Something]Query.cs`
 
 ```csharp
 using QFramework;
@@ -181,7 +171,7 @@ public class GetSomethingQuery : AbstractQuery<int>
 }
 ```
 
-### 5.2 Calling Command/Query from a Controller / UI Panel
+### 6.2 Calling Command/Query from a Controller / UI Panel
 
 ```csharp
 // Command:
@@ -193,14 +183,13 @@ var value = this.SendQuery(new GetSomethingQuery());
 
 ---
 
-## 6. Model & System Skeleton
+## 7. Model & System Skeleton
 
-### 6.1 Model
+### 7.1 Model
 
-**File (recommended):**
-
-* `Assets/Scripts/Features/[FeatureName]/Models/I[FeatureName]Model.cs`
-* `Assets/Scripts/Features/[FeatureName]/Models/[FeatureName]Model.cs`
+**Files (recommended):**
+- `Assets/Scripts/Features/[FeatureName]/Models/I[FeatureName]Model.cs`
+- `Assets/Scripts/Features/[FeatureName]/Models/[FeatureName]Model.cs`
 
 ```csharp
 using QFramework;
@@ -223,12 +212,11 @@ public class FeatureNameModel : AbstractModel, IFeatureNameModel
 }
 ```
 
-### 6.2 System
+### 7.2 System
 
-**File (recommended):**
-
-* `Assets/Scripts/Features/[FeatureName]/Systems/I[FeatureName]System.cs`
-* `Assets/Scripts/Features/[FeatureName]/Systems/[FeatureName]System.cs`
+**Files (recommended):**
+- `Assets/Scripts/Features/[FeatureName]/Systems/I[FeatureName]System.cs`
+- `Assets/Scripts/Features/[FeatureName]/Systems/[FeatureName]System.cs`
 
 ```csharp
 using QFramework;
@@ -241,20 +229,18 @@ public class FeatureNameSystem : AbstractSystem, IFeatureNameSystem
 {
     protected override void OnInit()
     {
-        // Cross-feature logic / orchestration here.
-        // Avoid holding Controller references.
+        // Orchestration here. Avoid holding Controller references.
     }
 }
 ```
 
 ---
 
-## 7. Utility Skeleton (Infrastructure Only)
+## 8. Utility Skeleton (Infrastructure Only)
 
-**File (recommended):**
-
-* `Assets/Scripts/Features/[FeatureName]/Utilities/I[FeatureName]Utility.cs`
-* `Assets/Scripts/Features/[FeatureName]/Utilities/[FeatureName]Utility.cs`
+**Files (recommended):**
+- `Assets/Scripts/Features/[FeatureName]/Utilities/I[FeatureName]Utility.cs`
+- `Assets/Scripts/Features/[FeatureName]/Utilities/[FeatureName]Utility.cs`
 
 ```csharp
 using QFramework;
@@ -269,7 +255,7 @@ public class FeatureNameUtility : IFeatureNameUtility
 }
 ```
 
-### 7.1 SingletonKit Utility (Allowed only for low-level infra)
+### 8.1 SingletonKit Utility (Allowed only for low-level infra)
 
 ```csharp
 using QFramework;
@@ -283,13 +269,12 @@ public class MyInfraSingleton : Singleton<MyInfraSingleton>
 
 ---
 
-## 8. Events & Bindables
+## 9. Events & Bindables
 
-### 8.1 Event (Prefer `struct` for TypeEventSystem style)
+### 9.1 Event (Prefer `struct` for TypeEventSystem style)
 
 **File (recommended):**
-
-* `Assets/Scripts/Features/[FeatureName]/Events/[Something]ChangedEvent.cs`
+- `Assets/Scripts/Features/[FeatureName]/Events/[Something]ChangedEvent.cs`
 
 ```csharp
 public struct SomethingChangedEvent
@@ -298,7 +283,7 @@ public struct SomethingChangedEvent
 }
 ```
 
-### 8.2 BindableProperty (Recommended for UI binding)
+### 9.2 BindableProperty (Recommended for UI binding)
 
 ```csharp
 using QFramework;
@@ -313,16 +298,14 @@ Count.Register(v => { /* update UI */ })
 
 ---
 
-## 9. UIKit Panel Logic Skeleton (Partial Class Only)
+## 10. UIKit Panel Logic Skeleton (Partial Class Only)
 
 **Files created by UIKit generator:**
-
-* `[PanelName].cs` (write logic here)
-* `[PanelName].Designer.cs` (generated; do NOT edit)
+- `[PanelName].cs` (write logic here)
+- `[PanelName].Designer.cs` (generated; do NOT edit)
 
 ```csharp
 using QFramework;
-using UnityEngine;
 
 public partial class MyUIPanel : UIPanel, IController
 {
@@ -348,11 +331,9 @@ public partial class MyUIPanel : UIPanel, IController
 }
 ```
 
-> Note: Never write business logic in `*.Designer.cs` / `*.Generated.cs`.
-
 ---
 
-## 10. RootApp Registration Snippet (Integrate a Feature)
+## 11. RootApp Registration Snippet (Integrate a Feature)
 
 ```csharp
 protected override void Init()
@@ -366,8 +347,4 @@ protected override void Init()
     // Utility (optional)
     // this.RegisterUtility<IFeatureNameUtility>(new FeatureNameUtility());
 }
-```
-
-```
-::contentReference[oaicite:1]{index=1}
 ```
