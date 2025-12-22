@@ -1,0 +1,1625 @@
+fileFormatVersion: 2
+guid: 9a36a9c4241e4a147a64cf1ed57f70b9
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 3490957487303827677
+    second: CHARA_0
+  - first:
+      213: 187842002105421747
+    second: CHARA_1
+  - first:
+      213: 5225364310941517151
+    second: CHARA_2
+  - first:
+      213: -2750023096196462769
+    second: CHARA_3
+  - first:
+      213: -1850187576236087796
+    second: CHARA_4
+  - first:
+      213: 7225003805887654168
+    second: CHARA_5
+  - first:
+      213: -1105069833942629841
+    second: CHARA_6
+  - first:
+      213: -6736482094379164580
+    second: CHARA_7
+  - first:
+      213: 1531668145244090125
+    second: CHARA_8
+  - first:
+      213: -2251406944398222239
+    second: CHARA_9
+  - first:
+      213: -985223984927127140
+    second: CHARA_10
+  - first:
+      213: -8540076945568575046
+    second: CHARA_11
+  - first:
+      213: -2481058627473796966
+    second: CHARA_12
+  - first:
+      213: -6165895948124117988
+    second: CHARA_13
+  - first:
+      213: -6492358934575544270
+    second: CHARA_14
+  - first:
+      213: -7569591179608556126
+    second: CHARA_15
+  - first:
+      213: 5041056043803723524
+    second: CHARA_16
+  - first:
+      213: -6412571692902617607
+    second: CHARA_17
+  - first:
+      213: 311615512862012261
+    second: CHARA_18
+  - first:
+      213: 5558368506752989686
+    second: CHARA_19
+  - first:
+      213: 5857023684159247346
+    second: CHARA_20
+  - first:
+      213: 889195164576735044
+    second: CHARA_21
+  - first:
+      213: 6334458684016560631
+    second: CHARA_22
+  - first:
+      213: -5428566879611969921
+    second: CHARA_23
+  - first:
+      213: 5393528354183660096
+    second: CHARA_24
+  - first:
+      213: -4842926999518886794
+    second: CHARA_25
+  - first:
+      213: -8122777628185874062
+    second: CHARA_26
+  - first:
+      213: -8136369157469784397
+    second: CHARA_27
+  - first:
+      213: -462612855270787766
+    second: CHARA_28
+  - first:
+      213: -4808778872915397882
+    second: CHARA_29
+  - first:
+      213: -7135499599330684826
+    second: CHARA_30
+  - first:
+      213: 8256100031271090353
+    second: CHARA_31
+  - first:
+      213: 7525220269002751282
+    second: CHARA_32
+  - first:
+      213: -4550768794555348266
+    second: CHARA_33
+  - first:
+      213: 4275553957209818015
+    second: CHARA_34
+  - first:
+      213: 2222080984215592244
+    second: CHARA_35
+  - first:
+      213: -2805109792352522138
+    second: CHARA_36
+  - first:
+      213: -5746619385022376549
+    second: CHARA_37
+  - first:
+      213: -5957874156129371635
+    second: CHARA_38
+  - first:
+      213: 3256739118474142479
+    second: CHARA_39
+  - first:
+      213: 2091581102874933974
+    second: CHARA_40
+  - first:
+      213: -5939113919161022331
+    second: CHARA_41
+  - first:
+      213: 8420800092253293918
+    second: CHARA_42
+  - first:
+      213: -2868597370606827676
+    second: CHARA_43
+  - first:
+      213: 4028885461599486732
+    second: CHARA_44
+  - first:
+      213: 3453146667927179050
+    second: CHARA_45
+  - first:
+      213: 6597177643758415763
+    second: CHARA_46
+  - first:
+      213: -4442883876673576366
+    second: CHARA_47
+  - first:
+      213: 3270509443277488667
+    second: CHARA_48
+  - first:
+      213: -8059837426366375905
+    second: CHARA_49
+  - first:
+      213: 5792387042655290962
+    second: CHARA_50
+  - first:
+      213: -7107385443594649231
+    second: CHARA_51
+  - first:
+      213: 6967672202902111094
+    second: CHARA_52
+  - first:
+      213: 2206555944177657409
+    second: CHARA_53
+  - first:
+      213: 3233661953124519888
+    second: CHARA_54
+  - first:
+      213: 725999572652489934
+    second: CHARA_55
+  - first:
+      213: 1381810523560604692
+    second: CHARA_56
+  - first:
+      213: -7136800003332278179
+    second: CHARA_57
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 1
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 0
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 0
+  spriteTessellationDetail: -1
+  textureType: 0
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: CHARA_0
+      rect:
+        serializedVersion: 2
+        x: 4
+        y: 561
+        width: 312
+        height: 466
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dd02cbcb65f527030800000000000000
+      internalID: 3490957487303827677
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_1
+      rect:
+        serializedVersion: 2
+        x: 319
+        y: 964
+        width: 40
+        height: 44
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3bf44614e495b9200800000000000000
+      internalID: 187842002105421747
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_2
+      rect:
+        serializedVersion: 2
+        x: 447
+        y: 983
+        width: 45
+        height: 37
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f554ca7d729348840800000000000000
+      internalID: 5225364310941517151
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_3
+      rect:
+        serializedVersion: 2
+        x: 494
+        y: 964
+        width: 36
+        height: 34
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f4707137094f5d9d0800000000000000
+      internalID: -2750023096196462769
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_4
+      rect:
+        serializedVersion: 2
+        x: 736
+        y: 985
+        width: 31
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c066b9eb330d256e0800000000000000
+      internalID: -1850187576236087796
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_5
+      rect:
+        serializedVersion: 2
+        x: 766
+        y: 969
+        width: 27
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 81967c68eae544460800000000000000
+      internalID: 7225003805887654168
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_6
+      rect:
+        serializedVersion: 2
+        x: 1497
+        y: 921
+        width: 81
+        height: 81
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f2289d747d00aa0f0800000000000000
+      internalID: -1105069833942629841
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_7
+      rect:
+        serializedVersion: 2
+        x: 1845
+        y: 944
+        width: 81
+        height: 81
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c5c10c00a353382a0800000000000000
+      internalID: -6736482094379164580
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_8
+      rect:
+        serializedVersion: 2
+        x: 1928
+        y: 933
+        width: 82
+        height: 82
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d0f2e0f1014914510800000000000000
+      internalID: 1531668145244090125
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_9
+      rect:
+        serializedVersion: 2
+        x: 319
+        y: 617
+        width: 279
+        height: 345
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 16cdb42005561c0e0800000000000000
+      internalID: -2251406944398222239
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_10
+      rect:
+        serializedVersion: 2
+        x: 600
+        y: 617
+        width: 230
+        height: 355
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c9949327108c352f0800000000000000
+      internalID: -985223984927127140
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_11
+      rect:
+        serializedVersion: 2
+        x: 832
+        y: 959
+        width: 32
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ab1d1e8e34d8b7980800000000000000
+      internalID: -8540076945568575046
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_12
+      rect:
+        serializedVersion: 2
+        x: 981
+        y: 957
+        width: 27
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a909182d252819dd0800000000000000
+      internalID: -2481058627473796966
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_13
+      rect:
+        serializedVersion: 2
+        x: 1117
+        y: 782
+        width: 211
+        height: 189
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c14aa02bd465e6aa0800000000000000
+      internalID: -6165895948124117988
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_14
+      rect:
+        serializedVersion: 2
+        x: 1441
+        y: 960
+        width: 38
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2388a4e62f186e5a0800000000000000
+      internalID: -6492358934575544270
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_15
+      rect:
+        serializedVersion: 2
+        x: 1654
+        y: 768
+        width: 189
+        height: 211
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2ad70847de863f690800000000000000
+      internalID: -7569591179608556126
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_16
+      rect:
+        serializedVersion: 2
+        x: 834
+        y: 784
+        width: 280
+        height: 169
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 407c1cf53cd65f540800000000000000
+      internalID: 5041056043803723524
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_17
+      rect:
+        serializedVersion: 2
+        x: 1330
+        y: 938
+        width: 45
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9fd60d34508f107a0800000000000000
+      internalID: -6412571692902617607
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_18
+      rect:
+        serializedVersion: 2
+        x: 1845
+        y: 889
+        width: 64
+        height: 53
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 56334ae68a4135400800000000000000
+      internalID: 311615512862012261
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_19
+      rect:
+        serializedVersion: 2
+        x: 1330
+        y: 852
+        width: 165
+        height: 84
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6f9fab715ba432d40800000000000000
+      internalID: 5558368506752989686
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_20
+      rect:
+        serializedVersion: 2
+        x: 1497
+        y: 857
+        width: 65
+        height: 62
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2f39c574204584150800000000000000
+      internalID: 5857023684159247346
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_21
+      rect:
+        serializedVersion: 2
+        x: 1593
+        y: 852
+        width: 59
+        height: 60
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 44f57908a4e075c00800000000000000
+      internalID: 889195164576735044
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_22
+      rect:
+        serializedVersion: 2
+        x: 1911
+        y: 816
+        width: 97
+        height: 115
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7f902399c9488e750800000000000000
+      internalID: 6334458684016560631
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_23
+      rect:
+        serializedVersion: 2
+        x: 2010
+        y: 816
+        width: 20
+        height: 52
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f7e174d4f2bd9a4b0800000000000000
+      internalID: -5428566879611969921
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_24
+      rect:
+        serializedVersion: 2
+        x: 1330
+        y: 782
+        width: 38
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0424d154679a9da40800000000000000
+      internalID: 5393528354183660096
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_25
+      rect:
+        serializedVersion: 2
+        x: 1377
+        y: 748
+        width: 265
+        height: 101
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 67447888d877accb0800000000000000
+      internalID: -4842926999518886794
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_26
+      rect:
+        serializedVersion: 2
+        x: 1848
+        y: 794
+        width: 59
+        height: 60
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 271bd7298c8164f80800000000000000
+      internalID: -8122777628185874062
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_27
+      rect:
+        serializedVersion: 2
+        x: 1931
+        y: 727
+        width: 97
+        height: 87
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3b6b19f0c5fc51f80800000000000000
+      internalID: -8136369157469784397
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_28
+      rect:
+        serializedVersion: 2
+        x: 832
+        y: 455
+        width: 262
+        height: 326
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a453e052f087499f0800000000000000
+      internalID: -462612855270787766
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_29
+      rect:
+        serializedVersion: 2
+        x: 1096
+        y: 464
+        width: 279
+        height: 316
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6037974d719c34db0800000000000000
+      internalID: -4808778872915397882
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_30
+      rect:
+        serializedVersion: 2
+        x: 1377
+        y: 464
+        width: 274
+        height: 281
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 660d3fe7bec99fc90800000000000000
+      internalID: -7135499599330684826
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_31
+      rect:
+        serializedVersion: 2
+        x: 1654
+        y: 465
+        width: 95
+        height: 294
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1b8310a5c3f839270800000000000000
+      internalID: 8256100031271090353
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_32
+      rect:
+        serializedVersion: 2
+        x: 1752
+        y: 464
+        width: 91
+        height: 302
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 23d7a7ed6f3fe6860800000000000000
+      internalID: 7525220269002751282
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_33
+      rect:
+        serializedVersion: 2
+        x: 1845
+        y: 715
+        width: 61
+        height: 77
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6da889174eb68d0c0800000000000000
+      internalID: -4550768794555348266
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_34
+      rect:
+        serializedVersion: 2
+        x: 1931
+        y: 613
+        width: 99
+        height: 112
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f93c185dba1d55b30800000000000000
+      internalID: 4275553957209818015
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_35
+      rect:
+        serializedVersion: 2
+        x: 332
+        y: 440
+        width: 417
+        height: 175
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 43d125ec1ea66de10800000000000000
+      internalID: 2222080984215592244
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_36
+      rect:
+        serializedVersion: 2
+        x: 1867
+        y: 613
+        width: 62
+        height: 85
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 660bbd6818f3219d0800000000000000
+      internalID: -2805109792352522138
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_37
+      rect:
+        serializedVersion: 2
+        x: 3
+        y: 3
+        width: 327
+        height: 555
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b951e50cd18ef30b0800000000000000
+      internalID: -5746619385022376549
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_38
+      rect:
+        serializedVersion: 2
+        x: 751
+        y: 551
+        width: 55
+        height: 58
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d0abd6b6501615da0800000000000000
+      internalID: -5957874156129371635
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_39
+      rect:
+        serializedVersion: 2
+        x: 1845
+        y: 436
+        width: 111
+        height: 175
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f0325ca29f2423d20800000000000000
+      internalID: 3256739118474142479
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_40
+      rect:
+        serializedVersion: 2
+        x: 1958
+        y: 529
+        width: 15
+        height: 60
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6dab7cf6ee9c60d10800000000000000
+      internalID: 2091581102874933974
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_41
+      rect:
+        serializedVersion: 2
+        x: 775
+        y: 455
+        width: 49
+        height: 64
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 58844d77b57049da0800000000000000
+      internalID: -5939113919161022331
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_42
+      rect:
+        serializedVersion: 2
+        x: 1431
+        y: 241
+        width: 355
+        height: 221
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e5d855f8111bcd470800000000000000
+      internalID: 8420800092253293918
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_43
+      rect:
+        serializedVersion: 2
+        x: 1788
+        y: 436
+        width: 52
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4674c51d3e1b038d0800000000000000
+      internalID: -2868597370606827676
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_44
+      rect:
+        serializedVersion: 2
+        x: 1958
+        y: 436
+        width: 15
+        height: 63
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c038f5b3bf979e730800000000000000
+      internalID: 4028885461599486732
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_45
+      rect:
+        serializedVersion: 2
+        x: 333
+        y: 3
+        width: 436
+        height: 435
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a2f8f13599a0cef20800000000000000
+      internalID: 3453146667927179050
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_46
+      rect:
+        serializedVersion: 2
+        x: 772
+        y: 362
+        width: 304
+        height: 91
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 39f6e581d12ed8b50800000000000000
+      internalID: 6597177643758415763
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_47
+      rect:
+        serializedVersion: 2
+        x: 1078
+        y: 362
+        width: 105
+        height: 87
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 252af8057a4b752c0800000000000000
+      internalID: -4442883876673576366
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_48
+      rect:
+        serializedVersion: 2
+        x: 1185
+        y: 353
+        width: 83
+        height: 84
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b128d11c20f236d20800000000000000
+      internalID: 3270509443277488667
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_49
+      rect:
+        serializedVersion: 2
+        x: 1270
+        y: 353
+        width: 83
+        height: 83
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f1898064094b52090800000000000000
+      internalID: -8059837426366375905
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_50
+      rect:
+        serializedVersion: 2
+        x: 1788
+        y: 326
+        width: 191
+        height: 108
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2564b0f6351b26050800000000000000
+      internalID: 5792387042655290962
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_51
+      rect:
+        serializedVersion: 2
+        x: 1981
+        y: 326
+        width: 22
+        height: 84
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 17142c8789e7d5d90800000000000000
+      internalID: -7107385443594649231
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_52
+      rect:
+        serializedVersion: 2
+        x: 773
+        y: 4
+        width: 345
+        height: 355
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6730855c3f422b060800000000000000
+      internalID: 6967672202902111094
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_53
+      rect:
+        serializedVersion: 2
+        x: 1121
+        y: 3
+        width: 308
+        height: 348
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1466cbdb0f24f9e10800000000000000
+      internalID: 2206555944177657409
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_54
+      rect:
+        serializedVersion: 2
+        x: 2005
+        y: 326
+        width: 25
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0dfcea7e96640ec20800000000000000
+      internalID: 3233661953124519888
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_55
+      rect:
+        serializedVersion: 2
+        x: 1788
+        y: 241
+        width: 25
+        height: 83
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ecc790bc3c4431a00800000000000000
+      internalID: 725999572652489934
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_56
+      rect:
+        serializedVersion: 2
+        x: 1826
+        y: 3
+        width: 191
+        height: 321
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 414f9bb995d2d2310800000000000000
+      internalID: 1381810523560604692
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CHARA_57
+      rect:
+        serializedVersion: 2
+        x: 1431
+        y: 3
+        width: 393
+        height: 236
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d587f58953ef4fc90800000000000000
+      internalID: -7136800003332278179
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      CHARA_0: 3490957487303827677
+      CHARA_1: 187842002105421747
+      CHARA_10: -985223984927127140
+      CHARA_11: -8540076945568575046
+      CHARA_12: -2481058627473796966
+      CHARA_13: -6165895948124117988
+      CHARA_14: -6492358934575544270
+      CHARA_15: -7569591179608556126
+      CHARA_16: 5041056043803723524
+      CHARA_17: -6412571692902617607
+      CHARA_18: 311615512862012261
+      CHARA_19: 5558368506752989686
+      CHARA_2: 5225364310941517151
+      CHARA_20: 5857023684159247346
+      CHARA_21: 889195164576735044
+      CHARA_22: 6334458684016560631
+      CHARA_23: -5428566879611969921
+      CHARA_24: 5393528354183660096
+      CHARA_25: -4842926999518886794
+      CHARA_26: -8122777628185874062
+      CHARA_27: -8136369157469784397
+      CHARA_28: -462612855270787766
+      CHARA_29: -4808778872915397882
+      CHARA_3: -2750023096196462769
+      CHARA_30: -7135499599330684826
+      CHARA_31: 8256100031271090353
+      CHARA_32: 7525220269002751282
+      CHARA_33: -4550768794555348266
+      CHARA_34: 4275553957209818015
+      CHARA_35: 2222080984215592244
+      CHARA_36: -2805109792352522138
+      CHARA_37: -5746619385022376549
+      CHARA_38: -5957874156129371635
+      CHARA_39: 3256739118474142479
+      CHARA_4: -1850187576236087796
+      CHARA_40: 2091581102874933974
+      CHARA_41: -5939113919161022331
+      CHARA_42: 8420800092253293918
+      CHARA_43: -2868597370606827676
+      CHARA_44: 4028885461599486732
+      CHARA_45: 3453146667927179050
+      CHARA_46: 6597177643758415763
+      CHARA_47: -4442883876673576366
+      CHARA_48: 3270509443277488667
+      CHARA_49: -8059837426366375905
+      CHARA_5: 7225003805887654168
+      CHARA_50: 5792387042655290962
+      CHARA_51: -7107385443594649231
+      CHARA_52: 6967672202902111094
+      CHARA_53: 2206555944177657409
+      CHARA_54: 3233661953124519888
+      CHARA_55: 725999572652489934
+      CHARA_56: 1381810523560604692
+      CHARA_57: -7136800003332278179
+      CHARA_6: -1105069833942629841
+      CHARA_7: -6736482094379164580
+      CHARA_8: 1531668145244090125
+      CHARA_9: -2251406944398222239
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
