@@ -1,8 +1,6 @@
 using System.Collections.Generic;
 using QFramework;
 using ThatGameJam.Features.KeroseneLamp.Commands;
-using ThatGameJam.Features.KeroseneLamp.Models;
-using ThatGameJam.Features.RunFailReset.Commands;
 using ThatGameJam.Features.Shared;
 using UnityEngine;
 
@@ -12,8 +10,6 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
     {
         [SerializeField] private GameObject lampPrefab;
         [SerializeField] private Transform lampParent;
-        [SerializeField] private int maxLamps = 3;
-        [SerializeField] private bool applyMaxOnEnable = true;
 
         private readonly List<GameObject> _lamps = new List<GameObject>();
         private int _nextLampId;
@@ -22,11 +18,6 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
 
         private void OnEnable()
         {
-            if (applyMaxOnEnable)
-            {
-                this.SendCommand(new SetLampMaxCommand(maxLamps));
-            }
-
             this.RegisterEvent<PlayerDiedEvent>(OnPlayerDied)
                 .UnRegisterWhenDisabled(gameObject);
             this.RegisterEvent<RunResetEvent>(OnRunReset)
@@ -35,13 +26,6 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
 
         private void OnPlayerDied(PlayerDiedEvent e)
         {
-            var model = this.GetModel<IKeroseneLampModel>();
-            if (model.LampCount.Value >= model.LampMax.Value)
-            {
-                this.SendCommand(new MarkRunFailedCommand());
-                return;
-            }
-
             SpawnLamp(e.WorldPos);
         }
 

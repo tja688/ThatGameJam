@@ -5,6 +5,7 @@ using ThatGameJam.Features.PlayerCharacter2D.Configs;
 using ThatGameJam.Features.PlayerCharacter2D.Events;
 using ThatGameJam.Features.PlayerCharacter2D.Models;
 using ThatGameJam.Features.PlayerCharacter2D.Queries;
+using ThatGameJam.Features.Shared;
 using UnityEngine;
 
 namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
@@ -23,6 +24,7 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
         private Rigidbody2D _rb;
         private CapsuleCollider2D _col;
         private float _time;
+        private bool _inputLocked;
 
         public IArchitecture GetArchitecture() => GameRootApp.Interface;
 
@@ -77,6 +79,11 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
             {
                 Jumped?.Invoke();
             }).UnRegisterWhenDisabled(gameObject);
+
+            this.RegisterEvent<PlayerDiedEvent>(_ => _inputLocked = true)
+                .UnRegisterWhenDisabled(gameObject);
+            this.RegisterEvent<PlayerRespawnedEvent>(_ => _inputLocked = false)
+                .UnRegisterWhenDisabled(gameObject);
         }
 
         private void Update()
@@ -88,6 +95,11 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
             var frameInput = _useExternalInput
                 ? _externalInput
                 : (_resolvedInputSource != null ? _resolvedInputSource.ReadInput() : default);
+
+            if (_inputLocked)
+            {
+                frameInput = default;
+            }
 
             if (_stats.SnapInput)
             {

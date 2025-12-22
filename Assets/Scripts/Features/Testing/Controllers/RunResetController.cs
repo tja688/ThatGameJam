@@ -28,6 +28,7 @@ namespace ThatGameJam.Features.RunFailReset.Controllers
 
         private void Update()
         {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
             if (!Input.GetKeyDown(resetKey))
             {
                 return;
@@ -38,12 +39,13 @@ namespace ThatGameJam.Features.RunFailReset.Controllers
                 return;
             }
 
-            this.GetSystem<IRunFailResetSystem>().RequestReset();
+            this.GetSystem<IRunFailResetSystem>().RequestResetFromTest();
+#endif
         }
 
         public void RequestReset()
         {
-            this.GetSystem<IRunFailResetSystem>().RequestReset();
+            this.GetSystem<IRunFailResetSystem>().RequestResetFromTest();
         }
 
         private void OnRunFailed(RunFailedEvent e)

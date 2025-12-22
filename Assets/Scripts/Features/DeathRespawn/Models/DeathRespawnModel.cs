@@ -15,6 +15,7 @@ namespace ThatGameJam.Features.DeathRespawn.Models
 
         internal void SetAlive(bool value) => _isAlive.Value = value;
         internal void IncrementDeathCount() => _deathCount.Value++;
+        internal void ResetDeathCount() => _deathCount.Value = 0;
 
         protected override void OnInit()
         {

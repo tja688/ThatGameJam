@@ -3,11 +3,12 @@
 ## 1. Purpose
 - Track whether the player is inside darkness zones and publish state changes.
 - Drain Light Vitality while in darkness (unless a Safe Zone is active).
+- Refresh overlap on reset/respawn so starting inside darkness is detected immediately.
 
 ## 2. Folder & Key Files
 - Root: `Assets/Scripts/Features/Darkness/`
 - Controllers:
-  - `PlayerDarknessSensor.cs` 〞 detects zone enter/exit and sends `SetInDarknessCommand`
+  - `PlayerDarknessSensor.cs` 〞 detects zone enter/exit and refreshes overlap on reset/respawn
   - `DarknessZone2D.cs` 〞 trigger volume that reports to the sensor
   - `DarknessTickController.cs` 〞 ticks `IDarknessSystem` each frame
 - Systems:
@@ -62,12 +63,13 @@
   - Usage notes: use for UI or gameplay gating
 
 ## 5. Typical Integrations
-- Example: On darkness enter ↙ play a sound (listen to `DarknessStateChangedEvent`)
+- Example: On darkness enter ↙ play a sound (listen to `DarknessStateChangedEvent`).
 
 ## 6. Verify Checklist
 1. Add `PlayerDarknessSensor` to the player and `DarknessZone2D` to a trigger volume.
 2. Enter/exit the trigger; expect `DarknessStateChangedEvent` to fire and `IsInDarkness` to toggle.
 3. With `DarknessTickController` active and Light Vitality enabled, light should drain while in darkness.
+4. Place spawn inside darkness, then respawn/reset; expect darkness state to activate without relying on TriggerEnter.
 
 ## 7. UNVERIFIED (only if needed)
 - None.

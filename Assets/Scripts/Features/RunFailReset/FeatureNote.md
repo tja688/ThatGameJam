@@ -2,19 +2,21 @@
 
 ## 1. Purpose
 - Track whether the current run is failed and broadcast fail/reset events.
-- Provide a reset trigger (key press or external call).
+- Trigger failure when death count reaches a configured threshold.
+- Allow resets only from fail flow or test-only scripts.
 
 ## 2. Folder & Key Files
 - Root: `Assets/Scripts/Features/RunFailReset/`
 - Controllers:
-  - `RunResetController.cs` 〞 listens for reset input and calls system
+  - `RunFailSettingsController.cs` 〞 sets max deaths per level (optional)
 - Systems:
-  - `IRunFailResetSystem`, `RunFailResetSystem` 〞 requests reset and detects failure
+  - `IRunFailResetSystem`, `RunFailResetSystem` 〞 listens for death count changes and emits fail/reset events
 - Models:
-  - `IRunFailResetModel`, `RunFailResetModel` 〞 `IsFailed` bindable state
+  - `IRunFailResetModel`, `RunFailResetModel` 〞 `IsFailed` + `MaxDeaths` bindables
 - Commands:
   - `MarkRunFailedCommand`
   - `ResetRunCommand`
+  - `SetMaxDeathsCommand`
 - Utilities: None
 
 ## 3. Runtime Wiring
@@ -24,11 +26,12 @@
   - System: `ThatGameJam.Features.RunFailReset.Systems.IRunFailResetSystem`
 
 ### 3.2 Scene setup (Unity)
-- Required MonoBehaviours:
-  - `RunResetController` on a scene object (listens for reset key)
+- Optional MonoBehaviours:
+  - `RunFailSettingsController` on a scene object (sets death threshold)
 - Inspector fields (if any):
-  - `RunResetController.resetKey` 〞 key to request reset
-  - `RunResetController.requireFailed` 〞 only allow reset after failure
+  - `RunFailSettingsController.maxDeathsPerLevel` 〞 failure threshold
+  - `RunFailSettingsController.applyOnEnable` 〞 send `SetMaxDeathsCommand` on enable
+- Test-only reset input lives in the Testing feature (`Assets/Scripts/Features/Testing/Controllers/RunResetController.cs`).
 
 ## 4. Public API Surface (How other Features integrate)
 ### 4.1 Events (Outbound)
@@ -36,14 +39,14 @@
 - `struct RunFailedEvent`
   - When fired: `MarkRunFailedCommand` executes
   - Payload: none
-  - Typical listener: UI/HUD
+  - Typical listener: UI/HUD, fail handling
   - Example:
     ```csharp
     this.RegisterEvent<RunFailedEvent>(_ => { /* show failed */ })
         .UnRegisterWhenDisabled(gameObject);
     ```
 - `struct RunResetEvent`
-  - When fired: `RunFailResetSystem.RequestReset()` executes
+  - When fired: `IRunFailResetSystem.RequestResetFromFail/Test()` executes
   - Payload: none
   - Typical listener: features that need to reset state
 
@@ -53,10 +56,13 @@
 ### 4.3 Commands (Write Path)
 - `MarkRunFailedCommand`
   - What state it mutates: `IRunFailResetModel.IsFailed`
-  - Typical sender: `RunFailResetSystem` (lamp count overflow)
+  - Typical sender: `RunFailResetSystem` (death count threshold)
 - `ResetRunCommand`
   - What state it mutates: `IRunFailResetModel.IsFailed`
   - Typical sender: `RunFailResetSystem`
+- `SetMaxDeathsCommand`
+  - What state it mutates: `IRunFailResetModel.MaxDeaths`
+  - Typical sender: `RunFailSettingsController` or setup code
 
 ### 4.4 Queries (Read Path, optional)
 - None.
@@ -64,19 +70,21 @@
 ### 4.5 Model Read Surface
 - Bindables / readonly properties:
   - `IReadonlyBindableProperty<bool> IsFailed`
-  - Usage notes: HUD or state gating
+  - `IReadonlyBindableProperty<int> MaxDeaths`
+  - Usage notes: HUD or fail gating
 
 ## 5. Typical Integrations
-- Example: External UI button ↙ call `IRunFailResetSystem.RequestReset()`.
+- Example: Configure death threshold ↙ send `SetMaxDeathsCommand`.
   ```csharp
-  this.GetSystem<IRunFailResetSystem>().RequestReset();
+  this.SendCommand(new SetMaxDeathsCommand(3));
   ```
-- Example: Lamp overflow policy ↙ `KeroseneLampManager` sends `MarkRunFailedCommand`, then `RunFailHandlingController` issues a delayed reset via `RequestReset()`.
+- Example: Fail handling ↙ call `IRunFailResetSystem.RequestResetFromFail()` after `RunFailedEvent`.
 
 ## 6. Verify Checklist
-1. Add `RunResetController` and press the reset key after failure.
-2. Force lamp count over max to trigger `RunFailedEvent`.
-3. Press reset; expect `RunResetEvent` and `IsFailed` to reset to false.
+1. Add `RunFailSettingsController` and set `maxDeathsPerLevel` (optional).
+2. Trigger deaths until `DeathCountChangedEvent.Count` reaches `MaxDeaths`; expect `RunFailedEvent`.
+3. Let `RunFailHandlingController` request reset; expect `RunResetEvent` and `IsFailed` to reset to false.
+4. In editor/dev builds, use `Testing/RunResetController` to issue a test reset.
 
 ## 7. UNVERIFIED (only if needed)
 - None.

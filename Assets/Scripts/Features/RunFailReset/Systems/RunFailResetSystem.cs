@@ -7,33 +7,49 @@ namespace ThatGameJam.Features.RunFailReset.Systems
 {
     public class RunFailResetSystem : AbstractSystem, IRunFailResetSystem
     {
-        private IUnRegister _lampCountUnregister;
+        private IUnRegister _deathCountUnregister;
 
         protected override void OnInit()
         {
-            _lampCountUnregister = this.RegisterEvent<LampCountChangedEvent>(OnLampCountChanged);
+            _deathCountUnregister = this.RegisterEvent<DeathCountChangedEvent>(OnDeathCountChanged);
         }
 
         protected override void OnDeinit()
         {
-            _lampCountUnregister?.UnRegister();
-            _lampCountUnregister = null;
+            _deathCountUnregister?.UnRegister();
+            _deathCountUnregister = null;
         }
 
-        public void RequestReset()
+        public void RequestResetFromFail()
+        {
+            var model = this.GetModel<IRunFailResetModel>();
+            if (!model.IsFailed.Value)
+            {
+                return;
+            }
+
+            ExecuteReset();
+        }
+
+        public void RequestResetFromTest()
+        {
+            ExecuteReset();
+        }
+
+        private void ExecuteReset()
         {
             this.SendCommand(new ResetRunCommand());
             this.SendEvent(new RunResetEvent());
         }
 
-        private void OnLampCountChanged(LampCountChangedEvent e)
+        private void OnDeathCountChanged(DeathCountChangedEvent e)
         {
-            if (e.Count <= e.Max)
+            var model = this.GetModel<IRunFailResetModel>();
+            if (e.Count < model.MaxDeaths.Value)
             {
                 return;
             }
 
-            var model = this.GetModel<IRunFailResetModel>();
             if (model.IsFailed.Value)
             {
                 return;

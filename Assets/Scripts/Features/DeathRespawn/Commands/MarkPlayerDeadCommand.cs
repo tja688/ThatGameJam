@@ -32,6 +32,11 @@ namespace ThatGameJam.Features.DeathRespawn.Commands
                 Reason = _reason,
                 WorldPos = _worldPos
             });
+
+            this.SendEvent(new DeathCountChangedEvent
+            {
+                Count = model.DeathCountValue
+            });
         }
     }
 }

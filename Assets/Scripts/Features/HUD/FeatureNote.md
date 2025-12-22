@@ -42,7 +42,7 @@
   - `ILightVitalityModel.CurrentLight`, `ILightVitalityModel.MaxLight`
   - `IDarknessModel.IsInDarkness`
   - `ISafeZoneModel.IsSafe`, `ISafeZoneModel.SafeZoneCount`
-  - `IKeroseneLampModel.LampCount`, `IKeroseneLampModel.LampMax`
+  - `IKeroseneLampModel.LampCount`
   - `IRunFailResetModel.IsFailed`
   - Usage notes: HUDController registers with `RegisterWithInitValue`
 

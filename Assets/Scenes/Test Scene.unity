@@ -5653,6 +5653,8 @@ GameObject:
   - component: {fileID: 2108122864}
   - component: {fileID: 2108122863}
   - component: {fileID: 2108122862}
+  - component: {fileID: 2108122865}
+  - component: {fileID: 2108122866}
   m_Layer: 0
   m_Name: GameSystems
   m_TagString: Untagged
@@ -5745,8 +5747,33 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ThatGameJam.Features.KeroseneLamp.Controllers.KeroseneLampManager
   lampPrefab: {fileID: 356797205242928593, guid: 5e607bc3d6cfef34a8a9ee37661a52b9, type: 3}
   lampParent: {fileID: 1462457046}
-  maxLamps: 3
-  applyMaxOnEnable: 1
+--- !u!114 &2108122865
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2108122858}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f097f6f30890465f9d76756577115a43, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThatGameJam.Features.RunFailHandling.Controllers.RunFailHandlingController
+  resetDelaySeconds: 0
+--- !u!114 &2108122866
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2108122858}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 58f544c3e7e242e7b424d97e9ace4a9a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThatGameJam.Features.RunFailReset.Controllers.RunFailSettingsController
+  maxDeathsPerLevel: 4
+  applyOnEnable: 1
 --- !u!1 &2114430831
 GameObject:
   m_ObjectHideFlags: 0

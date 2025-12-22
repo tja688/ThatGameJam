@@ -3,6 +3,7 @@
 ## 1. Purpose
 - Provide 2D platformer character movement, jumping, and grounded state.
 - Expose bindables/events for movement state and allow external input.
+- Lock player input while dead and restore on respawn.
 
 ## 2. Folder & Key Files
 - Root: `Assets/Scripts/Features/PlayerCharacter2D/`
@@ -87,6 +88,7 @@
 1. Add `PlatformerCharacterController` + `PlatformerCharacterInput` to the player.
 2. Assign a `PlatformerCharacterStats` asset and InputAction references.
 3. Press jump; expect `PlayerJumpedEvent` and movement to update.
+4. Trigger `PlayerDiedEvent`; expect input to stop until `PlayerRespawnedEvent` fires.
 
 ## 7. UNVERIFIED (only if needed)
 - None.

@@ -1,5 +1,6 @@
 using System.Collections;
 using QFramework;
+using ThatGameJam.Features.DeathRespawn.Commands;
 using ThatGameJam.Features.DeathRespawn.Systems;
 using ThatGameJam.Features.Shared;
 using UnityEngine;
@@ -35,11 +36,8 @@ namespace ThatGameJam.Features.DeathRespawn.Controllers
                     .UnRegisterWhenDisabled(gameObject);
             }
 
-            if (respawnOnRunReset)
-            {
-                this.RegisterEvent<RunResetEvent>(OnRunReset)
-                    .UnRegisterWhenDisabled(gameObject);
-            }
+            this.RegisterEvent<RunResetEvent>(OnRunReset)
+                .UnRegisterWhenDisabled(gameObject);
         }
 
         private void OnDisable()
@@ -58,7 +56,12 @@ namespace ThatGameJam.Features.DeathRespawn.Controllers
 
         private void OnRunReset(RunResetEvent e)
         {
-            RequestRespawn();
+            this.SendCommand(new ResetDeathCountCommand());
+
+            if (respawnOnRunReset)
+            {
+                RequestRespawn();
+            }
         }
 
         public void RequestRespawn()

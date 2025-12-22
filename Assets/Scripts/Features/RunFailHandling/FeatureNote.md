@@ -39,14 +39,11 @@
 - None.
 
 ## 5. Typical Integrations
-- Example: Trigger a failure ↙ send `MarkRunFailedCommand`, then `RunFailHandlingController` will log and reset after delay.
-  ```csharp
-  this.SendCommand(new MarkRunFailedCommand());
-  ```
+- Example: Let `RunFailResetSystem` emit `RunFailedEvent` on death-count threshold, then `RunFailHandlingController` issues a delayed `RequestResetFromFail()`.
 
 ## 6. Verify Checklist
 1. Add `RunFailHandlingController` to a scene.
-2. Trigger `RunFailedEvent` (e.g., via lamp overflow).
+2. Trigger `RunFailedEvent` (reach the configured death threshold).
 3. Observe a `LogKit` info message and a reset after `resetDelaySeconds`.
 
 ## 7. UNVERIFIED (only if needed)

@@ -28,7 +28,6 @@ namespace ThatGameJam.Features.HUD.Controllers
         private float _currentLight;
         private float _maxLight;
         private int _lampCount;
-        private int _lampMax;
         private int _safeZoneCount;
         private bool _isSafe;
 
@@ -54,8 +53,6 @@ namespace ThatGameJam.Features.HUD.Controllers
 
             var lampModel = this.GetModel<IKeroseneLampModel>();
             lampModel.LampCount.RegisterWithInitValue(OnLampCountChanged)
-                .UnRegisterWhenDisabled(gameObject);
-            lampModel.LampMax.RegisterWithInitValue(OnLampMaxChanged)
                 .UnRegisterWhenDisabled(gameObject);
 
             var runModel = this.GetModel<IRunFailResetModel>();
@@ -127,17 +124,11 @@ namespace ThatGameJam.Features.HUD.Controllers
             RefreshLampUI();
         }
 
-        private void OnLampMaxChanged(int max)
-        {
-            _lampMax = max;
-            RefreshLampUI();
-        }
-
         private void RefreshLampUI()
         {
             if (lampText != null)
             {
-                lampText.text = $"Lamps: {_lampCount}/{_lampMax}";
+                lampText.text = $"Lamps: {_lampCount}";
             }
         }
 

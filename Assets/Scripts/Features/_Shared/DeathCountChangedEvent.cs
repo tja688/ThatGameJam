@@ -1,6 +1,6 @@
 namespace ThatGameJam.Features.Shared
 {
-    public struct LampCountChangedEvent
+    public struct DeathCountChangedEvent
     {
         public int Count;
     }

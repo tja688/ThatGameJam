@@ -61,7 +61,7 @@ namespace ThatGameJam.Features.RunFailHandling.Controllers
 
         private void RequestRunReset()
         {
-            this.GetSystem<IRunFailResetSystem>().RequestReset();
+            this.GetSystem<IRunFailResetSystem>().RequestResetFromFail();
         }
     }
 }

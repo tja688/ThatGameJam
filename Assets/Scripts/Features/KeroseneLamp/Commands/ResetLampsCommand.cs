@@ -18,8 +18,7 @@ namespace ThatGameJam.Features.KeroseneLamp.Commands
             {
                 this.SendEvent(new LampCountChangedEvent
                 {
-                    Count = 0,
-                    Max = model.MaxValue
+                    Count = 0
                 });
             }
         }

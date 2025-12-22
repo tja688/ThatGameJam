@@ -1,20 +1,18 @@
 # Feature: KeroseneLamp
 
 ## 1. Purpose
-- Track kerosene lamp count/max and broadcast spawn/count events.
-- Optionally instantiate lamp prefabs on player death.
-- If lamp count is already at max, the next death sends `MarkRunFailedCommand`. `RunFailHandling` handles the delayed reset.
+- Track kerosene lamp count and broadcast spawn/count events.
+- Instantiate lamp prefabs on every player death (no max limit).
 
 ## 2. Folder & Key Files
 - Root: `Assets/Scripts/Features/KeroseneLamp/`
 - Controllers:
-- `KeroseneLampManager.cs` 〞 spawns lamp prefab and issues commands
+  - `KeroseneLampManager.cs` 〞 spawns lamp prefab and issues commands
 - Models:
-  - `IKeroseneLampModel`, `KeroseneLampModel` 〞 lamp count + max
+  - `IKeroseneLampModel`, `KeroseneLampModel` 〞 lamp count
 - Commands:
-- `RecordLampSpawnedCommand`
-- `SetLampMaxCommand`
-- `ResetLampsCommand`
+  - `RecordLampSpawnedCommand`
+  - `ResetLampsCommand`
 - Systems: None
 - Utilities: None
 
@@ -29,8 +27,6 @@
 - Inspector fields (if any):
   - `lampPrefab` 〞 prefab to instantiate (optional)
   - `lampParent` 〞 parent transform for spawned lamps (optional)
-  - `maxLamps` 〞 sets lamp max on enable (if `applyMaxOnEnable`)
-  - `applyMaxOnEnable` 〞 whether to send `SetLampMaxCommand` on enable
 
 ## 4. Public API Surface (How other Features integrate)
 ### 4.1 Events (Outbound)
@@ -45,8 +41,8 @@
         .UnRegisterWhenDisabled(gameObject);
     ```
 - `struct LampCountChangedEvent`
-  - When fired: lamp count/max changes
-  - Payload: `Count` (int), `Max` (int)
+  - When fired: lamp count changes
+  - Payload: `Count` (int)
   - Typical listener: HUD
 
 ### 4.2 Request Events (Inbound write requests, optional)
@@ -56,9 +52,6 @@
 - `RecordLampSpawnedCommand`
   - What state it mutates: `IKeroseneLampModel.LampCount`, `NextLampId`
   - Typical sender: `KeroseneLampManager`
-- `SetLampMaxCommand`
-  - What state it mutates: `IKeroseneLampModel.LampMax`
-  - Typical sender: `KeroseneLampManager` or setup code
 - `ResetLampsCommand`
   - What state it mutates: lamp count and next id
   - Typical sender: `KeroseneLampManager` on run reset
@@ -69,19 +62,15 @@
 ### 4.5 Model Read Surface
 - Bindables / readonly properties:
   - `IReadonlyBindableProperty<int> LampCount`
-  - `IReadonlyBindableProperty<int> LampMax`
-  - Usage notes: HUD display or gating logic
+  - Usage notes: HUD display or analytics
 
 ## 5. Typical Integrations
-- Example: Set lamp cap on scene load ↙ send `SetLampMaxCommand`.
-  ```csharp
-  this.SendCommand(new SetLampMaxCommand(3));
-  ```
+- Example: On `RunResetEvent` ↙ clear spawned lamps (handled by `KeroseneLampManager`).
 
 ## 6. Verify Checklist
 1. Add `KeroseneLampManager` and assign `lampPrefab` (optional) and `lampParent`.
 2. Trigger a `PlayerDiedEvent`; expect `LampSpawnedEvent` and `LampCountChangedEvent`.
-3. When lamp count reaches max, trigger another `PlayerDiedEvent`; expect `RunFailedEvent`, then a delayed `RunResetEvent` and lamp count reset to 0.
+3. Trigger `RunResetEvent`; expect all lamps to be destroyed and lamp count reset to 0.
 
 ## 7. UNVERIFIED (only if needed)
 - None.

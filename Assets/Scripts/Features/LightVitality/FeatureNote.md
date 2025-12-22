@@ -3,6 +3,7 @@
 ## 1. Purpose
 - Maintain player light resource (current/max) and broadcast changes.
 - Provide commands/queries for consuming, adding, and reading light.
+- Refill to max on `RunResetEvent` (fail/test only) and `PlayerRespawnedEvent`.
 
 ## 2. Folder & Key Files
 - Root: `Assets/Scripts/Features/LightVitality/`
@@ -103,7 +104,7 @@
 1. Add `LightVitalityDebugController` to a scene and press the configured keys.
 2. Expect `LightChangedEvent` logs and HUD updates on add/consume.
 3. Drain to zero; expect `LightDepletedEvent` to fire.
-4. Trigger `RunResetEvent` or `PlayerRespawnedEvent`; expect current light to refill to max.
+4. Trigger `RunResetEvent` (from fail/test) or `PlayerRespawnedEvent`; expect current light to refill to max.
 
 ## 7. UNVERIFIED (only if needed)
 - None.

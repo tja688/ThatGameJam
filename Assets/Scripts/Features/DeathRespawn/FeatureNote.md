@@ -2,13 +2,13 @@
 
 ## 1. Purpose
 - Track player alive/dead state and broadcast death/respawn events.
-- Provide death triggers (fall/light-depleted) and respawn logic.
+- Maintain per-run death count and publish count changes.
 
 ## 2. Folder & Key Files
 - Root: `Assets/Scripts/Features/DeathRespawn/`
 - Controllers:
   - `DeathController.cs` 〞 detects death conditions and calls system
-  - `RespawnController.cs` 〞 handles respawn timing/position
+  - `RespawnController.cs` 〞 handles respawn timing/position and run-reset death count reset
   - `KillVolume2D.cs` 〞 trigger volume that kills on contact
 - Systems:
   - `IDeathRespawnSystem`, `DeathRespawnSystem` 〞 sends death/respawn commands
@@ -17,6 +17,7 @@
 - Commands:
   - `MarkPlayerDeadCommand`
   - `MarkPlayerRespawnedCommand`
+  - `ResetDeathCountCommand`
 - Utilities: None
 
 ## 3. Runtime Wiring
@@ -53,6 +54,10 @@
   - When fired: `MarkPlayerRespawnedCommand` executes
   - Payload: `WorldPos` (Vector3)
   - Typical listener: checkpoint/UI, LightVitality reset system
+- `struct DeathCountChangedEvent`
+  - When fired: death count increments or resets
+  - Payload: `Count` (int)
+  - Typical listener: RunFailReset
 
 ### 4.2 Request Events (Inbound write requests, optional)
 - None.
@@ -64,6 +69,9 @@
 - `MarkPlayerRespawnedCommand`
   - What state it mutates: `IDeathRespawnModel.IsAlive`
   - Typical sender: `DeathRespawnSystem`
+- `ResetDeathCountCommand`
+  - What state it mutates: `IDeathRespawnModel.DeathCount`
+  - Typical sender: `RespawnController` on `RunResetEvent`
 
 ### 4.4 Queries (Read Path, optional)
 - None.
@@ -75,12 +83,13 @@
   - Usage notes: HUD or analytics counters
 
 ## 5. Typical Integrations
-- Example: On fall trigger ↙ call `IDeathRespawnSystem.MarkDead(...)` from a hazard controller.
+- Example: On death count change ↙ RunFailReset checks threshold.
 
 ## 6. Verify Checklist
 1. Add `DeathController` + `RespawnController` to the player and a `KillVolume2D` trigger in the scene.
 2. Enter the kill volume; expect `PlayerDiedEvent` to fire with `Reason=Fall`.
 3. After `respawnDelay`, player teleports and `PlayerRespawnedEvent` fires.
+4. Trigger `RunResetEvent`; expect death count to reset to 0 and `DeathCountChangedEvent` to fire (if count was > 0).
 
 ## 7. UNVERIFIED (only if needed)
 - None.

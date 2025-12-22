@@ -3,11 +3,12 @@
 ## 1. Purpose
 - Track how many Safe Zones the player is inside and whether the player is safe.
 - Regenerate Light Vitality while safe.
+- Refresh overlap on reset/respawn so starting inside a safe zone is detected immediately.
 
 ## 2. Folder & Key Files
 - Root: `Assets/Scripts/Features/SafeZone/`
 - Controllers:
-  - `PlayerSafeZoneSensor.cs` 〞 counts overlapping safe zones and sends commands
+  - `PlayerSafeZoneSensor.cs` 〞 counts overlapping safe zones and refreshes overlap on reset/respawn
   - `SafeZone2D.cs` 〞 trigger volume that reports to the sensor
   - `SafeZoneTickController.cs` 〞 ticks `ISafeZoneSystem` each frame
 - Systems:
@@ -69,6 +70,7 @@
 1. Add `PlayerSafeZoneSensor` to the player and `SafeZone2D` to a trigger volume.
 2. Enter/exit the trigger; expect `SafeZoneStateChangedEvent` and `IsSafe` to toggle.
 3. With `SafeZoneTickController` active, light should regenerate while safe.
+4. Place spawn inside safe zone, then respawn/reset; expect safe state to activate without relying on TriggerEnter.
 
 ## 7. UNVERIFIED (only if needed)
 - None.
