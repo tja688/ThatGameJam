@@ -14,9 +14,22 @@ namespace ThatGameJam.Features.LightVitality.Controllers
         {
             this.RegisterEvent<RunResetEvent>(OnRunReset)
                 .UnRegisterWhenDisabled(gameObject);
+
+            this.RegisterEvent<PlayerRespawnedEvent>(OnPlayerRespawned)
+                .UnRegisterWhenDisabled(gameObject);
         }
 
         private void OnRunReset(RunResetEvent e)
+        {
+            ResetLightToMax();
+        }
+
+        private void OnPlayerRespawned(PlayerRespawnedEvent e)
+        {
+            ResetLightToMax();
+        }
+
+        private void ResetLightToMax()
         {
             var max = this.SendQuery(new GetMaxLightQuery());
             this.SendCommand(new SetLightCommand(max));

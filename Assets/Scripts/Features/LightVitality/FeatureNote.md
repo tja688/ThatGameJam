@@ -7,8 +7,10 @@
 ## 2. Folder & Key Files
 - Root: `Assets/Scripts/Features/LightVitality/`
 - Controllers:
-  - `LightVitalityResetController.cs` 〞 resets light on `RunResetEvent`
   - `LightVitalityDebugController.cs` 〞 debug keybindings for light changes
+  - `LightVitalityResetController.cs` 〞 legacy/optional reset listener for scene-only setups
+- Systems:
+  - `ILightVitalityResetSystem`, `LightVitalityResetSystem` 〞 listens for run reset/respawn and refills light
 - Models:
   - `ILightVitalityModel`, `LightVitalityModel` 〞 current/max light bindables
 - Commands:
@@ -26,11 +28,13 @@
 ### 3.1 Root registration (`GameRootApp`)
 - Registered modules:
   - Model: `ThatGameJam.Features.LightVitality.Models.ILightVitalityModel`
+  - System: `ThatGameJam.Features.LightVitality.Systems.ILightVitalityResetSystem`
 
 ### 3.2 Scene setup (Unity)
 - Required MonoBehaviours:
-  - `LightVitalityResetController` on a scene object (optional, for run reset)
   - `LightVitalityDebugController` on a scene object (optional, for debug keys)
+- Optional MonoBehaviours:
+  - `LightVitalityResetController` (legacy, only if you want scene-only reset listeners)
 - Inspector fields (if any):
   - `LightVitalityDebugController.addAmount`, `consumeAmount`, `addKey`, `consumeKey`, `setToMaxKey`
 
@@ -99,6 +103,7 @@
 1. Add `LightVitalityDebugController` to a scene and press the configured keys.
 2. Expect `LightChangedEvent` logs and HUD updates on add/consume.
 3. Drain to zero; expect `LightDepletedEvent` to fire.
+4. Trigger `RunResetEvent` or `PlayerRespawnedEvent`; expect current light to refill to max.
 
 ## 7. UNVERIFIED (only if needed)
 - None.

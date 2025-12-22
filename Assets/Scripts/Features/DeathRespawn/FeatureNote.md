@@ -52,7 +52,7 @@
 - `struct PlayerRespawnedEvent`
   - When fired: `MarkPlayerRespawnedCommand` executes
   - Payload: `WorldPos` (Vector3)
-  - Typical listener: checkpoint/UI
+  - Typical listener: checkpoint/UI, LightVitality reset system
 
 ### 4.2 Request Events (Inbound write requests, optional)
 - None.

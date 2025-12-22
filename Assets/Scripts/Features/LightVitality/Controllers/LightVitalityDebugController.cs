@@ -43,7 +43,7 @@ namespace ThatGameJam.Features.LightVitality.Controllers
 
         private void OnLightChanged(LightChangedEvent e)
         {
-            LogKit.I($"Light {e.Current:0.##}/{e.Max:0.##}");
+            // LogKit.I($"Light {e.Current:0.##}/{e.Max:0.##}");
         }
     }
 }

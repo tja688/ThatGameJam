@@ -3,17 +3,18 @@
 ## 1. Purpose
 - Track kerosene lamp count/max and broadcast spawn/count events.
 - Optionally instantiate lamp prefabs on player death.
+- If lamp count is already at max, the next death sends `MarkRunFailedCommand`. `RunFailHandling` handles the delayed reset.
 
 ## 2. Folder & Key Files
 - Root: `Assets/Scripts/Features/KeroseneLamp/`
 - Controllers:
-  - `KeroseneLampManager.cs` 〞 spawns lamp prefab and issues commands
+- `KeroseneLampManager.cs` 〞 spawns lamp prefab and issues commands
 - Models:
   - `IKeroseneLampModel`, `KeroseneLampModel` 〞 lamp count + max
 - Commands:
-  - `RecordLampSpawnedCommand`
-  - `SetLampMaxCommand`
-  - `ResetLampsCommand`
+- `RecordLampSpawnedCommand`
+- `SetLampMaxCommand`
+- `ResetLampsCommand`
 - Systems: None
 - Utilities: None
 
@@ -80,7 +81,7 @@
 ## 6. Verify Checklist
 1. Add `KeroseneLampManager` and assign `lampPrefab` (optional) and `lampParent`.
 2. Trigger a `PlayerDiedEvent`; expect `LampSpawnedEvent` and `LampCountChangedEvent`.
-3. Trigger `RunResetEvent`; expect lamp count reset to 0.
+3. When lamp count reaches max, trigger another `PlayerDiedEvent`; expect `RunFailedEvent`, then a delayed `RunResetEvent` and lamp count reset to 0.
 
 ## 7. UNVERIFIED (only if needed)
 - None.

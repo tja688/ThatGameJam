@@ -71,6 +71,7 @@
   ```csharp
   this.GetSystem<IRunFailResetSystem>().RequestReset();
   ```
+- Example: Lamp overflow policy ↙ `KeroseneLampManager` sends `MarkRunFailedCommand`, then `RunFailHandlingController` issues a delayed reset via `RequestReset()`.
 
 ## 6. Verify Checklist
 1. Add `RunResetController` and press the reset key after failure.

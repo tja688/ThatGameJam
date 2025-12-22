@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using QFramework;
 using ThatGameJam.Features.KeroseneLamp.Commands;
+using ThatGameJam.Features.KeroseneLamp.Models;
+using ThatGameJam.Features.RunFailReset.Commands;
 using ThatGameJam.Features.Shared;
 using UnityEngine;
 
@@ -33,6 +35,13 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
 
         private void OnPlayerDied(PlayerDiedEvent e)
         {
+            var model = this.GetModel<IKeroseneLampModel>();
+            if (model.LampCount.Value >= model.LampMax.Value)
+            {
+                this.SendCommand(new MarkRunFailedCommand());
+                return;
+            }
+
             SpawnLamp(e.WorldPos);
         }
 
