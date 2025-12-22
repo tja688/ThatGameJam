@@ -1,119 +1,120 @@
-using Animancer;
 using UnityEngine;
+using Animancer;
 
-namespace ThatGameJam.Test
+/// <summary>
+/// Spine角色 Animancer 8.0 适配测试
+/// 核心特性：
+/// 1. 使用 ClipTransition 替代 AnimationClip，方便在 Inspector 设置淡入淡出。
+/// 2. 使用 state.Events(this) 这种 v8 推荐的事件归属权写法。
+/// 3. 多图层混合测试。
+/// </summary>
+[AddComponentMenu("Test/Spine Animancer Smoke Test")]
+public class SpineAnimancerSmokeTest : MonoBehaviour
 {
-    /// <summary>
-    /// Spine + Animancer Smoke Test Script.
-    /// This script demonstrates how to use Animancer to control a Spine character (via SkeletonMecanim).
-    /// Focuses on: Basic playback, State switching (Idle/Move), Layering (Expressions), and Cross-fading.
-    /// </summary>
-    [SelectionBase]
-    public sealed class SpineAnimancerSmokeTest : MonoBehaviour
+    [Header("核心组件")]
+    [SerializeField] private AnimancerComponent _animancer;
+
+    [Header("基础层 (Layer 0)")]
+    [Tooltip("待机动画 (对应 m/standby)")]
+    [SerializeField] private ClipTransition _idleTransition;
+
+    [Tooltip("移动动画 (对应 m/walk)")]
+    [SerializeField] private ClipTransition _walkTransition;
+
+    [Header("动作层 (Layer 0 - Override)")]
+    [Tooltip("指令动画 (对应 One-Shot/Salute/Scared)")]
+    [SerializeField] private ClipTransition _actionTransition;
+
+    [Header("叠加层 (Layer 1)")]
+    [Tooltip("表情/眨眼动画 (对应 expressions/eyes)")]
+    [SerializeField] private ClipTransition _overlayTransition;
+
+    // 内部状态
+    private bool _isOverlayActive = false;
+    private AnimancerLayer _overlayLayer;
+
+    private void Awake()
     {
-        [Header("Components")]
-        [SerializeField] private AnimancerComponent _animancer;
+        if (_animancer == null)
+            _animancer = GetComponent<AnimancerComponent>();
 
-        [Header("Base Animations (Layer 0)")]
-        [SerializeField] private ClipTransition _idle;
-        [SerializeField] private ClipTransition _walk;
-        [SerializeField] private ClipTransition _salute;
+        // 初始化：确保第一帧就播放 Idle
+        // 使用 Play(Transition) 是 8.0 的推荐写法
+        _animancer.Play(_idleTransition);
 
-        [Header("Overlay Animations (Layer 1)")]
-        [SerializeField] private ClipTransition _blink;
+        // 初始化叠加层 (Layer 1)
+        _overlayLayer = _animancer.Layers[1];
+        // 设置遮罩（如果有的话），这里先设权重为1但在没播放时它是不会生效的
+        _overlayLayer.SetWeight(1f); 
+    }
 
-        [Header("Settings")]
-        [SerializeField] private float _moveSpeed = 5f;
-        [SerializeField] private float _fadeDuration = 0.25f;
-        [SerializeField] private KeyCode _saluteKey = KeyCode.G;
-        [SerializeField] private KeyCode _blinkKey = KeyCode.B;
+    private void Update()
+    {
+        HandleMovement();
+        HandleAction();
+        HandleOverlay();
+    }
 
-        private void OnValidate()
+    private void HandleMovement()
+    {
+        // 如果正在播放动作动画（如 Scared/Salute），则暂时不切回移动状态
+        // IsPlaying 检查的是特定的 Transition 实例
+        if (_animancer.IsPlaying(_actionTransition)) return;
+
+        float input = Input.GetAxis("Horizontal");
+
+        if (Mathf.Abs(input) > 0.1f)
         {
-            if (_animancer == null) _animancer = GetComponent<AnimancerComponent>();
+            // 左右翻转
+            if (input > 0) transform.localScale = new Vector3(1, 1, 1);
+            else if (input < 0) transform.localScale = new Vector3(-1, 1, 1);
+
+            // 播放移动：如果已经是 Walk，Animancer 会自动保持，不会重置
+            _animancer.Play(_walkTransition);
         }
-
-        private void Start()
+        else
         {
-            // Initial state
-            if (_idle != null) _animancer.Play(_idle);
-            
-            // Set up Layer 1 for overlays (e.g. blinking, facial expressions)
-            _animancer.Layers[1].SetDebugName("Overlay / Expressions");
+            // 播放待机
+            _animancer.Play(_idleTransition);
         }
+    }
 
-        private void Update()
+    private void HandleAction()
+    {
+        // 按 Space 键触发一次性动作
+        if (Input.GetKeyDown(KeyCode.Space))
         {
-            HandleMovement();
-            HandleActions();
-        }
+            var state = _animancer.Play(_actionTransition);
 
-        private void HandleMovement()
-        {
-            float horizontal = Input.GetAxisRaw("Horizontal");
-            float vertical = Input.GetAxisRaw("Vertical");
-            bool isMoving = Mathf.Abs(horizontal) > 0.1f || Mathf.Abs(vertical) > 0.1f;
-
-            if (isMoving)
+            // 【关键修复】Animancer 8.0 写法
+            // 传入 'this' 表示当前脚本拥有此事件，防止其他脚本误清理
+            state.Events(this).OnEnd = () =>
             {
-                // Play Walk with automatic cross-fade
-                if (_walk != null) _animancer.Play(_walk, _fadeDuration);
-                
-                // Simple 2D flip logic
-                if (horizontal != 0)
-                {
-                    Vector3 scale = transform.localScale;
-                    scale.x = Mathf.Abs(scale.x) * (horizontal > 0 ? 1 : -1);
-                    transform.localScale = scale;
-                }
-                
-                // Translate for testing movement
-                transform.Translate(new Vector3(horizontal, vertical, 0).normalized * _moveSpeed * Time.deltaTime);
+                // 动作结束后，平滑切回 Idle
+                _animancer.Play(_idleTransition);
+            };
+        }
+    }
+
+    private void HandleOverlay()
+    {
+        // 按 E 键切换叠加动画（眨眼/表情）
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            _isOverlayActive = !_isOverlayActive;
+
+            if (_isOverlayActive)
+            {
+                // 在 Layer 1 上播放
+                _overlayLayer.Play(_overlayTransition);
+                Debug.Log("[Test] 开启叠加动画");
             }
             else
             {
-                // Back to Idle if not moving and not performing a one-shot action
-                // Using IsPlaying(HasKey) is efficient.
-                if (_idle != null && !_animancer.IsPlaying(_salute))
-                {
-                    _animancer.Play(_idle, _fadeDuration);
-                }
+                // 停止 Layer 1 上的动画（带淡出）
+                _overlayLayer.Stop(); 
+                Debug.Log("[Test] 关闭叠加动画");
             }
-        }
-
-        private void HandleActions()
-        {
-            // Test One-Shot: Salute
-            if (Input.GetKeyDown(_saluteKey) && _salute != null)
-            {
-                var state = _animancer.Play(_salute);
-                
-                // Using Animancer 8.0 event handling
-                // state.Events(this) ensures we are the owner and avoid conflicts
-                state.Events(this).OnEnd = () => 
-                {
-                    if (!IsMoving()) _animancer.Play(_idle, _fadeDuration);
-                };
-            }
-
-            // Test Layering: Blink (played on Layer 1)
-            if (Input.GetKeyDown(_blinkKey) && _blink != null)
-            {
-                // Play on Layer 1 to test simultaneous animations
-                _animancer.Layers[1].Play(_blink);
-            }
-        }
-
-        private bool IsMoving()
-        {
-            return Mathf.Abs(Input.GetAxisRaw("Horizontal")) > 0.1f || Mathf.Abs(Input.GetAxisRaw("Vertical")) > 0.1f;
-        }
-
-        [ContextMenu("Debug/Log Current States")]
-        public void LogStates()
-        {
-            Debug.Log($"Layer 0 current state: {_animancer.Layers[0].CurrentState}");
-            Debug.Log($"Layer 1 current state: {_animancer.Layers[1].CurrentState}");
         }
     }
 }
