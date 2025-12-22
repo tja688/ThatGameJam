@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using QFramework;
 using ThatGameJam.Features.SafeZone.Commands;
+using ThatGameJam.Features.Shared;
 using UnityEngine;
 
 namespace ThatGameJam.Features.SafeZone.Controllers
@@ -10,6 +11,12 @@ namespace ThatGameJam.Features.SafeZone.Controllers
         private readonly HashSet<SafeZone2D> _zones = new HashSet<SafeZone2D>();
 
         public IArchitecture GetArchitecture() => GameRootApp.Interface;
+
+        private void OnEnable()
+        {
+            this.RegisterEvent<RunResetEvent>(OnRunReset)
+                .UnRegisterWhenDisabled(gameObject);
+        }
 
         public void NotifyZoneEnter(SafeZone2D zone)
         {
@@ -33,11 +40,24 @@ namespace ThatGameJam.Features.SafeZone.Controllers
 
         private void OnDisable()
         {
-            if (_zones.Count > 0)
+            ResetState();
+        }
+
+        private void OnRunReset(RunResetEvent e)
+        {
+            ResetState();
+        }
+
+        private void ResetState()
+        {
+            if (_zones.Count == 0)
             {
-                _zones.Clear();
-                UpdateCount();
+                this.SendCommand(new SetSafeZoneCountCommand(0));
+                return;
             }
+
+            _zones.Clear();
+            UpdateCount();
         }
 
         private void UpdateCount()

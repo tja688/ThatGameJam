@@ -103,9 +103,23 @@ You are introducing a new vertical slice feature.
 ### 2.3 Add a Command
 
 1. Preflight Plan (MUST)
-2. Create a Command that performs state change
-3. Trigger from Controller/System (as appropriate)
+2. Create a Command that performs state change (write path only)
+
+3. Trigger (MUST choose one concrete path)
+   - Path A (preferred): Trigger from Controller / UI
+     - `IController` supports `SendCommand` by design.  
+     - Example: `this.SendCommand(new DoThingCommand(...));`
+   - Path B (when the trigger originates in a System): System → Event → Controller → Command
+     - MUST NOT call `this.SendCommand(...)` inside a System by default.
+       - Reason: default `ISystem` does NOT implement `ICanSendCommand`.
+     - System MUST emit a request event (e.g. `RequestDoThingCommandEvent`).
+     - A Controller listens to that request event and executes the Command.
+
 4. Verify no direct state mutation from Controllers/Systems
+5. Self-check (MUST)
+   - If `SendCommand` is used outside a Controller, prove the receiver implements `ICanSendCommand`.
+   - Otherwise mark as `UNVERIFIED` and add `NEXT_SEARCH` (see PLAYBOOK).
+
 
 ### 2.4 Add a Query
 

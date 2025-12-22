@@ -1,7 +1,6 @@
 # TEMPLATES — Code Skeletons (v3)
 
-> Read `PLAYBOOK.md` first.  
-> Copy/paste templates for this project.
+> Read `PLAYBOOK.md` first.Copy/paste templates for this project.
 >
 > - **Single Root Architecture**: `GameRootApp : Architecture<GameRootApp>`
 > - **Vertical Slice**: `Assets/Scripts/Features/[FeatureName]/...`
@@ -12,6 +11,7 @@
 ## 1. GameRootApp (Single Root Architecture)
 
 **File (recommended):**
+
 - `Assets/Scripts/Root/GameRootApp.cs`
 
 ```csharp
@@ -42,6 +42,7 @@ public class GameRootApp : Architecture<GameRootApp>
   (`Architecture<T>.Interface` triggers `Init()` once, lazily).
 
 **File (recommended):**
+
 - `Assets/Scripts/Root/ProjectToolkitBootstrap.cs`
 
 ```csharp
@@ -65,7 +66,106 @@ public static class ProjectToolkitBootstrap
 }
 ```
 
+### 2.1 Event: “System requests a write” (recommended)
+
+**File (recommended):**
+
+* `Assets/Scripts/Features/[FeatureName]/Events/Request[Verb][Noun]CommandEvent.cs`
+
+<pre class="overflow-visible! px-0!" data-start="2519" data-end="2643"><div class="contain-inline-size rounded-2xl corner-superellipse/1.1 relative bg-token-sidebar-surface-primary"><div class="@w-xl/main:top-9 sticky top-[calc(--spacing(9)+var(--header-height))]"><div class="absolute end-0 bottom-0 flex h-9 items-center pe-2"><div class="bg-token-bg-elevated-secondary text-token-text-secondary flex items-center gap-4 rounded-sm px-2 font-sans text-xs"></div></div></div><div class="overflow-y-auto p-4" dir="ltr"><code class="whitespace-pre! language-csharp"><span><span>// Prefer struct for TypeEventSystem style.</span><span>
+</span><span>public</span><span></span><span>struct</span><span> RequestDoThingCommandEvent
+{
+    </span><span>public</span><span></span><span>int</span><span> Value;
+}
+</span></span></code></div></div></pre>
+
 ---
+
+### 2.2 System: listen → decide → emit request event (NO SendCommand by default)
+
+**File (recommended):**
+
+* `Assets/Scripts/Features/[FeatureName]/Systems/[FeatureName]System.cs`
+
+<pre class="overflow-visible! px-0!" data-start="2829" data-end="3732"><div class="contain-inline-size rounded-2xl corner-superellipse/1.1 relative bg-token-sidebar-surface-primary"><div class="@w-xl/main:top-9 sticky top-[calc(--spacing(9)+var(--header-height))]"><div class="absolute end-0 bottom-0 flex h-9 items-center pe-2"><div class="bg-token-bg-elevated-secondary text-token-text-secondary flex items-center gap-4 rounded-sm px-2 font-sans text-xs"></div></div></div><div class="overflow-y-auto p-4" dir="ltr"><code class="whitespace-pre! language-csharp"><span><span>using</span><span> QFramework;
+
+</span><span>public</span><span></span><span>interface</span><span></span><span>IFeatureNameSystem</span><span> : </span><span>ISystem</span><span>
+{
+}
+
+</span><span>public</span><span></span><span>class</span><span></span><span>FeatureNameSystem</span><span> : </span><span>AbstractSystem</span><span>, </span><span>IFeatureNameSystem</span><span>
+{
+    </span><span>protected</span><span></span><span>override</span><span></span><span>void</span><span></span><span>OnInit</span><span>()
+    {
+        </span><span>// Long-lived: System lives with the Root Architecture.</span><span>
+        </span><span>// Register events here.</span><span>
+        </span><span>this</span><span>.RegisterEvent<SomeTriggerEvent>(OnSomeTriggerEvent);
+    }
+
+    </span><span>private</span><span></span><span>void</span><span></span><span>OnSomeTriggerEvent</span><span>(</span><span>SomeTriggerEvent e</span><span>)
+    {
+        </span><span>// IMPORTANT:</span><span>
+        </span><span>// Default ISystem does NOT implement ICanSendCommand.</span><span>
+        </span><span>// So: do NOT call this.SendCommand(...) here.</span><span>
+        </span><span>//</span><span>
+        </span><span>// Instead, emit a request event to be handled by a Controller.</span><span>
+
+        </span><span>this</span><span>.SendEvent(</span><span>new</span><span> RequestDoThingCommandEvent
+        {
+            Value = e.Value
+        });
+    }
+}
+
+</span><span>// Example trigger event (could be emitted by another feature/system/controller)</span><span>
+</span><span>public</span><span></span><span>struct</span><span> SomeTriggerEvent
+{
+    </span><span>public</span><span></span><span>int</span><span> Value;
+}
+</span></span></code></div></div></pre>
+
+---
+
+### 2.3 Controller: receive request → SendCommand (write path)
+
+**File (recommended):**
+
+* `Assets/Scripts/Features/[FeatureName]/Controllers/[FeatureName]Controller.cs`
+
+<pre class="overflow-visible! px-0!" data-start="3987" data-end="4877"><div class="contain-inline-size rounded-2xl corner-superellipse/1.1 relative bg-token-sidebar-surface-primary"><div class="@w-xl/main:top-9 sticky top-[calc(--spacing(9)+var(--header-height))]"><div class="absolute end-0 bottom-0 flex h-9 items-center pe-2"><div class="bg-token-bg-elevated-secondary text-token-text-secondary flex items-center gap-4 rounded-sm px-2 font-sans text-xs"></div></div></div><div class="overflow-y-auto p-4" dir="ltr"><code class="whitespace-pre! language-csharp"><span><span>using</span><span> QFramework;
+</span><span>using</span><span> UnityEngine;
+
+</span><span>public</span><span></span><span>class</span><span></span><span>FeatureNameController</span><span> : </span><span>MonoBehaviour</span><span>, </span><span>IController</span><span>
+{
+    </span><span>public</span><span> IArchitecture </span><span>GetArchitecture</span><span>() => GameRootApp.Interface;
+
+    </span><span>private</span><span></span><span>void</span><span></span><span>OnEnable</span><span>()
+    {
+        </span><span>this</span><span>.RegisterEvent<RequestDoThingCommandEvent>(OnRequestDoThingCommand)
+            .UnRegisterWhenDisabled(gameObject);
+    }
+
+    </span><span>private</span><span></span><span>void</span><span></span><span>OnRequestDoThingCommand</span><span>(</span><span>RequestDoThingCommandEvent e</span><span>)
+    {
+        </span><span>// Controller is the safe/default place to SendCommand.</span><span>
+        </span><span>this</span><span>.SendCommand(</span><span>new</span><span> DoThingCommand(e.Value));
+    }
+}
+
+</span><span>public</span><span></span><span>class</span><span></span><span>DoThingCommand</span><span> : </span><span>AbstractCommand</span><span>
+{
+    </span><span>private</span><span></span><span>readonly</span><span></span><span>int</span><span> _value;
+
+    </span><span>public</span><span></span><span>DoThingCommand</span><span>(</span><span>int</span><span></span><span>value</span><span>) => _value = </span><span>value</span><span>;
+
+    </span><span>protected</span><span></span><span>override</span><span></span><span>void</span><span></span><span>OnExecute</span><span>()
+    {
+        </span><span>// State mutation ONLY (write path)</span><span>
+        </span><span>// var model = this.GetModel<IFeatureNameModel>();</span><span>
+        </span><span>// model.Apply(_value);</span><span>
+    }
+}
+</span></span></code></div></div></pre>
 
 ## 3. Feature Skeleton (Folder Structure)
 
@@ -88,6 +188,7 @@ Assets/Scripts/Features/_Shared/   (optional: shared cross-feature types)
 ## 4. Controller Skeleton (MonoBehaviour Entry)
 
 **File (recommended):**
+
 - `Assets/Scripts/Features/[FeatureName]/Controllers/[FeatureName]Controller.cs`
 
 ```csharp
@@ -118,6 +219,7 @@ public class FeatureNameController : MonoBehaviour, IController
 ### 5.1 Command (No Return)
 
 **File (recommended):**
+
 - `Assets/Scripts/Features/[FeatureName]/Commands/[Verb][Noun]Command.cs`
 
 ```csharp
@@ -156,6 +258,7 @@ public class DoThingCommand : AbstractCommand<int>
 ### 6.1 Query (Return Value)
 
 **File (recommended):**
+
 - `Assets/Scripts/Features/[FeatureName]/Queries/Get[Something]Query.cs`
 
 ```csharp
@@ -188,6 +291,7 @@ var value = this.SendQuery(new GetSomethingQuery());
 ### 7.1 Model
 
 **Files (recommended):**
+
 - `Assets/Scripts/Features/[FeatureName]/Models/I[FeatureName]Model.cs`
 - `Assets/Scripts/Features/[FeatureName]/Models/[FeatureName]Model.cs`
 
@@ -215,6 +319,7 @@ public class FeatureNameModel : AbstractModel, IFeatureNameModel
 ### 7.2 System
 
 **Files (recommended):**
+
 - `Assets/Scripts/Features/[FeatureName]/Systems/I[FeatureName]System.cs`
 - `Assets/Scripts/Features/[FeatureName]/Systems/[FeatureName]System.cs`
 
@@ -239,6 +344,7 @@ public class FeatureNameSystem : AbstractSystem, IFeatureNameSystem
 ## 8. Utility Skeleton (Infrastructure Only)
 
 **Files (recommended):**
+
 - `Assets/Scripts/Features/[FeatureName]/Utilities/I[FeatureName]Utility.cs`
 - `Assets/Scripts/Features/[FeatureName]/Utilities/[FeatureName]Utility.cs`
 
@@ -274,6 +380,7 @@ public class MyInfraSingleton : Singleton<MyInfraSingleton>
 ### 9.1 Event (Prefer `struct` for TypeEventSystem style)
 
 **File (recommended):**
+
 - `Assets/Scripts/Features/[FeatureName]/Events/[Something]ChangedEvent.cs`
 
 ```csharp
@@ -301,6 +408,7 @@ Count.Register(v => { /* update UI */ })
 ## 10. UIKit Panel Logic Skeleton (Partial Class Only)
 
 **Files created by UIKit generator:**
+
 - `[PanelName].cs` (write logic here)
 - `[PanelName].Designer.cs` (generated; do NOT edit)
 

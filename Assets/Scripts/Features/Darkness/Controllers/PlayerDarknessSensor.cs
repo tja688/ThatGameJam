@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using QFramework;
 using ThatGameJam.Features.Darkness.Commands;
+using ThatGameJam.Features.Shared;
 using UnityEngine;
 
 namespace ThatGameJam.Features.Darkness.Controllers
@@ -18,6 +19,12 @@ namespace ThatGameJam.Features.Darkness.Controllers
         private float _exitCountdown;
 
         public IArchitecture GetArchitecture() => GameRootApp.Interface;
+
+        private void OnEnable()
+        {
+            this.RegisterEvent<RunResetEvent>(OnRunReset)
+                .UnRegisterWhenDisabled(gameObject);
+        }
 
         public void NotifyZoneEnter(DarknessZone2D zone)
         {
@@ -62,17 +69,24 @@ namespace ThatGameJam.Features.Darkness.Controllers
 
         private void OnDisable()
         {
+            ResetState();
+        }
+
+        private void OnRunReset(RunResetEvent e)
+        {
+            ResetState();
+        }
+
+        private void ResetState()
+        {
             _zones.Clear();
             _enterPending = false;
             _exitPending = false;
             _enterCountdown = 0f;
             _exitCountdown = 0f;
+            _isInDarkness = false;
 
-            if (_isInDarkness)
-            {
-                _isInDarkness = false;
-                this.SendCommand(new SetInDarknessCommand(false));
-            }
+            this.SendCommand(new SetInDarknessCommand(false));
         }
 
         private void UpdatePendingState()

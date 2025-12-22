@@ -12,5 +12,10 @@ public class GameRootApp : Architecture<GameRootApp>
         this.RegisterSystem<ThatGameJam.Features.Darkness.Systems.IDarknessSystem>(new ThatGameJam.Features.Darkness.Systems.DarknessSystem());
         this.RegisterModel<ThatGameJam.Features.SafeZone.Models.ISafeZoneModel>(new ThatGameJam.Features.SafeZone.Models.SafeZoneModel());
         this.RegisterSystem<ThatGameJam.Features.SafeZone.Systems.ISafeZoneSystem>(new ThatGameJam.Features.SafeZone.Systems.SafeZoneSystem());
+        this.RegisterModel<ThatGameJam.Features.DeathRespawn.Models.IDeathRespawnModel>(new ThatGameJam.Features.DeathRespawn.Models.DeathRespawnModel());
+        this.RegisterSystem<ThatGameJam.Features.DeathRespawn.Systems.IDeathRespawnSystem>(new ThatGameJam.Features.DeathRespawn.Systems.DeathRespawnSystem());
+        this.RegisterModel<ThatGameJam.Features.KeroseneLamp.Models.IKeroseneLampModel>(new ThatGameJam.Features.KeroseneLamp.Models.KeroseneLampModel());
+        this.RegisterModel<ThatGameJam.Features.RunFailReset.Models.IRunFailResetModel>(new ThatGameJam.Features.RunFailReset.Models.RunFailResetModel());
+        this.RegisterSystem<ThatGameJam.Features.RunFailReset.Systems.IRunFailResetSystem>(new ThatGameJam.Features.RunFailReset.Systems.RunFailResetSystem());
     }
 }
