@@ -11,7 +11,7 @@ namespace MermaidPreviewer
     {
         private const string TempFolderName = "UnityMermaidPreview";
 
-        public bool TryRender(string mermaidSource, out Texture2D texture, out string errorMessage)
+        public bool TryRender(string mermaidSource, float renderScale, out Texture2D texture, out string errorMessage)
         {
             texture = null;
             errorMessage = null;
@@ -39,8 +39,27 @@ namespace MermaidPreviewer
             }
 
             var mmdcPath = MermaidPreviewerPrefs.MmdcPath;
+
+#if UNITY_EDITOR_WIN
+            // On Windows, if the path is not absolute or doesn't exist, try common npm locations or append .cmd
+            if (!Path.IsPathRooted(mmdcPath))
+            {
+                // If it's just "mmdc", try to find it in common npm folders as a fallback
+                var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                var npmMmdc = Path.Combine(appData, "npm", "mmdc.cmd");
+                if (File.Exists(npmMmdc))
+                {
+                    mmdcPath = npmMmdc;
+                }
+            }
+            else if (!File.Exists(mmdcPath) && File.Exists(mmdcPath + ".cmd"))
+            {
+                mmdcPath += ".cmd";
+            }
+#endif
+
             var puppeteerConfig = MermaidPreviewerPrefs.PuppeteerConfigPath;
-            var args = BuildArgs(inputPath, outputPath, puppeteerConfig);
+            var args = BuildArgs(inputPath, outputPath, puppeteerConfig, renderScale);
 
             var startInfo = new ProcessStartInfo
             {
@@ -49,7 +68,8 @@ namespace MermaidPreviewer
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
-                CreateNoWindow = true
+                CreateNoWindow = true,
+                WorkingDirectory = tempDir
             };
 
             try
@@ -112,11 +132,12 @@ namespace MermaidPreviewer
             return true;
         }
 
-        private static string BuildArgs(string inputPath, string outputPath, string puppeteerConfigPath)
+        private static string BuildArgs(string inputPath, string outputPath, string puppeteerConfigPath, float renderScale)
         {
             var builder = new StringBuilder();
             builder.Append("-i ").Append(Quote(inputPath)).Append(' ');
-            builder.Append("-o ").Append(Quote(outputPath));
+            builder.Append("-o ").Append(Quote(outputPath)).Append(' ');
+            builder.Append("-s ").Append(renderScale.ToString(System.Globalization.CultureInfo.InvariantCulture));
 
             if (!string.IsNullOrWhiteSpace(puppeteerConfigPath))
             {

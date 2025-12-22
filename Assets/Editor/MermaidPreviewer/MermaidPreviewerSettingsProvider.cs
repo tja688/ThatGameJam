@@ -1,4 +1,5 @@
 using UnityEditor;
+using UnityEngine;
 
 namespace MermaidPreviewer
 {
@@ -33,6 +34,15 @@ namespace MermaidPreviewer
             }
 
             EditorGUILayout.HelpBox("Leave mmdc path empty to use PATH. Puppeteer config is optional.", MessageType.Info);
+
+            EditorGUILayout.Space(6);
+            EditorGUILayout.LabelField("Render Settings", EditorStyles.boldLabel);
+            var renderScale = MermaidPreviewerPrefs.RenderScale;
+            var newRenderScale = EditorGUILayout.Slider("Render Scale", renderScale, 1.0f, 8.0f);
+            if (!Mathf.Approximately(newRenderScale, renderScale))
+            {
+                MermaidPreviewerPrefs.RenderScale = newRenderScale;
+            }
         }
     }
 }

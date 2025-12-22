@@ -82,3 +82,17 @@
 .toast-label {
     white-space: normal;
 }
+
+.spacer {
+    flex-grow: 1;
+}
+
+.scale-slider {
+    width: 200px;
+    margin-left: 10px;
+}
+
+.scale-slider > Label {
+    min-width: 40px;
+    margin-right: 4px;
+}

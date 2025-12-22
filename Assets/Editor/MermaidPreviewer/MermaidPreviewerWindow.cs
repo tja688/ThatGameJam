@@ -19,6 +19,7 @@ namespace MermaidPreviewer
         private VisualElement _viewport;
         private VisualElement _content;
         private ToastController _toast;
+        private Slider _renderScaleSlider;
 
         private string _currentSource;
         private string _currentPath;
@@ -29,6 +30,8 @@ namespace MermaidPreviewer
         private Vector2 _translation;
         private bool _isPanning;
         private Vector2 _lastPointerPosition;
+        private double _nextRenderTime;
+        private bool _renderScaleChanged;
 
         [MenuItem("Window/Mermaid Previewer")]
         public static void ShowWindow()
@@ -66,6 +69,13 @@ namespace MermaidPreviewer
             var toastLabel = root.Q<Label>("toastLabel");
             _toast = new ToastController(toastRoot, toastLabel);
 
+            _renderScaleSlider = root.Q<Slider>("scaleSlider");
+            if (_renderScaleSlider != null)
+            {
+                _renderScaleSlider.value = MermaidPreviewerPrefs.RenderScale;
+                _renderScaleSlider.RegisterValueChangedCallback(OnRenderScaleChanged);
+            }
+
             refreshButton.clicked += RefreshRender;
             fitButton.clicked += ResetView;
             if (openButton != null)
@@ -77,8 +87,25 @@ namespace MermaidPreviewer
             RegisterViewportInteractions();
 
             UpdatePathLabel();
-            SetStatus("Ready");
+            UpdateStatus();
             ResetView();
+
+
+            EditorApplication.update += OnEditorUpdate;
+        }
+
+        private void OnDisable()
+        {
+            EditorApplication.update -= OnEditorUpdate;
+        }
+
+        private void OnEditorUpdate()
+        {
+            if (_renderScaleChanged && EditorApplication.timeSinceStartup >= _nextRenderTime)
+            {
+                _renderScaleChanged = false;
+                RenderCurrent();
+            }
         }
 
         private void RegisterDragAndDrop(VisualElement root)
@@ -299,6 +326,17 @@ namespace MermaidPreviewer
             RenderCurrent();
         }
 
+        private void OnRenderScaleChanged(ChangeEvent<float> evt)
+        {
+            var newScale = evt.newValue;
+            MermaidPreviewerPrefs.RenderScale = newScale;
+            UpdateStatus();
+
+            // Debouncing
+            _renderScaleChanged = true;
+            _nextRenderTime = EditorApplication.timeSinceStartup + 0.2;
+        }
+
         private void OpenFileDialog()
         {
             var path = EditorUtility.OpenFilePanel("Open Markdown", Application.dataPath, "md,txt");
@@ -332,7 +370,8 @@ namespace MermaidPreviewer
             }
 
             var runner = new MmdcRunner();
-            if (!runner.TryRender(source, out var texture, out var errorMessage))
+            var renderScale = MermaidPreviewerPrefs.RenderScale;
+            if (!runner.TryRender(source, renderScale, out var texture, out var errorMessage))
             {
                 ShowToast(errorMessage, false);
                 SetStatus("Error");
@@ -345,7 +384,7 @@ namespace MermaidPreviewer
             }
 
             ApplyTexture(texture);
-            SetStatus("Ready");
+            UpdateStatus();
         }
 
         private void ApplyTexture(Texture2D texture)
@@ -366,12 +405,21 @@ namespace MermaidPreviewer
             _image.style.height = _currentTexture.height;
         }
 
+        private void UpdateStatus(string customStatus = null)
+        {
+            if (_statusLabel == null)
+            {
+                return;
+            }
+
+            var scale = MermaidPreviewerPrefs.RenderScale;
+            var status = customStatus ?? "Ready";
+            _statusLabel.text = $"{status} | Scale: {scale:F1}";
+        }
+
         private void SetStatus(string status)
         {
-            if (_statusLabel != null)
-            {
-                _statusLabel.text = status;
-            }
+            UpdateStatus(status);
         }
 
         private void UpdatePathLabel()

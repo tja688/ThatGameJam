@@ -7,6 +7,8 @@
             <ui:Button name="openButton" text="Open File" class="toolbar-button" />
             <ui:Button name="refreshButton" text="Refresh" class="toolbar-button" />
             <ui:Button name="fitButton" text="Fit" class="toolbar-button" />
+            <ui:VisualElement class="spacer" />
+            <ui:Slider name="scaleSlider" label="Scale" low-value="1" high-value="8" show-input-field="true" class="scale-slider" />
         </ui:VisualElement>
         <ui:VisualElement name="viewport" class="viewport">
             <ui:VisualElement name="content" class="content">
