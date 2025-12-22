@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+    <ui:VisualElement class="root">
+        <ui:VisualElement class="toolbar">
+            <ui:Label name="titleLabel" text="Mermaid Previewer" class="title" />
+            <ui:Label name="pathLabel" text="No file loaded" class="path" />
+            <ui:Button name="openButton" text="Open File" class="toolbar-button" />
+            <ui:Button name="refreshButton" text="Refresh" class="toolbar-button" />
+            <ui:Button name="fitButton" text="Fit" class="toolbar-button" />
+        </ui:VisualElement>
+        <ui:VisualElement name="viewport" class="viewport">
+            <ui:VisualElement name="content" class="content">
+                <ui:Image name="previewImage" class="preview-image" />
+            </ui:VisualElement>
+            <ui:VisualElement name="toast" class="toast">
+                <ui:Label name="toastLabel" class="toast-label" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement class="statusbar">
+            <ui:Label name="statusLabel" text="Ready" class="status-text" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
