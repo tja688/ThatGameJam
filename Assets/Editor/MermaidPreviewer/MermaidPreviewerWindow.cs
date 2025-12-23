@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -20,6 +21,9 @@ namespace MermaidPreviewer
         private VisualElement _content;
         private ToastController _toast;
         private Slider _renderScaleSlider;
+        private DropdownField _themeDropdown;
+        private TextField _backgroundField;
+        private Button _clearButton;
 
         private string _currentSource;
         private string _currentPath;
@@ -31,7 +35,16 @@ namespace MermaidPreviewer
         private bool _isPanning;
         private Vector2 _lastPointerPosition;
         private double _nextRenderTime;
-        private bool _renderScaleChanged;
+        private bool _renderQueued;
+
+        private static readonly List<string> ThemeOptions = new List<string>
+        {
+            "default",
+            "neutral",
+            "dark",
+            "forest",
+            "base"
+        };
 
         [MenuItem("Window/Mermaid Previewer")]
         public static void ShowWindow()
@@ -76,6 +89,33 @@ namespace MermaidPreviewer
                 _renderScaleSlider.RegisterValueChangedCallback(OnRenderScaleChanged);
             }
 
+            _themeDropdown = root.Q<DropdownField>("themeDropdown");
+            if (_themeDropdown != null)
+            {
+                _themeDropdown.choices = new List<string>(ThemeOptions);
+                var currentTheme = MermaidPreviewerPrefs.Theme;
+                if (!_themeDropdown.choices.Contains(currentTheme))
+                {
+                    _themeDropdown.choices.Add(currentTheme);
+                }
+
+                _themeDropdown.value = currentTheme;
+                _themeDropdown.RegisterValueChangedCallback(OnThemeChanged);
+            }
+
+            _backgroundField = root.Q<TextField>("backgroundField");
+            if (_backgroundField != null)
+            {
+                _backgroundField.value = MermaidPreviewerPrefs.Background;
+                _backgroundField.RegisterValueChangedCallback(OnBackgroundChanged);
+            }
+
+            _clearButton = root.Q<Button>("clearButton");
+            if (_clearButton != null)
+            {
+                _clearButton.clicked += ClearPreview;
+            }
+
             refreshButton.clicked += RefreshRender;
             fitButton.clicked += ResetView;
             if (openButton != null)
@@ -101,9 +141,9 @@ namespace MermaidPreviewer
 
         private void OnEditorUpdate()
         {
-            if (_renderScaleChanged && EditorApplication.timeSinceStartup >= _nextRenderTime)
+            if (_renderQueued && EditorApplication.timeSinceStartup >= _nextRenderTime)
             {
-                _renderScaleChanged = false;
+                _renderQueued = false;
                 RenderCurrent();
             }
         }
@@ -332,8 +372,32 @@ namespace MermaidPreviewer
             MermaidPreviewerPrefs.RenderScale = newScale;
             UpdateStatus();
 
+            QueueRender();
+        }
+
+        private void OnThemeChanged(ChangeEvent<string> evt)
+        {
+            var theme = evt.newValue;
+            MermaidPreviewerPrefs.Theme = theme;
+            QueueRender();
+        }
+
+        private void OnBackgroundChanged(ChangeEvent<string> evt)
+        {
+            var background = evt.newValue;
+            MermaidPreviewerPrefs.Background = background;
+            QueueRender();
+        }
+
+        private void QueueRender()
+        {
+            if (string.IsNullOrWhiteSpace(_currentSource))
+            {
+                return;
+            }
+
             // Debouncing
-            _renderScaleChanged = true;
+            _renderQueued = true;
             _nextRenderTime = EditorApplication.timeSinceStartup + 0.2;
         }
 
@@ -371,7 +435,9 @@ namespace MermaidPreviewer
 
             var runner = new MmdcRunner();
             var renderScale = MermaidPreviewerPrefs.RenderScale;
-            if (!runner.TryRender(source, renderScale, out var texture, out var errorMessage))
+            var theme = MermaidPreviewerPrefs.Theme;
+            var background = MermaidPreviewerPrefs.Background;
+            if (!runner.TryRender(source, renderScale, theme, background, out var texture, out var errorMessage))
             {
                 ShowToast(errorMessage, false);
                 SetStatus("Error");
@@ -385,6 +451,24 @@ namespace MermaidPreviewer
 
             ApplyTexture(texture);
             UpdateStatus();
+        }
+
+        private void ClearPreview()
+        {
+            if (_currentTexture != null)
+            {
+                DestroyImmediate(_currentTexture);
+                _currentTexture = null;
+            }
+
+            if (_image != null)
+            {
+                _image.image = null;
+                _image.style.width = StyleKeyword.Auto;
+                _image.style.height = StyleKeyword.Auto;
+            }
+
+            SetStatus("Cleared");
         }
 
         private void ApplyTexture(Texture2D texture)

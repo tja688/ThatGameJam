@@ -15,6 +15,11 @@
     border-bottom-color: #3a3a3a;
 }
 
+.main {
+    flex-direction: row;
+    flex-grow: 1;
+}
+
 .title {
     unity-font-style: bold;
     color: #e0e0e0;
@@ -95,4 +100,26 @@
 .scale-slider > Label {
     min-width: 40px;
     margin-right: 4px;
+}
+
+.options-panel {
+    width: 220px;
+    padding: 8px;
+    background-color: #242424;
+    border-left-width: 1px;
+    border-left-color: #3a3a3a;
+}
+
+.panel-title {
+    unity-font-style: bold;
+    color: #e0e0e0;
+    margin-bottom: 6px;
+}
+
+.panel-field {
+    margin-bottom: 6px;
+}
+
+.panel-button {
+    margin-top: 4px;
 }

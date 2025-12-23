@@ -11,7 +11,7 @@ namespace MermaidPreviewer
     {
         private const string TempFolderName = "UnityMermaidPreview";
 
-        public bool TryRender(string mermaidSource, float renderScale, out Texture2D texture, out string errorMessage)
+        public bool TryRender(string mermaidSource, float renderScale, string theme, string background, out Texture2D texture, out string errorMessage)
         {
             texture = null;
             errorMessage = null;
@@ -59,7 +59,7 @@ namespace MermaidPreviewer
 #endif
 
             var puppeteerConfig = MermaidPreviewerPrefs.PuppeteerConfigPath;
-            var args = BuildArgs(inputPath, outputPath, puppeteerConfig, renderScale);
+            var args = BuildArgs(inputPath, outputPath, puppeteerConfig, renderScale, theme, background);
 
             var startInfo = new ProcessStartInfo
             {
@@ -132,7 +132,7 @@ namespace MermaidPreviewer
             return true;
         }
 
-        private static string BuildArgs(string inputPath, string outputPath, string puppeteerConfigPath, float renderScale)
+        private static string BuildArgs(string inputPath, string outputPath, string puppeteerConfigPath, float renderScale, string theme, string background)
         {
             var builder = new StringBuilder();
             builder.Append("-i ").Append(Quote(inputPath)).Append(' ');
@@ -142,6 +142,16 @@ namespace MermaidPreviewer
             if (!string.IsNullOrWhiteSpace(puppeteerConfigPath))
             {
                 builder.Append(' ').Append("-p ").Append(Quote(puppeteerConfigPath));
+            }
+
+            if (!string.IsNullOrWhiteSpace(theme))
+            {
+                builder.Append(' ').Append("-t ").Append(Quote(theme));
+            }
+
+            if (!string.IsNullOrWhiteSpace(background))
+            {
+                builder.Append(' ').Append("-b ").Append(Quote(background));
             }
 
             return builder.ToString();

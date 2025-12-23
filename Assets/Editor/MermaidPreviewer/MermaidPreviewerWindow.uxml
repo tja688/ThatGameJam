@@ -10,12 +10,20 @@
             <ui:VisualElement class="spacer" />
             <ui:Slider name="scaleSlider" label="Scale" low-value="1" high-value="8" show-input-field="true" class="scale-slider" />
         </ui:VisualElement>
-        <ui:VisualElement name="viewport" class="viewport">
-            <ui:VisualElement name="content" class="content">
-                <ui:Image name="previewImage" class="preview-image" />
+        <ui:VisualElement class="main">
+            <ui:VisualElement name="viewport" class="viewport">
+                <ui:VisualElement name="content" class="content">
+                    <ui:Image name="previewImage" class="preview-image" />
+                </ui:VisualElement>
+                <ui:VisualElement name="toast" class="toast">
+                    <ui:Label name="toastLabel" class="toast-label" />
+                </ui:VisualElement>
             </ui:VisualElement>
-            <ui:VisualElement name="toast" class="toast">
-                <ui:Label name="toastLabel" class="toast-label" />
+            <ui:VisualElement name="optionsPanel" class="options-panel">
+                <ui:Label text="Render Options" class="panel-title" />
+                <ui:DropdownField name="themeDropdown" label="Theme" class="panel-field" />
+                <ui:TextField name="backgroundField" label="Background" is-delayed="true" class="panel-field" />
+                <ui:Button name="clearButton" text="Clear Preview" class="panel-button" />
             </ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement class="statusbar">
