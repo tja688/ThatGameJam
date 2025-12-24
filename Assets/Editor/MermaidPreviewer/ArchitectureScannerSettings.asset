@@ -22,4 +22,4 @@ MonoBehaviour:
   featureMode: 0
   featurePathToken: Features
   namespacePrefix: ThatGameJam.Features
-  lastSelectedNavId: feature:DeathRespawn:l1
+  lastSelectedNavId: feature:PlayerCharacter2D:l2
