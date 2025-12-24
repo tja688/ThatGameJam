@@ -1,33 +1,66 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
     <ui:VisualElement class="root">
-        <ui:VisualElement class="toolbar">
-            <ui:Label name="titleLabel" text="Mermaid Previewer" class="title" />
-            <ui:Label name="pathLabel" text="No file loaded" class="path" />
-            <ui:Button name="openButton" text="Open File" class="toolbar-button" />
-            <ui:Button name="refreshButton" text="Refresh" class="toolbar-button" />
-            <ui:Button name="fitButton" text="Fit" class="toolbar-button" />
-            <ui:VisualElement class="spacer" />
-            <ui:Slider name="scaleSlider" label="Scale" low-value="1" high-value="8" show-input-field="true" class="scale-slider" />
+        <ui:VisualElement class="tabs">
+            <ui:Button name="configTabButton" text="Config" class="tab-button" />
+            <ui:Button name="mermaidTabButton" text="Mermaid" class="tab-button" />
         </ui:VisualElement>
-        <ui:VisualElement class="main">
-            <ui:VisualElement name="viewport" class="viewport">
-                <ui:VisualElement name="content" class="content">
-                    <ui:Image name="previewImage" class="preview-image" />
+
+        <ui:VisualElement name="configTab" class="tab-content">
+            <ui:Label text="Architecture Scanner" class="section-title" />
+            <ui:VisualElement class="form-row">
+                <ui:TextField name="scanRootField" label="Scan Root" class="flex-field" />
+                <ui:Button name="scanRootButton" text="Select Folder" class="small-button" />
+            </ui:VisualElement>
+            <ui:TextField name="excludeField" label="Exclude Patterns" is-delayed="true" class="full-field" />
+            <ui:DropdownField name="featureModeDropdown" label="Feature Mode" class="full-field" />
+            <ui:TextField name="featureTokenField" label="Feature Path Token" class="full-field" />
+            <ui:TextField name="namespacePrefixField" label="Namespace Prefix" class="full-field" />
+            <ui:VisualElement class="form-row">
+                <ui:TextField name="outputFolderField" label="Output Folder" class="flex-field" />
+                <ui:Button name="outputFolderButton" text="Select Folder" class="small-button" />
+            </ui:VisualElement>
+            <ui:Button name="scanButton" text="Scan / 扫描" class="primary-button" />
+            <ui:Label name="scanStatusLabel" text="Ready" class="status-text" />
+        </ui:VisualElement>
+
+        <ui:VisualElement name="mermaidTab" class="tab-content">
+            <ui:VisualElement class="toolbar">
+                <ui:Label name="titleLabel" text="Mermaid Previewer" class="title" />
+                <ui:Label name="pathLabel" text="No file loaded" class="path" />
+                <ui:Button name="openButton" text="Open File" class="toolbar-button" />
+                <ui:Button name="refreshButton" text="Refresh" class="toolbar-button" />
+                <ui:Button name="fitButton" text="Fit" class="toolbar-button" />
+                <ui:VisualElement class="spacer" />
+                <ui:Slider name="scaleSlider" label="Scale" low-value="1" high-value="8" show-input-field="true" class="scale-slider" />
+            </ui:VisualElement>
+            <ui:Label name="breadcrumbLabel" text="" class="breadcrumb" />
+            <ui:Label name="emptyStateLabel" text="No scan results found. Please run Scan in Config tab." class="empty-state" />
+            <ui:VisualElement class="mermaid-body">
+                <ui:VisualElement class="sidebar">
+                    <ui:Label text="Navigation" class="panel-title" />
+                    <ui:TreeView name="navTree" class="nav-tree" />
                 </ui:VisualElement>
-                <ui:VisualElement name="toast" class="toast">
-                    <ui:Label name="toastLabel" class="toast-label" />
+                <ui:VisualElement class="main">
+                    <ui:VisualElement name="viewport" class="viewport">
+                        <ui:VisualElement name="content" class="content">
+                            <ui:Image name="previewImage" class="preview-image" />
+                        </ui:VisualElement>
+                        <ui:VisualElement name="toast" class="toast">
+                            <ui:Label name="toastLabel" class="toast-label" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                    <ui:VisualElement name="optionsPanel" class="options-panel">
+                        <ui:Label text="Render Options" class="panel-title" />
+                        <ui:DropdownField name="themeDropdown" label="Theme" class="panel-field" />
+                        <ui:TextField name="backgroundField" label="Background" is-delayed="true" class="panel-field" />
+                        <ui:Button name="clearButton" text="Clear Preview" class="panel-button" />
+                    </ui:VisualElement>
                 </ui:VisualElement>
             </ui:VisualElement>
-            <ui:VisualElement name="optionsPanel" class="options-panel">
-                <ui:Label text="Render Options" class="panel-title" />
-                <ui:DropdownField name="themeDropdown" label="Theme" class="panel-field" />
-                <ui:TextField name="backgroundField" label="Background" is-delayed="true" class="panel-field" />
-                <ui:Button name="clearButton" text="Clear Preview" class="panel-button" />
+            <ui:VisualElement class="statusbar">
+                <ui:Label name="statusLabel" text="Ready" class="status-text" />
             </ui:VisualElement>
-        </ui:VisualElement>
-        <ui:VisualElement class="statusbar">
-            <ui:Label name="statusLabel" text="Ready" class="status-text" />
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

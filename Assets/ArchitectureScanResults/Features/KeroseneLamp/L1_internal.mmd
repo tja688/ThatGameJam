@@ -1,0 +1,15 @@
+%% L1 KeroseneLamp Internal
+graph TD
+    subgraph KeroseneLamp
+        subgraph Controllers
+            Controller::KeroseneLampManager["KeroseneLampManager"]
+        end
+        subgraph Models
+            Model::IKeroseneLampModel["IKeroseneLampModel"]
+            Model::KeroseneLampModel["KeroseneLampModel"]
+        end
+        subgraph Commands
+            Command::RecordLampSpawnedCommand["RecordLampSpawnedCommand"]
+            Command::ResetLampsCommand["ResetLampsCommand"]
+        end
+    end

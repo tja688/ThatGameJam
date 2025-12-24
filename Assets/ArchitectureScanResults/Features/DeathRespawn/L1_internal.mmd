@@ -1,0 +1,22 @@
+%% L1 DeathRespawn Internal
+graph TD
+    subgraph DeathRespawn
+        subgraph Controllers
+            Controller::DeathController["DeathController"]
+            Controller::KillVolume2D["KillVolume2D"]
+            Controller::RespawnController["RespawnController"]
+        end
+        subgraph Systems
+            System::DeathRespawnSystem["DeathRespawnSystem"]
+            System::IDeathRespawnSystem["IDeathRespawnSystem"]
+        end
+        subgraph Models
+            Model::DeathRespawnModel["DeathRespawnModel"]
+            Model::IDeathRespawnModel["IDeathRespawnModel"]
+        end
+        subgraph Commands
+            Command::MarkPlayerDeadCommand["MarkPlayerDeadCommand"]
+            Command::MarkPlayerRespawnedCommand["MarkPlayerRespawnedCommand"]
+            Command::ResetDeathCountCommand["ResetDeathCountCommand"]
+        end
+    end

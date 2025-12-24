@@ -1,0 +1,30 @@
+%% L0 Features Overview
+graph TD
+    Feature::Darkness["Darkness"]
+    Feature::DeathRespawn["DeathRespawn"]
+    Feature::HUD["HUD"]
+    Feature::KeroseneLamp["KeroseneLamp"]
+    Feature::LightVitality["LightVitality"]
+    Feature::Misc["Misc"]
+    Feature::PlayerCharacter2D["PlayerCharacter2D"]
+    Feature::RunFailHandling["RunFailHandling"]
+    Feature::RunFailReset["RunFailReset"]
+    Feature::SafeZone["SafeZone"]
+    Feature::Testing["Testing"]
+    Feature::_Shared["_Shared"]
+    Feature::Darkness --> Feature::LightVitality
+    Feature::HUD --> Feature::Darkness
+    Feature::HUD --> Feature::KeroseneLamp
+    Feature::HUD --> Feature::LightVitality
+    Feature::HUD --> Feature::RunFailReset
+    Feature::HUD --> Feature::SafeZone
+    Feature::Misc --> Feature::Darkness
+    Feature::Misc --> Feature::DeathRespawn
+    Feature::Misc --> Feature::KeroseneLamp
+    Feature::Misc --> Feature::LightVitality
+    Feature::Misc --> Feature::PlayerCharacter2D
+    Feature::Misc --> Feature::RunFailReset
+    Feature::Misc --> Feature::SafeZone
+    Feature::RunFailHandling --> Feature::RunFailReset
+    Feature::SafeZone --> Feature::LightVitality
+    Feature::Testing --> Feature::RunFailReset

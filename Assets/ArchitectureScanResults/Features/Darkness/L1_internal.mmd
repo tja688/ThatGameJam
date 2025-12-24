@@ -1,0 +1,20 @@
+%% L1 Darkness Internal
+graph TD
+    subgraph Darkness
+        subgraph Controllers
+            Controller::DarknessTickController["DarknessTickController"]
+            Controller::DarknessZone2D["DarknessZone2D"]
+            Controller::PlayerDarknessSensor["PlayerDarknessSensor"]
+        end
+        subgraph Systems
+            System::DarknessSystem["DarknessSystem"]
+            System::IDarknessSystem["IDarknessSystem"]
+        end
+        subgraph Models
+            Model::DarknessModel["DarknessModel"]
+            Model::IDarknessModel["IDarknessModel"]
+        end
+        subgraph Commands
+            Command::SetInDarknessCommand["SetInDarknessCommand"]
+        end
+    end

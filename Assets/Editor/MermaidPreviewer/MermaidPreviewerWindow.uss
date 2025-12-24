@@ -4,6 +4,66 @@
     background-color: #1e1e1e;
 }
 
+.tabs {
+    flex-direction: row;
+    align-items: center;
+    height: 28px;
+    padding-left: 6px;
+    background-color: #2b2b2b;
+    border-bottom-width: 1px;
+    border-bottom-color: #3a3a3a;
+}
+
+.tab-button {
+    margin-right: 6px;
+    height: 22px;
+}
+
+.tab-button--active {
+    background-color: #3a3a3a;
+}
+
+.tab-content {
+    display: none;
+    flex-grow: 1;
+}
+
+.tab-content--active {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.section-title {
+    unity-font-style: bold;
+    color: #e0e0e0;
+    margin: 8px 8px 6px 8px;
+}
+
+.form-row {
+    flex-direction: row;
+    align-items: center;
+    margin: 0 8px 6px 8px;
+}
+
+.flex-field {
+    flex-grow: 1;
+}
+
+.full-field {
+    margin: 0 8px 6px 8px;
+}
+
+.small-button {
+    width: 120px;
+    margin-left: 6px;
+}
+
+.primary-button {
+    width: 120px;
+    margin: 4px 8px 6px 8px;
+}
+
 .toolbar {
     flex-direction: row;
     align-items: center;
@@ -13,6 +73,23 @@
     background-color: #2b2b2b;
     border-bottom-width: 1px;
     border-bottom-color: #3a3a3a;
+}
+
+.mermaid-body {
+    flex-direction: row;
+    flex-grow: 1;
+}
+
+.sidebar {
+    width: 240px;
+    padding: 8px;
+    background-color: #242424;
+    border-right-width: 1px;
+    border-right-color: #3a3a3a;
+}
+
+.nav-tree {
+    flex-grow: 1;
 }
 
 .main {
@@ -122,4 +199,14 @@
 
 .panel-button {
     margin-top: 4px;
+}
+
+.breadcrumb {
+    color: #cfcfcf;
+    margin: 4px 8px 4px 8px;
+}
+
+.empty-state {
+    color: #cfcfcf;
+    margin: 4px 8px 4px 8px;
 }
