@@ -618,6 +618,7 @@ GameObject:
   m_Component:
   - component: {fileID: 169976392}
   - component: {fileID: 169976391}
+  - component: {fileID: 169976393}
   m_Layer: 0
   m_Name: "\u56FE\u7247\u5904\u7406"
   m_TagString: Untagged
@@ -692,13 +693,59 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 169976390}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 79.94902, y: -0.105671406, z: 0}
-  m_LocalScale: {x: 0.45, y: 0.45, z: 0.45}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.21999958, y: -0.24899995, z: 0}
+  m_LocalScale: {x: 0.02, y: 0.053101745, z: 0.184502}
   m_ConstrainProportionsScale: 1
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 1489600703}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!61 &169976393
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 169976390}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: -0.023824453, y: 0.5958607}
+  m_SpriteTilingProperty:
+    border: {x: 2.9199998, y: 3.05, z: 3.1, w: 0.95}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 12.8, y: 12.8}
+    newSize: {x: 12.8, y: 12.8}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 2.4558005, y: 2.1698031}
+  m_EdgeRadius: 0
 --- !u!1 &176423584
 GameObject:
   m_ObjectHideFlags: 0
@@ -4605,7 +4652,7 @@ MonoBehaviour:
   noiseFreq: 1.6
   followSmoothTime: 0.18
   followMaxSpeed: 999
-  contactTrigger: {fileID: 0}
+  contactTrigger: {fileID: 169976393}
   extraConsumePerSecond: 8
   consumeReason: 3
   drawGizmos: 1
@@ -4681,8 +4728,9 @@ Transform:
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 72.79, y: 1.64, z: 0}
   m_LocalScale: {x: 9.2251, y: 3.4745, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_ConstrainProportionsScale: 1
+  m_Children:
+  - {fileID: 169976392}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1506205606
@@ -6857,4 +6905,3 @@ SceneRoots:
   - {fileID: 1435767652}
   - {fileID: 2088347262}
   - {fileID: 725980290}
-  - {fileID: 169976392}
