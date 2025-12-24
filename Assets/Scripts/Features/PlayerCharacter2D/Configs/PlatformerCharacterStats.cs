@@ -60,6 +60,31 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Configs
 
         [Tooltip("The amount of time we buffer a jump.")]
         public float JumpBuffer = 0.2f;
+
+        [Header("Climb")]
+        [Tooltip("Upward speed while climbing.")]
+        public float ClimbUpSpeed = 6f;
+
+        [Tooltip("Downward speed while climbing (clamped by MaxFallSpeed).")]
+        public float ClimbDownSpeed = 8f;
+
+        [Tooltip("Downward drift when idle on a wall. Set to 0 for full stop.")]
+        public float ClimbIdleSlideSpeed = 0f;
+
+        [Tooltip("Jump power used when jumping from a climb (match JumpPower for normal feel).")]
+        public float ClimbJumpPower = 36f;
+
+        [Tooltip("Small horizontal detach velocity when jumping from a climb.")]
+        public float ClimbJumpDetachVelocity = 0.05f;
+
+        [Tooltip("How long you can keep climbing after losing wall contact.")]
+        public float WallCoyoteTime = 0.1f;
+
+        [Tooltip("Seconds after leaving a wall before re-grab is allowed.")]
+        public float ClimbRegrabLockout = 0.05f;
+
+        [Tooltip("Target distance to keep from the wall while climbing.")]
+        [Range(0f, 0.2f)]
+        public float ClimbStickDistance = 0.05f;
     }
 }
-

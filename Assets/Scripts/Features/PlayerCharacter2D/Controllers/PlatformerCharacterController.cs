@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using QFramework;
 using ThatGameJam.Features.PlayerCharacter2D.Commands;
 using ThatGameJam.Features.PlayerCharacter2D.Configs;
@@ -20,9 +21,16 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
         [SerializeField] private PlatformerFrameInput _externalInput;
         [SerializeField] private MonoBehaviour _inputSource;
 
+        [Header("Climb")]
+        [SerializeField] private Collider2D _climbSensor;
+        [SerializeField] private string _climbableTag = "Climbable";
+
         private IPlatformerFrameInputSource _resolvedInputSource;
         private Rigidbody2D _rb;
         private CapsuleCollider2D _col;
+        private readonly List<Collider2D> _climbOverlapResults = new List<Collider2D>(8);
+        private ContactFilter2D _climbOverlapFilter;
+        private float _defaultGravityScale;
         private float _time;
         private bool _inputLocked;
 
@@ -31,6 +39,7 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
         // Reads through Model or Query
         public Vector2 MoveInput => this.GetModel<IPlayerCharacter2DModel>().FrameInput.Move;
         public bool IsGrounded => this.GetModel<IPlayerCharacter2DModel>().Grounded.Value;
+        public bool IsClimbing => this.GetModel<IPlayerCharacter2DModel>().IsClimbing.Value;
 
         public bool UseExternalInput
         {
@@ -47,11 +56,18 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
         // Action events for backward compatibility or Unity-side listeners
         public event Action<bool, float> GroundedChanged;
         public event Action Jumped;
+        public event Action<bool> ClimbStateChanged;
 
         private void Awake()
         {
             _rb = GetComponent<Rigidbody2D>();
             _col = GetComponent<CapsuleCollider2D>();
+            _defaultGravityScale = _rb.gravityScale;
+            _climbOverlapFilter = new ContactFilter2D
+            {
+                useTriggers = true,
+                useLayerMask = false
+            };
 
             _resolvedInputSource = _inputSource as IPlatformerFrameInputSource;
             if (_resolvedInputSource == null)
@@ -80,9 +96,14 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
                 Jumped?.Invoke();
             }).UnRegisterWhenDisabled(gameObject);
 
-            this.RegisterEvent<PlayerDiedEvent>(_ => _inputLocked = true)
+            this.RegisterEvent<PlayerClimbStateChangedEvent>(e =>
+            {
+                ClimbStateChanged?.Invoke(e.IsClimbing);
+            }).UnRegisterWhenDisabled(gameObject);
+
+            this.RegisterEvent<PlayerDiedEvent>(OnPlayerDied)
                 .UnRegisterWhenDisabled(gameObject);
-            this.RegisterEvent<PlayerRespawnedEvent>(_ => _inputLocked = false)
+            this.RegisterEvent<PlayerRespawnedEvent>(OnPlayerRespawned)
                 .UnRegisterWhenDisabled(gameObject);
         }
 
@@ -117,6 +138,7 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
 
             // Physics queries (allowed in Controller)
             var previousQueriesStartInColliders = Physics2D.queriesStartInColliders;
+            bool wallDetected = TryGetClimbableWall(out var wallSideSign, out var wallPoint);
             Physics2D.queriesStartInColliders = false;
 
             try
@@ -140,7 +162,21 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
                     ~_stats.PlayerLayer);
 
                 // Advance Model state
-                this.SendCommand(new TickFixedStepCommand(groundHit, ceilingHit, Time.fixedDeltaTime, _stats));
+                this.SendCommand(new TickFixedStepCommand(
+                    groundHit,
+                    ceilingHit,
+                    wallDetected,
+                    wallSideSign,
+                    Time.fixedDeltaTime,
+                    _stats));
+
+                var isClimbing = this.GetModel<IPlayerCharacter2DModel>().IsClimbing.Value;
+                _rb.gravityScale = isClimbing ? 0f : _defaultGravityScale;
+
+                if (isClimbing && wallDetected)
+                {
+                    ApplyClimbStick(wallPoint, wallSideSign);
+                }
             }
             finally
             {
@@ -151,11 +187,116 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
             _rb.linearVelocity = this.SendQuery(new GetDesiredVelocityQuery());
         }
 
+        private void OnPlayerDied(PlayerDiedEvent e)
+        {
+            _inputLocked = true;
+            ForceExitClimb();
+        }
+
+        private void OnPlayerRespawned(PlayerRespawnedEvent e)
+        {
+            _inputLocked = false;
+            ForceExitClimb();
+        }
+
+        private void ForceExitClimb()
+        {
+            this.SendCommand(new ResetClimbStateCommand());
+            _rb.gravityScale = _defaultGravityScale;
+        }
+
+        private bool TryGetClimbableWall(out float wallSideSign, out Vector2 wallPoint)
+        {
+            wallSideSign = 0f;
+            wallPoint = default;
+
+            if (_climbSensor == null || !_climbSensor.enabled || string.IsNullOrEmpty(_climbableTag))
+            {
+                return false;
+            }
+
+            _climbOverlapResults.Clear();
+            _climbSensor.Overlap(_climbOverlapFilter, _climbOverlapResults);
+            if (_climbOverlapResults.Count == 0)
+            {
+                return false;
+            }
+
+            var center = (Vector2)_climbSensor.bounds.center;
+            var bestDistance = float.MaxValue;
+            Collider2D bestCollider = null;
+
+            for (var i = 0; i < _climbOverlapResults.Count; i++)
+            {
+                var hit = _climbOverlapResults[i];
+                if (hit == null || !hit.enabled)
+                {
+                    continue;
+                }
+
+                if (hit.attachedRigidbody == _rb)
+                {
+                    continue;
+                }
+
+                if (!hit.CompareTag(_climbableTag))
+                {
+                    continue;
+                }
+
+                var closest = hit.ClosestPoint(center);
+                var distance = Mathf.Abs(closest.x - center.x);
+                if (distance < bestDistance)
+                {
+                    bestDistance = distance;
+                    bestCollider = hit;
+                    wallPoint = closest;
+                }
+            }
+
+            if (bestCollider == null)
+            {
+                return false;
+            }
+
+            wallSideSign = Mathf.Sign(wallPoint.x - center.x);
+            if (wallSideSign == 0f)
+            {
+                wallSideSign = Mathf.Sign(bestCollider.bounds.center.x - center.x);
+            }
+
+            if (wallSideSign == 0f)
+            {
+                wallSideSign = 1f;
+            }
+
+            return true;
+        }
+
+        private void ApplyClimbStick(Vector2 wallPoint, float wallSideSign)
+        {
+            if (_climbSensor == null || _stats.ClimbStickDistance <= 0f || wallSideSign == 0f)
+            {
+                return;
+            }
+
+            var center = (Vector2)_climbSensor.bounds.center;
+            var offsetToTransform = (Vector2)transform.position - center;
+            var targetCenterX = wallPoint.x - wallSideSign * _stats.ClimbStickDistance;
+            var targetPositionX = targetCenterX + offsetToTransform.x;
+
+            var pos = _rb.position;
+            pos.x = targetPositionX;
+            _rb.position = pos;
+        }
+
 #if UNITY_EDITOR
         private void OnValidate()
         {
             if (_stats == null)
-                Debug.LogWarning("Please assign a PlatformerCharacterStats asset to the controller.", this);
+            {
+                // Debug.LogWarning("Please assign a PlatformerCharacterStats asset to the controller.", this);
+            }
         }
 #endif
     }

@@ -9,6 +9,7 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
         [Header("Input Actions")]
         [SerializeField] private InputActionReference _move;
         [SerializeField] private InputActionReference _jump;
+        [SerializeField] private InputActionReference _grab;
 
         [Header("Lifecycle")]
         [SerializeField] private bool _enableActionsOnEnable = true;
@@ -18,6 +19,7 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
             if (!_enableActionsOnEnable) return;
             _move?.action?.Enable();
             _jump?.action?.Enable();
+            _grab?.action?.Enable();
         }
 
         private void OnDisable()
@@ -25,6 +27,7 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
             if (!_enableActionsOnEnable) return;
             _move?.action?.Disable();
             _jump?.action?.Disable();
+            _grab?.action?.Disable();
         }
 
         public PlatformerFrameInput ReadInput()
@@ -35,11 +38,15 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
             var jumpDown = jumpAction != null && jumpAction.WasPressedThisFrame();
             var jumpHeld = jumpAction != null && jumpAction.IsPressed();
 
+            var grabAction = _grab?.action;
+            var grabHeld = grabAction != null && grabAction.IsPressed();
+
             return new PlatformerFrameInput
             {
                 Move = move,
                 JumpDown = jumpDown,
                 JumpHeld = jumpHeld,
+                GrabHeld = grabHeld,
             };
         }
 
@@ -55,4 +62,3 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
 #endif
     }
 }
-

@@ -2,6 +2,7 @@
 
 ## 1. Purpose
 - Provide 2D platformer character movement, jumping, and grounded state.
+- Provide wall grab/climb with tag-based wall detection and climb coyote time.
 - Expose bindables/events for movement state and allow external input.
 - Lock player input while dead and restore on respawn.
 
@@ -16,14 +17,16 @@
   - `IPlayerCharacter2DModel`, `PlayerCharacter2DModel` 〞 movement state and bindables
 - Commands:
   - `SetFrameInputCommand`
+  - `ResetClimbStateCommand`
   - `TickFixedStepCommand`
 - Queries:
   - `GetDesiredVelocityQuery`
 - Events:
   - `PlayerGroundedChangedEvent`
+  - `PlayerClimbStateChangedEvent`
   - `PlayerJumpedEvent`
 - Configs:
-  - `PlatformerCharacterStats.cs` 〞 ScriptableObject movement tuning
+  - `PlatformerCharacterStats.cs` 〞 ScriptableObject movement + climb tuning
 - Utilities: None
 
 ## 3. Runtime Wiring
@@ -40,7 +43,10 @@
   - `PlatformerCharacterController._stats` 〞 `PlatformerCharacterStats` asset
   - `PlatformerCharacterController._useExternalInput` / `_externalInput` 〞 bypass input source
   - `PlatformerCharacterController._inputSource` 〞 optional explicit input source
+  - `PlatformerCharacterController._climbSensor` 〞 trigger collider used for wall detection
+  - `PlatformerCharacterController._climbableTag` 〞 tag for climbable walls (default: "Climbable")
   - `PlatformerCharacterInput._move` / `_jump` 〞 InputActionReference bindings
+  - `PlatformerCharacterInput._grab` 〞 InputActionReference for grab/hold
 
 ## 4. Public API Surface (How other Features integrate)
 ### 4.1 Events (Outbound)
@@ -58,6 +64,10 @@
   - When fired: jump executed in `TickFixedStepCommand`
   - Payload: none
   - Typical listener: SFX/animation
+- `struct PlayerClimbStateChangedEvent`
+  - When fired: climb state toggles in `TickFixedStepCommand` or `ResetClimbStateCommand`
+  - Payload: `IsClimbing` (bool)
+  - Typical listener: SFX/animation
 
 ### 4.2 Request Events (Inbound write requests, optional)
 - None.
@@ -66,8 +76,11 @@
 - `SetFrameInputCommand`
   - What state it mutates: `IPlayerCharacter2DModel.FrameInput`, time, jump buffer flags
   - Typical sender: `PlatformerCharacterController`
+- `ResetClimbStateCommand`
+  - What state it mutates: `IPlayerCharacter2DModel.IsClimbing`, climb timers
+  - Typical sender: `PlatformerCharacterController` (death/respawn)
 - `TickFixedStepCommand`
-  - What state it mutates: `IPlayerCharacter2DModel.Grounded`, `Velocity`, jump state
+  - What state it mutates: `IPlayerCharacter2DModel.Grounded`, `Velocity`, climb state/timers, jump state
   - Typical sender: `PlatformerCharacterController` (FixedUpdate)
 
 ### 4.4 Queries (Read Path, optional)
@@ -78,17 +91,22 @@
 ### 4.5 Model Read Surface
 - Bindables / readonly properties:
   - `BindableProperty<bool> Grounded`
+  - `BindableProperty<bool> IsClimbing`
   - `BindableProperty<Vector2> Velocity`
   - Usage notes: model also exposes `FrameInput` and timing flags for advanced systems
 
 ## 5. Typical Integrations
 - Example: Play landing dust ↙ listen to `PlayerGroundedChangedEvent`.
+- Example: Switch climb animation ↙ listen to `PlayerClimbStateChangedEvent`.
 
 ## 6. Verify Checklist
 1. Add `PlatformerCharacterController` + `PlatformerCharacterInput` to the player.
 2. Assign a `PlatformerCharacterStats` asset and InputAction references.
 3. Press jump; expect `PlayerJumpedEvent` and movement to update.
-4. Trigger `PlayerDiedEvent`; expect input to stop until `PlayerRespawnedEvent` fires.
+4. Hold grab near a "Climbable" wall; expect `PlayerClimbStateChangedEvent` and climb motion.
+5. While climbing, press jump; expect a vertical jump without noticeable horizontal push.
+6. After the climb jump, confirm you do not immediately re-grab the wall.
+7. Trigger `PlayerDiedEvent`; expect input to stop until `PlayerRespawnedEvent` fires.
 
 ## 7. UNVERIFIED (only if needed)
 - None.

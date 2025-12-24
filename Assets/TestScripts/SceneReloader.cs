@@ -22,8 +22,6 @@ namespace ThatGameJam.Test
             // 获取当前活跃场景的名称并重新加载
             string currentSceneName = SceneManager.GetActiveScene().name;
             SceneManager.LoadScene(currentSceneName);
-            
-            Debug.Log($"[SceneReloader] 正在重新加载场景: {currentSceneName}");
         }
 
         private void Update()

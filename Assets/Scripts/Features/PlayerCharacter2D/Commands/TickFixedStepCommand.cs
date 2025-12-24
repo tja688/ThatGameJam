@@ -10,13 +10,23 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Commands
     {
         private readonly bool _groundHit;
         private readonly bool _ceilingHit;
+        private readonly bool _wallDetected;
+        private readonly float _wallSideSign;
         private readonly float _fixedDeltaTime;
         private readonly PlatformerCharacterStats _stats;
 
-        public TickFixedStepCommand(bool groundHit, bool ceilingHit, float fixedDeltaTime, PlatformerCharacterStats stats)
+        public TickFixedStepCommand(
+            bool groundHit,
+            bool ceilingHit,
+            bool wallDetected,
+            float wallSideSign,
+            float fixedDeltaTime,
+            PlatformerCharacterStats stats)
         {
             _groundHit = groundHit;
             _ceilingHit = ceilingHit;
+            _wallDetected = wallDetected;
+            _wallSideSign = wallSideSign;
             _fixedDeltaTime = fixedDeltaTime;
             _stats = stats;
         }
@@ -25,6 +35,7 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Commands
         {
             var model = this.GetModel<IPlayerCharacter2DModel>();
             var velocity = model.Velocity.Value;
+            var wasClimbing = model.IsClimbing.Value;
 
             // --- Collisions ---
             if (_ceilingHit) velocity.y = Mathf.Min(0, velocity.y);
@@ -44,6 +55,124 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Commands
                 model.Grounded.Value = false;
                 model.FrameLeftGrounded = model.Time;
                 this.SendEvent(new PlayerGroundedChangedEvent { Grounded = false, ImpactSpeed = 0 });
+            }
+
+            if (model.RegrabLockoutTimer > 0f)
+            {
+                model.RegrabLockoutTimer = Mathf.Max(0f, model.RegrabLockoutTimer - _fixedDeltaTime);
+            }
+
+            var wantsClimb = model.FrameInput.GrabHeld
+                             && model.RegrabLockoutTimer <= 0f
+                             && !model.Grounded.Value;
+
+            if (model.IsClimbing.Value)
+            {
+                if (_wallDetected)
+                {
+                    model.WallContactTimer = _stats.WallCoyoteTime;
+                    if (_wallSideSign != 0f)
+                    {
+                        model.ClimbWallSide = _wallSideSign;
+                    }
+                }
+                else
+                {
+                    model.WallContactTimer = Mathf.Max(0f, model.WallContactTimer - _fixedDeltaTime);
+                }
+
+                var lostWall = !_wallDetected && model.WallContactTimer <= 0f;
+                if (!wantsClimb || lostWall || model.Grounded.Value)
+                {
+                    model.IsClimbing.Value = false;
+                    model.WallContactTimer = 0f;
+                    model.RegrabLockoutTimer = Mathf.Max(model.RegrabLockoutTimer, _stats.ClimbRegrabLockout);
+                }
+            }
+            else
+            {
+                model.WallContactTimer = 0f;
+                if (wantsClimb && _wallDetected)
+                {
+                    model.IsClimbing.Value = true;
+                    model.WallContactTimer = _stats.WallCoyoteTime;
+                    if (_wallSideSign != 0f)
+                    {
+                        model.ClimbWallSide = _wallSideSign;
+                    }
+                    velocity.x = 0f;
+                }
+            }
+
+            if (model.IsClimbing.Value)
+            {
+                if (model.FrameInput.JumpDown)
+                {
+                    model.IsClimbing.Value = false;
+                    model.WallContactTimer = 0f;
+                    model.RegrabLockoutTimer = Mathf.Max(model.RegrabLockoutTimer, _stats.ClimbRegrabLockout);
+
+                    model.EndedJumpEarly = false;
+                    model.TimeJumpWasPressed = 0f;
+                    model.BufferedJumpUsable = false;
+                    model.CoyoteUsable = false;
+                    model.JumpToConsume = false;
+
+                    velocity.y = _stats.ClimbJumpPower;
+
+                    var detachVelocity = _stats.ClimbJumpDetachVelocity;
+                    if (detachVelocity > 0f)
+                    {
+                        var sideSign = model.ClimbWallSide;
+                        if (sideSign == 0f)
+                        {
+                            sideSign = _wallSideSign;
+                        }
+
+                        if (sideSign == 0f)
+                        {
+                            sideSign = 1f;
+                        }
+
+                        velocity.x = -Mathf.Sign(sideSign) * detachVelocity;
+                    }
+                    else
+                    {
+                        velocity.x = 0f;
+                    }
+
+                    this.SendEvent<PlayerJumpedEvent>();
+                }
+                else
+                {
+                    if (_ceilingHit && model.FrameInput.Move.y > 0f)
+                    {
+                        velocity.y = 0f;
+                    }
+                    else if (model.FrameInput.Move.y > 0f)
+                    {
+                        velocity.y = _stats.ClimbUpSpeed;
+                    }
+                    else if (model.FrameInput.Move.y < 0f)
+                    {
+                        velocity.y = -Mathf.Min(_stats.ClimbDownSpeed, _stats.MaxFallSpeed);
+                    }
+                    else
+                    {
+                        velocity.y = -Mathf.Min(_stats.ClimbIdleSlideSpeed, _stats.MaxFallSpeed);
+                    }
+
+                    velocity.x = 0f;
+                }
+
+                model.Velocity.Value = velocity;
+
+                if (wasClimbing != model.IsClimbing.Value)
+                {
+                    this.SendEvent(new PlayerClimbStateChangedEvent { IsClimbing = model.IsClimbing.Value });
+                }
+
+                return;
             }
 
             // --- Jumping ---
@@ -102,6 +231,11 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Commands
             }
 
             model.Velocity.Value = velocity;
+
+            if (wasClimbing != model.IsClimbing.Value)
+            {
+                this.SendEvent(new PlayerClimbStateChangedEvent { IsClimbing = model.IsClimbing.Value });
+            }
         }
     }
 }
