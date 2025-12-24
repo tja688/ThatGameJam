@@ -57,6 +57,10 @@ subgraph Controller["Controllers（控制器）"]
   subgraph Controller_KeroseneLamp["KeroseneLamp（煤油灯）"]
     N35_KeroseneLampManager["KeroseneLampManager（煤油灯管理器）"]:::controller
   end
+  subgraph Controller_Mechanisms["Mechanisms（机关/陷阱）"]
+    N91_SpikeHazard2D["SpikeHazard2D（地刺机关2D）"]:::controller
+    N92_VineMechanism2D["VineMechanism2D（藤蔓机关2D）"]:::controller
+  end
   subgraph Controller_LightVitality["LightVitality（光生命力）"]
     N44_LightVitalityDebugController["LightVitalityDebugController（光生命力调试控制器）"]:::controller
     N46_LightVitalityResetController["LightVitalityResetController（光生命力重置控制器）"]:::controller
@@ -270,6 +274,7 @@ EI_InputGetKeyDown -->|input| N74_RunResetController
 EI_InputGetKeyDown -->|input| N81_SceneReloader
 EI_OnTrigger2D -->|input| N7_DarknessZone2D
 EI_OnTrigger2D -->|input| N37_KillVolume2D
+EI_OnTrigger2D -->|input| N91_SpikeHazard2D
 EI_OnTrigger2D -->|input| N76_SafeZone2D
 EI_RuntimeInitializeOnLoadMethod -->|input| N63_ProjectToolkitBootstrap
 EI_Update -->|input| N6_DarknessTickController
@@ -463,5 +468,10 @@ N90_TickFixedStepCommand -->|write| N29_IPlayerCharacter2DModel
 N90_TickFixedStepCommand -->|use| N53_PlatformerCharacterStats
 N90_TickFixedStepCommand -->|publish| N59_PlayerGroundedChangedEvent
 N90_TickFixedStepCommand -->|publish| N60_PlayerJumpedEvent
+N91_SpikeHazard2D -->|find| N8_DeathController
+N91_SpikeHazard2D -->|use| N12_EDeathReason
+N91_SpikeHazard2D -->|call| N24_IDeathRespawnSystem
+N92_VineMechanism2D -->|subscribe| N39_LampSpawnedEvent
+N92_VineMechanism2D -->|subscribe| N75_RunResetEvent
 
 ```mermaid
