@@ -45,6 +45,7 @@
   - `PlatformerCharacterController._inputSource` 〞 optional explicit input source
   - `PlatformerCharacterController._climbSensor` 〞 trigger collider used for wall detection
   - `PlatformerCharacterController._climbableTag` 〞 tag for climbable walls (default: "Climbable")
+  - `PlatformerCharacterController._climbableLayerMask` 〞 layer filter for climbable walls (default: Everything)
   - `PlatformerCharacterInput._move` / `_jump` 〞 InputActionReference bindings
   - `PlatformerCharacterInput._grab` 〞 InputActionReference for grab/hold
 
@@ -108,5 +109,27 @@
 6. After the climb jump, confirm you do not immediately re-grab the wall.
 7. Trigger `PlayerDiedEvent`; expect input to stop until `PlayerRespawnedEvent` fires.
 
-## 7. UNVERIFIED (only if needed)
+## 7. Climb Bugfix Notes (2025-12-24)
+### 7.1 Root Cause Summary
+- Grounded wall grab blocked in `TickFixedStepCommand`: `wantsClimb` required `!model.Grounded.Value`, and climb exit also triggered on `model.Grounded.Value`. Result: ground contact (or groundHit from internal tiles) forced `IsClimbing` false and prevented entry.
+- Wall detection instability in `PlatformerCharacterController.TryGetClimbableWall`: `ClosestPoint` on an overlap returns the sensor center when inside a collider, so `wallSideSign` becomes 0 then falls back to bounds center, which can flip. Combined with `ContactFilter2D.useLayerMask = false`, overlap candidates can shift to unrelated colliders and briefly drop `wallDetected`, draining `WallContactTimer` and exiting climb even while the sensor still overlaps a wall.
+
+### 7.2 Fix Strategy
+- Allow wall grab entry on ground by removing the grounded gate from `wantsClimb` and stopping climb exits from `Grounded` alone. Grounded JumpDown now exits climb and uses normal jump logic (no forced horizontal detach).
+- Stabilize wall detection: `TryGetClimbableWall` now uses `Physics2D.Distance` to pick the closest candidate and derive wall side from separation normal/points (handles "sensor inside collider"), with `_climbableLayerMask` filtering plus tag check. While climbing, wall side is only updated if it does not flip against the existing side.
+- Preserve climb coyote via `WallCoyoteTime` and avoid regrab lockout on passive losses (lockout is only applied when the player releases grab or performs a climb jump).
+- Debug logging is gated by `PlatformerCharacterStats.EnableClimbDebugLogs` and only emits on climb enter/exit.
+
+### 7.3 Tuning Notes
+- `PlatformerCharacterStats.WallCoyoteTime`: raise to ~0.12 if composite boundaries still cause brief wall detection loss.
+- `PlatformerCharacterStats.ClimbRegrabLockout`: keep short (0.05-0.1) so regrab feels responsive after a climb jump.
+- `PlatformerCharacterStats.EnableClimbDebugLogs`: enable to see one-line enter/exit diagnostics.
+
+### 7.4 Scene Verification Steps
+1. Repro old bug: walk into a "Climbable" wall while grounded, hold or tap grab; previously did not enter climb. Now expect `PlayerClimbStateChangedEvent` and no slide away.
+2. Repro composite exit: climb past a tilemap/composite wall that contains a non-colliding internal floor strip; previously climb exited mid-height. Now stay climbing as long as grab is held and wall remains detected.
+3. While grounded and grabbing, press jump; expect a normal jump (no forced horizontal push).
+4. Enable `EnableClimbDebugLogs` and verify enter/exit logs include groundHit/ceilingHit, wallDetected/side, timers, input, and collider identity.
+
+## 8. UNVERIFIED (only if needed)
 - None.

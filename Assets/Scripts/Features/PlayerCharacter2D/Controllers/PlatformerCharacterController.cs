@@ -24,6 +24,7 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
         [Header("Climb")]
         [SerializeField] private Collider2D _climbSensor;
         [SerializeField] private string _climbableTag = "Climbable";
+        [SerializeField] private LayerMask _climbableLayerMask = ~0;
 
         private IPlatformerFrameInputSource _resolvedInputSource;
         private Rigidbody2D _rb;
@@ -66,7 +67,8 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
             _climbOverlapFilter = new ContactFilter2D
             {
                 useTriggers = true,
-                useLayerMask = false
+                useLayerMask = true,
+                layerMask = _climbableLayerMask
             };
 
             _resolvedInputSource = _inputSource as IPlatformerFrameInputSource;
@@ -138,7 +140,7 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
 
             // Physics queries (allowed in Controller)
             var previousQueriesStartInColliders = Physics2D.queriesStartInColliders;
-            bool wallDetected = TryGetClimbableWall(out var wallSideSign, out var wallPoint);
+            bool wallDetected = TryGetClimbableWall(out var wallSideSign, out var wallPoint, out var wallCollider);
             Physics2D.queriesStartInColliders = false;
 
             try
@@ -167,6 +169,9 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
                     ceilingHit,
                     wallDetected,
                     wallSideSign,
+                    wallCollider != null ? wallCollider.name : string.Empty,
+                    wallCollider != null ? wallCollider.tag : string.Empty,
+                    wallCollider != null ? wallCollider.gameObject.layer : -1,
                     Time.fixedDeltaTime,
                     _stats));
 
@@ -175,7 +180,14 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
 
                 if (isClimbing && wallDetected)
                 {
-                    ApplyClimbStick(wallPoint, wallSideSign);
+                    var climbSide = wallSideSign;
+                    var modelSide = this.GetModel<IPlayerCharacter2DModel>().ClimbWallSide;
+                    if (modelSide != 0f)
+                    {
+                        climbSide = modelSide;
+                    }
+
+                    ApplyClimbStick(wallPoint, climbSide);
                 }
             }
             finally
@@ -205,10 +217,11 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
             _rb.gravityScale = _defaultGravityScale;
         }
 
-        private bool TryGetClimbableWall(out float wallSideSign, out Vector2 wallPoint)
+        private bool TryGetClimbableWall(out float wallSideSign, out Vector2 wallPoint, out Collider2D wallCollider)
         {
             wallSideSign = 0f;
             wallPoint = default;
+            wallCollider = null;
 
             if (_climbSensor == null || !_climbSensor.enabled || string.IsNullOrEmpty(_climbableTag))
             {
@@ -216,6 +229,8 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
             }
 
             _climbOverlapResults.Clear();
+            _climbOverlapFilter.useLayerMask = true;
+            _climbOverlapFilter.layerMask = _climbableLayerMask;
             _climbSensor.Overlap(_climbOverlapFilter, _climbOverlapResults);
             if (_climbOverlapResults.Count == 0)
             {
@@ -225,6 +240,8 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
             var center = (Vector2)_climbSensor.bounds.center;
             var bestDistance = float.MaxValue;
             Collider2D bestCollider = null;
+            ColliderDistance2D bestSeparation = default;
+            var bestHasSeparation = false;
 
             for (var i = 0; i < _climbOverlapResults.Count; i++)
             {
@@ -244,13 +261,14 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
                     continue;
                 }
 
-                var closest = hit.ClosestPoint(center);
-                var distance = Mathf.Abs(closest.x - center.x);
+                var separation = Physics2D.Distance(_climbSensor, hit);
+                var distance = Mathf.Abs(separation.distance);
                 if (distance < bestDistance)
                 {
                     bestDistance = distance;
                     bestCollider = hit;
-                    wallPoint = closest;
+                    bestSeparation = separation;
+                    bestHasSeparation = true;
                 }
             }
 
@@ -259,7 +277,21 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
                 return false;
             }
 
-            wallSideSign = Mathf.Sign(wallPoint.x - center.x);
+            if (bestHasSeparation)
+            {
+                wallPoint = bestSeparation.pointB;
+                wallSideSign = Mathf.Sign(bestSeparation.normal.x);
+                if (wallSideSign == 0f)
+                {
+                    wallSideSign = Mathf.Sign(bestSeparation.pointB.x - bestSeparation.pointA.x);
+                }
+            }
+            else
+            {
+                wallPoint = bestCollider.ClosestPoint(center);
+                wallSideSign = Mathf.Sign(wallPoint.x - center.x);
+            }
+
             if (wallSideSign == 0f)
             {
                 wallSideSign = Mathf.Sign(bestCollider.bounds.center.x - center.x);
@@ -270,6 +302,7 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
                 wallSideSign = 1f;
             }
 
+            wallCollider = bestCollider;
             return true;
         }
 

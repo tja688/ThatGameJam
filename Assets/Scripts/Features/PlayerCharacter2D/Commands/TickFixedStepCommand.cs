@@ -12,6 +12,9 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Commands
         private readonly bool _ceilingHit;
         private readonly bool _wallDetected;
         private readonly float _wallSideSign;
+        private readonly string _wallColliderName;
+        private readonly string _wallColliderTag;
+        private readonly int _wallColliderLayer;
         private readonly float _fixedDeltaTime;
         private readonly PlatformerCharacterStats _stats;
 
@@ -20,6 +23,9 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Commands
             bool ceilingHit,
             bool wallDetected,
             float wallSideSign,
+            string wallColliderName,
+            string wallColliderTag,
+            int wallColliderLayer,
             float fixedDeltaTime,
             PlatformerCharacterStats stats)
         {
@@ -27,6 +33,9 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Commands
             _ceilingHit = ceilingHit;
             _wallDetected = wallDetected;
             _wallSideSign = wallSideSign;
+            _wallColliderName = wallColliderName;
+            _wallColliderTag = wallColliderTag;
+            _wallColliderLayer = wallColliderLayer;
             _fixedDeltaTime = fixedDeltaTime;
             _stats = stats;
         }
@@ -63,8 +72,7 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Commands
             }
 
             var wantsClimb = model.FrameInput.GrabHeld
-                             && model.RegrabLockoutTimer <= 0f
-                             && !model.Grounded.Value;
+                             && model.RegrabLockoutTimer <= 0f;
 
             if (model.IsClimbing.Value)
             {
@@ -73,7 +81,10 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Commands
                     model.WallContactTimer = _stats.WallCoyoteTime;
                     if (_wallSideSign != 0f)
                     {
-                        model.ClimbWallSide = _wallSideSign;
+                        if (model.ClimbWallSide == 0f || Mathf.Sign(model.ClimbWallSide) == Mathf.Sign(_wallSideSign))
+                        {
+                            model.ClimbWallSide = _wallSideSign;
+                        }
                     }
                 }
                 else
@@ -82,11 +93,14 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Commands
                 }
 
                 var lostWall = !_wallDetected && model.WallContactTimer <= 0f;
-                if (!wantsClimb || lostWall || model.Grounded.Value)
+                if (!wantsClimb || lostWall)
                 {
                     model.IsClimbing.Value = false;
                     model.WallContactTimer = 0f;
-                    model.RegrabLockoutTimer = Mathf.Max(model.RegrabLockoutTimer, _stats.ClimbRegrabLockout);
+                    if (!wantsClimb)
+                    {
+                        model.RegrabLockoutTimer = Mathf.Max(model.RegrabLockoutTimer, _stats.ClimbRegrabLockout);
+                    }
                 }
             }
             else
@@ -104,46 +118,57 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Commands
                 }
             }
 
+            var performedClimbJump = false;
             if (model.IsClimbing.Value)
             {
                 if (model.FrameInput.JumpDown)
                 {
-                    model.IsClimbing.Value = false;
-                    model.WallContactTimer = 0f;
-                    model.RegrabLockoutTimer = Mathf.Max(model.RegrabLockoutTimer, _stats.ClimbRegrabLockout);
-
-                    model.EndedJumpEarly = false;
-                    model.TimeJumpWasPressed = 0f;
-                    model.BufferedJumpUsable = false;
-                    model.CoyoteUsable = false;
-                    model.JumpToConsume = false;
-
-                    velocity.y = _stats.ClimbJumpPower;
-
-                    var detachVelocity = _stats.ClimbJumpDetachVelocity;
-                    if (detachVelocity > 0f)
+                    if (model.Grounded.Value)
                     {
-                        var sideSign = model.ClimbWallSide;
-                        if (sideSign == 0f)
-                        {
-                            sideSign = _wallSideSign;
-                        }
-
-                        if (sideSign == 0f)
-                        {
-                            sideSign = 1f;
-                        }
-
-                        velocity.x = -Mathf.Sign(sideSign) * detachVelocity;
+                        model.IsClimbing.Value = false;
+                        model.WallContactTimer = 0f;
                     }
                     else
                     {
-                        velocity.x = 0f;
-                    }
+                        model.IsClimbing.Value = false;
+                        model.WallContactTimer = 0f;
+                        model.RegrabLockoutTimer = Mathf.Max(model.RegrabLockoutTimer, _stats.ClimbRegrabLockout);
 
-                    this.SendEvent<PlayerJumpedEvent>();
+                        model.EndedJumpEarly = false;
+                        model.TimeJumpWasPressed = 0f;
+                        model.BufferedJumpUsable = false;
+                        model.CoyoteUsable = false;
+                        model.JumpToConsume = false;
+
+                        velocity.y = _stats.ClimbJumpPower;
+
+                        var detachVelocity = _stats.ClimbJumpDetachVelocity;
+                        if (detachVelocity > 0f)
+                        {
+                            var sideSign = model.ClimbWallSide;
+                            if (sideSign == 0f)
+                            {
+                                sideSign = _wallSideSign;
+                            }
+
+                            if (sideSign == 0f)
+                            {
+                                sideSign = 1f;
+                            }
+
+                            velocity.x = -Mathf.Sign(sideSign) * detachVelocity;
+                        }
+                        else
+                        {
+                            velocity.x = 0f;
+                        }
+
+                        this.SendEvent<PlayerJumpedEvent>();
+                        performedClimbJump = true;
+                    }
                 }
-                else
+
+                if (model.IsClimbing.Value)
                 {
                     if (_ceilingHit && model.FrameInput.Move.y > 0f)
                     {
@@ -159,17 +184,37 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Commands
                     }
                     else
                     {
-                        velocity.y = -Mathf.Min(_stats.ClimbIdleSlideSpeed, _stats.MaxFallSpeed);
+                        velocity.y = model.Grounded.Value
+                            ? 0f
+                            : -Mathf.Min(_stats.ClimbIdleSlideSpeed, _stats.MaxFallSpeed);
                     }
 
                     velocity.x = 0f;
+                    model.Velocity.Value = velocity;
+                }
+            }
+
+            var climbStateChanged = wasClimbing != model.IsClimbing.Value;
+            if (model.IsClimbing.Value || performedClimbJump)
+            {
+                if (!model.IsClimbing.Value)
+                {
+                    model.Velocity.Value = velocity;
                 }
 
-                model.Velocity.Value = velocity;
-
-                if (wasClimbing != model.IsClimbing.Value)
+                if (climbStateChanged)
                 {
                     this.SendEvent(new PlayerClimbStateChangedEvent { IsClimbing = model.IsClimbing.Value });
+                    if (_stats != null && _stats.EnableClimbDebugLogs)
+                    {
+                        var move = model.FrameInput.Move;
+                        LogKit.I(
+                            $"[PlayerCharacter2D] Climb {wasClimbing}->{model.IsClimbing.Value} " +
+                            $"groundHit={_groundHit} ceilingHit={_ceilingHit} wallDetected={_wallDetected} wallSide={_wallSideSign:0.##} " +
+                            $"grabHeld={model.FrameInput.GrabHeld} moveY={move.y:0.##} " +
+                            $"wallTimer={model.WallContactTimer:0.###} regrabTimer={model.RegrabLockoutTimer:0.###} " +
+                            $"wallCollider={_wallColliderName} tag={_wallColliderTag} layer={_wallColliderLayer}");
+                    }
                 }
 
                 return;
@@ -232,9 +277,19 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Commands
 
             model.Velocity.Value = velocity;
 
-            if (wasClimbing != model.IsClimbing.Value)
+            if (climbStateChanged)
             {
                 this.SendEvent(new PlayerClimbStateChangedEvent { IsClimbing = model.IsClimbing.Value });
+                if (_stats != null && _stats.EnableClimbDebugLogs)
+                {
+                    var move = model.FrameInput.Move;
+                    LogKit.I(
+                        $"[PlayerCharacter2D] Climb {wasClimbing}->{model.IsClimbing.Value} " +
+                        $"groundHit={_groundHit} ceilingHit={_ceilingHit} wallDetected={_wallDetected} wallSide={_wallSideSign:0.##} " +
+                        $"grabHeld={model.FrameInput.GrabHeld} moveY={move.y:0.##} " +
+                        $"wallTimer={model.WallContactTimer:0.###} regrabTimer={model.RegrabLockoutTimer:0.###} " +
+                        $"wallCollider={_wallColliderName} tag={_wallColliderTag} layer={_wallColliderLayer}");
+                }
             }
         }
     }

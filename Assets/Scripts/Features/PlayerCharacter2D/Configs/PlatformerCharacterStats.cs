@@ -86,5 +86,9 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Configs
         [Tooltip("Target distance to keep from the wall while climbing.")]
         [Range(0f, 0.2f)]
         public float ClimbStickDistance = 0.05f;
+
+        [Header("Debug")]
+        [Tooltip("Enable climb enter/exit debug logs.")]
+        public bool EnableClimbDebugLogs = false;
     }
 }
