@@ -3,6 +3,7 @@ graph TD
     subgraph RunFailReset
         subgraph Controllers
             Controller::RunFailSettingsController["RunFailSettingsController"]
+            Controller::RunResetController["RunResetController"]
         end
         subgraph Systems
             System::IRunFailResetSystem["IRunFailResetSystem"]

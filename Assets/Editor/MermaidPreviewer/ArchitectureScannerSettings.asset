@@ -19,7 +19,7 @@ MonoBehaviour:
   - '**/Tests/**'
   - '**/ThirdParty/**'
   - '**/Temp/**'
-  featureMode: 0
+  featureMode: 1
   featurePathToken: Features
   namespacePrefix: ThatGameJam.Features
-  lastSelectedNavId: feature:PlayerCharacter2D:l2
+  lastSelectedNavId: feature:Darkness:component:IDarknessSystem

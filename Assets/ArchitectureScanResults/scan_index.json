@@ -1,5 +1,5 @@
 {
-    "timestamp": "2025-12-24T00:11:26.8167362Z",
+    "timestamp": "2025-12-25T03:21:42.5992335Z",
     "scanRoot": "Assets/Scripts",
     "l0MermaidPath": "L0_features_overview.mmd",
     "features": [
@@ -234,6 +234,34 @@
             ]
         },
         {
+            "id": "Mechanisms",
+            "name": "Mechanisms",
+            "l1MermaidPath": "Features/Mechanisms/L1_internal.mmd",
+            "l2MermaidPath": "Features/Mechanisms/L2_external.mmd",
+            "components": [
+                {
+                    "name": "GhostMechanism2D",
+                    "category": "Controllers",
+                    "l2MermaidPath": ""
+                },
+                {
+                    "name": "MechanismControllerBase",
+                    "category": "Controllers",
+                    "l2MermaidPath": ""
+                },
+                {
+                    "name": "SpikeHazard2D",
+                    "category": "Controllers",
+                    "l2MermaidPath": ""
+                },
+                {
+                    "name": "VineMechanism2D",
+                    "category": "Controllers",
+                    "l2MermaidPath": ""
+                }
+            ]
+        },
+        {
             "id": "Misc",
             "name": "Misc",
             "l1MermaidPath": "Features/Misc/L1_internal.mmd",
@@ -258,6 +286,11 @@
             "l2MermaidPath": "Features/PlayerCharacter2D/L2_external.mmd",
             "components": [
                 {
+                    "name": "ResetClimbStateCommand",
+                    "category": "Commands",
+                    "l2MermaidPath": ""
+                },
+                {
                     "name": "SetFrameInputCommand",
                     "category": "Commands",
                     "l2MermaidPath": ""
@@ -275,6 +308,11 @@
                 {
                     "name": "PlatformerCharacterInput",
                     "category": "Controllers",
+                    "l2MermaidPath": ""
+                },
+                {
+                    "name": "PlayerClimbStateChangedEvent",
+                    "category": "Events",
                     "l2MermaidPath": ""
                 },
                 {
@@ -359,6 +397,11 @@
                     "l2MermaidPath": ""
                 },
                 {
+                    "name": "RunResetController",
+                    "category": "Controllers",
+                    "l2MermaidPath": ""
+                },
+                {
                     "name": "IRunFailResetModel",
                     "category": "Models",
                     "l2MermaidPath": ""
@@ -429,23 +472,10 @@
             ]
         },
         {
-            "id": "Testing",
-            "name": "Testing",
-            "l1MermaidPath": "Features/Testing/L1_internal.mmd",
-            "l2MermaidPath": "Features/Testing/L2_external.mmd",
-            "components": [
-                {
-                    "name": "RunResetController",
-                    "category": "Controllers",
-                    "l2MermaidPath": ""
-                }
-            ]
-        },
-        {
-            "id": "_Shared",
-            "name": "_Shared",
-            "l1MermaidPath": "Features/_Shared/L1_internal.mmd",
-            "l2MermaidPath": "Features/_Shared/L2_external.mmd",
+            "id": "Shared",
+            "name": "Shared",
+            "l1MermaidPath": "Features/Shared/L1_internal.mmd",
+            "l2MermaidPath": "Features/Shared/L2_external.mmd",
             "components": [
                 {
                     "name": "DarknessStateChangedEvent",

@@ -5,19 +5,26 @@ graph TD
     Feature::HUD["HUD"]
     Feature::KeroseneLamp["KeroseneLamp"]
     Feature::LightVitality["LightVitality"]
+    Feature::Mechanisms["Mechanisms"]
     Feature::Misc["Misc"]
     Feature::PlayerCharacter2D["PlayerCharacter2D"]
     Feature::RunFailHandling["RunFailHandling"]
     Feature::RunFailReset["RunFailReset"]
     Feature::SafeZone["SafeZone"]
-    Feature::Testing["Testing"]
-    Feature::_Shared["_Shared"]
+    Feature::Shared["Shared"]
     Feature::Darkness --> Feature::LightVitality
+    Feature::Darkness --> Feature::Shared
+    Feature::DeathRespawn --> Feature::Shared
     Feature::HUD --> Feature::Darkness
     Feature::HUD --> Feature::KeroseneLamp
     Feature::HUD --> Feature::LightVitality
     Feature::HUD --> Feature::RunFailReset
     Feature::HUD --> Feature::SafeZone
+    Feature::KeroseneLamp --> Feature::Shared
+    Feature::LightVitality --> Feature::Shared
+    Feature::Mechanisms --> Feature::DeathRespawn
+    Feature::Mechanisms --> Feature::LightVitality
+    Feature::Mechanisms --> Feature::Shared
     Feature::Misc --> Feature::Darkness
     Feature::Misc --> Feature::DeathRespawn
     Feature::Misc --> Feature::KeroseneLamp
@@ -25,6 +32,9 @@ graph TD
     Feature::Misc --> Feature::PlayerCharacter2D
     Feature::Misc --> Feature::RunFailReset
     Feature::Misc --> Feature::SafeZone
+    Feature::PlayerCharacter2D --> Feature::Shared
     Feature::RunFailHandling --> Feature::RunFailReset
+    Feature::RunFailHandling --> Feature::Shared
+    Feature::RunFailReset --> Feature::Shared
     Feature::SafeZone --> Feature::LightVitality
-    Feature::Testing --> Feature::RunFailReset
+    Feature::SafeZone --> Feature::Shared
