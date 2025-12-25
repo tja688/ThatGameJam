@@ -1,0 +1,53 @@
+﻿flowchart LR
+  classDef unresolved fill:#ffd6d6,stroke:#cc0000,color:#330000;
+  N0["LightVitalityDebugController"]
+  style N0 stroke-width:3px;
+  N1["UnRegisterExtension"]
+  class N1 unresolved;
+  N2["CanRegisterEventExtension"]
+  class N2 unresolved;
+  N3["Unity"]
+  N4["CanSendCommandExtension"]
+  class N4 unresolved;
+  N5["AddLightCommand"]
+  N6["ConsumeLightCommand"]
+  N7["CanSendQueryExtension"]
+  class N7 unresolved;
+  N8["GetMaxLightQuery"]
+  N9["SetLightCommand"]
+  N10["CanGetModelExtension"]
+  class N10 unresolved;
+  N11["LightVitalityCommandUtils"]
+  N12["CanSendEventExtension"]
+  class N12 unresolved;
+  N13["LightConsumedEvent"]
+  class N13 unresolved;
+  N14["LightVitalityModel"]
+  N15["LightChangedEvent"]
+  class N15 unresolved;
+  N16["LightDepletedEvent"]
+  class N16 unresolved;
+  N0 -->|Calls| N1
+  N0 -->|Calls| N2
+  N0 -->|Calls| N3
+  N0 -->|Calls| N4
+  N0 -->|Creates| N5
+  N0 -->|Creates| N6
+  N0 -->|Calls| N7
+  N0 -->|Creates| N8
+  N0 -->|Creates| N9
+  N5 -->|Calls| N10
+  N5 -->|Calls| N11
+  N6 -->|Calls| N10
+  N6 -->|Calls| N3
+  N6 -->|Calls| N11
+  N6 -->|Calls| N12
+  N6 -->|Creates| N13
+  N8 -->|Calls| N10
+  N9 -->|Calls| N10
+  N9 -->|Calls| N11
+  N11 -->|Calls| N3
+  N11 -->|Calls| N14
+  N11 -->|Calls| N12
+  N11 -->|Creates| N15
+  N11 -->|Creates| N16

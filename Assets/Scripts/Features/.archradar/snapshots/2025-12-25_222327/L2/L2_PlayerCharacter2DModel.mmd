@@ -1,0 +1,9 @@
+﻿flowchart LR
+  classDef unresolved fill:#ffd6d6,stroke:#cc0000,color:#330000;
+  N0["PlayerCharacter2DModel"]
+  style N0 stroke-width:3px;
+  N1["BindableProperty<bool>"]
+  class N1 unresolved;
+  N2["Unity"]
+  N0 -->|Creates| N1
+  N0 -->|Creates| N2

@@ -1,0 +1,17 @@
+﻿flowchart LR
+  classDef unresolved fill:#ffd6d6,stroke:#cc0000,color:#330000;
+  N0["SetMaxDeathsCommand"]
+  style N0 stroke-width:3px;
+  N1["CanGetModelExtension"]
+  class N1 unresolved;
+  N2["Unity"]
+  N3["RunFailResetModel"]
+  N4["BindableProperty<bool>"]
+  class N4 unresolved;
+  N5["BindableProperty<int>"]
+  class N5 unresolved;
+  N0 -->|Calls| N1
+  N0 -->|Calls| N2
+  N0 -->|Calls| N3
+  N3 -->|Creates| N4
+  N3 -->|Creates| N5

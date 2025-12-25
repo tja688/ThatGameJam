@@ -1,0 +1,21 @@
+﻿flowchart LR
+  classDef unresolved fill:#ffd6d6,stroke:#cc0000,color:#330000;
+  N0["RunResetController"]
+  style N0 stroke-width:3px;
+  N1["UnRegisterExtension"]
+  class N1 unresolved;
+  N2["CanRegisterEventExtension"]
+  class N2 unresolved;
+  N3["CanGetModelExtension"]
+  class N3 unresolved;
+  N4["Unity"]
+  N5["IRunFailResetSystem"]
+  class N5 unresolved;
+  N6["CanGetSystemExtension"]
+  class N6 unresolved;
+  N0 -->|Calls| N1
+  N0 -->|Calls| N2
+  N0 -->|Calls| N3
+  N0 -->|Calls| N4
+  N0 -->|Calls| N5
+  N0 -->|Calls| N6

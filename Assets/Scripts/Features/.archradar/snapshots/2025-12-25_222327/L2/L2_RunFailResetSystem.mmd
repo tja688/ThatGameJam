@@ -1,0 +1,35 @@
+﻿flowchart LR
+  classDef unresolved fill:#ffd6d6,stroke:#cc0000,color:#330000;
+  N0["RunFailResetSystem"]
+  style N0 stroke-width:3px;
+  N1["CanRegisterEventExtension"]
+  class N1 unresolved;
+  N2["IUnRegister"]
+  class N2 unresolved;
+  N3["CanGetModelExtension"]
+  class N3 unresolved;
+  N4["CanSendCommandExtension"]
+  class N4 unresolved;
+  N5["ResetRunCommand"]
+  class N5 unresolved;
+  N6["CanSendEventExtension"]
+  class N6 unresolved;
+  N7["RunResetEvent"]
+  class N7 unresolved;
+  N8["MarkRunFailedCommand"]
+  N9["RunFailResetModel"]
+  class N9 unresolved;
+  N10["RunFailedEvent"]
+  class N10 unresolved;
+  N0 -->|Calls| N1
+  N0 -->|Calls| N2
+  N0 -->|Calls| N3
+  N0 -->|Calls| N4
+  N0 -->|Creates| N5
+  N0 -->|Calls| N6
+  N0 -->|Creates| N7
+  N0 -->|Creates| N8
+  N8 -->|Calls| N3
+  N8 -->|Calls| N9
+  N8 -->|Calls| N6
+  N8 -->|Creates| N10

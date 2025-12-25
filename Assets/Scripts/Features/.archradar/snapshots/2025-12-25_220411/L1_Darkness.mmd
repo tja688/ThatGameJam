@@ -1,0 +1,10 @@
+﻿flowchart LR
+  classDef unresolved fill:#ffd6d6,stroke:#cc0000,color:#330000;
+  N0["ThatGameJam.Features.Darkness.Systems.DarknessSystem"]
+  N1["ThatGameJam.Features.Darkness.Controllers.DarknessZone2D"]
+  N2["ThatGameJam.Features.Darkness.Controllers.DarknessTickController"]
+  N3["ThatGameJam.Features.Darkness.Commands.SetInDarknessCommand"]
+  N4["ThatGameJam.Features.Darkness.Models.DarknessModel"]
+  N5["ThatGameJam.Features.Darkness.Controllers.PlayerDarknessSensor"]
+  N5 -->|Calls| N5
+  N5 -->|Creates| N3

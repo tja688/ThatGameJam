@@ -1,0 +1,14 @@
+﻿flowchart LR
+  classDef unresolved fill:#ffd6d6,stroke:#cc0000,color:#330000;
+  N0["ThatGameJam.Features.DeathRespawn.Models.DeathRespawnModel"]
+  style N0 stroke-width:3px;
+  N1["ThatGameJam.Features.DeathRespawn.Commands.MarkPlayerDeadCommand"]
+  N2["ThatGameJam.Features.DeathRespawn.Commands.ResetDeathCountCommand"]
+  N3["QFramework.BindableProperty<bool>"]
+  class N3 unresolved;
+  N4["QFramework.BindableProperty<int>"]
+  class N4 unresolved;
+  N1 -->|Calls| N0
+  N2 -->|Calls| N0
+  N0 -->|Creates| N3
+  N0 -->|Creates| N4

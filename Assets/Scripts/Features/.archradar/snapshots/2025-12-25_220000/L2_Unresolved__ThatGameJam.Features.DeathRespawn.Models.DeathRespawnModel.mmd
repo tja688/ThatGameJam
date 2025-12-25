@@ -1,0 +1,9 @@
+﻿flowchart LR
+  classDef unresolved fill:#ffd6d6,stroke:#cc0000,color:#330000;
+  N0["ThatGameJam.Features.DeathRespawn.Models.DeathRespawnModel"]
+  class N0 unresolved;
+  style N0 stroke-width:3px;
+  N1["GameRootApp"]
+  N2["ThatGameJam.Features.DeathRespawn.Commands.MarkPlayerRespawnedCommand"]
+  N1 -->|Creates| N0
+  N2 -->|Calls| N0

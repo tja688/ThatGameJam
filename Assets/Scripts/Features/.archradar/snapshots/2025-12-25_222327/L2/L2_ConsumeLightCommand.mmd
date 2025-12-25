@@ -1,0 +1,35 @@
+﻿flowchart LR
+  classDef unresolved fill:#ffd6d6,stroke:#cc0000,color:#330000;
+  N0["ConsumeLightCommand"]
+  style N0 stroke-width:3px;
+  N1["GhostMechanism2D"]
+  N2["LightVitalityDebugController"]
+  N3["CanGetModelExtension"]
+  class N3 unresolved;
+  N4["Unity"]
+  N5["LightVitalityCommandUtils"]
+  N6["CanSendEventExtension"]
+  class N6 unresolved;
+  N7["LightConsumedEvent"]
+  class N7 unresolved;
+  N8["LightVitalityModel"]
+  N9["LightChangedEvent"]
+  class N9 unresolved;
+  N10["LightDepletedEvent"]
+  class N10 unresolved;
+  N11["BindableProperty<float>"]
+  class N11 unresolved;
+  N1 -->|Creates| N0
+  N2 -->|Creates| N0
+  N0 -->|Calls| N3
+  N0 -->|Calls| N4
+  N0 -->|Calls| N5
+  N0 -->|Calls| N6
+  N0 -->|Creates| N7
+  N5 -->|Calls| N4
+  N5 -->|Calls| N8
+  N5 -->|Calls| N6
+  N5 -->|Creates| N9
+  N5 -->|Creates| N10
+  N8 -->|Creates| N11
+  N8 -->|Calls| N4

@@ -1,0 +1,14 @@
+﻿flowchart LR
+  classDef unresolved fill:#ffd6d6,stroke:#cc0000,color:#330000;
+  N0["ThatGameJam.Features.DeathRespawn.Systems.DeathRespawnSystem"]
+  N1["ThatGameJam.Features.DeathRespawn.Commands.MarkPlayerRespawnedCommand"]
+  N2["ThatGameJam.Features.DeathRespawn.Controllers.KillVolume2D"]
+  N3["ThatGameJam.Features.DeathRespawn.Models.DeathRespawnModel"]
+  N4["ThatGameJam.Features.DeathRespawn.Commands.MarkPlayerDeadCommand"]
+  N5["ThatGameJam.Features.DeathRespawn.Controllers.RespawnController"]
+  N6["ThatGameJam.Features.DeathRespawn.Controllers.DeathController"]
+  N7["ThatGameJam.Features.DeathRespawn.Commands.ResetDeathCountCommand"]
+  N4 -->|Calls| N3
+  N5 -->|Calls| N5
+  N6 -->|Calls| N6
+  N7 -->|Calls| N3

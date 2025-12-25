@@ -1,0 +1,13 @@
+﻿flowchart LR
+  classDef unresolved fill:#ffd6d6,stroke:#cc0000,color:#330000;
+  N0["ThatGameJam.Features.PlayerCharacter2D.Systems.PlayerCharacter2DSystem"]
+  N1["ThatGameJam.Features.PlayerCharacter2D.Configs.PlatformerCharacterStats"]
+  N2["ThatGameJam.Features.PlayerCharacter2D.Commands.SetFrameInputCommand"]
+  N3["ThatGameJam.Features.PlayerCharacter2D.Controllers.PlatformerCharacterController"]
+  N4["ThatGameJam.Features.PlayerCharacter2D.Controllers.PlatformerCharacterInput"]
+  N5["ThatGameJam.Features.PlayerCharacter2D.Commands.TickFixedStepCommand"]
+  N6["ThatGameJam.Features.PlayerCharacter2D.Models.PlayerCharacter2DModel"]
+  N7["ThatGameJam.Features.PlayerCharacter2D.Commands.ResetClimbStateCommand"]
+  N8["ThatGameJam.Features.PlayerCharacter2D.Queries.GetDesiredVelocityQuery"]
+  N3 -->|Creates| N2
+  N3 -->|Calls| N3

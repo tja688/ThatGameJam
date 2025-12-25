@@ -1,0 +1,21 @@
+﻿flowchart LR
+  classDef unresolved fill:#ffd6d6,stroke:#cc0000,color:#330000;
+  N0["TickFixedStepCommand"]
+  style N0 stroke-width:3px;
+  N1["CanGetModelExtension"]
+  class N1 unresolved;
+  N2["Unity"]
+  N3["CanSendEventExtension"]
+  class N3 unresolved;
+  N4["PlayerGroundedChangedEvent"]
+  class N4 unresolved;
+  N5["PlayerClimbStateChangedEvent"]
+  class N5 unresolved;
+  N6["LogKit"]
+  class N6 unresolved;
+  N0 -->|Calls| N1
+  N0 -->|Calls| N2
+  N0 -->|Calls| N3
+  N0 -->|Creates| N4
+  N0 -->|Creates| N5
+  N0 -->|Calls| N6

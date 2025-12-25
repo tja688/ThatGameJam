@@ -1,0 +1,12 @@
+﻿flowchart LR
+  classDef unresolved fill:#ffd6d6,stroke:#cc0000,color:#330000;
+  N0["DeathRespawnSystem"]
+  N1["MarkPlayerRespawnedCommand"]
+  N2["KillVolume2D"]
+  N3["DeathRespawnModel"]
+  N4["MarkPlayerDeadCommand"]
+  N5["RespawnController"]
+  N6["DeathController"]
+  N7["ResetDeathCountCommand"]
+  N4 -->|Calls| N3
+  N7 -->|Calls| N3

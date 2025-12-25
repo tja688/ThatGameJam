@@ -1,0 +1,21 @@
+﻿flowchart LR
+  classDef unresolved fill:#ffd6d6,stroke:#cc0000,color:#330000;
+  N0["HUDController"]
+  style N0 stroke-width:3px;
+  N1["CanGetModelExtension"]
+  class N1 unresolved;
+  N2["UnRegisterExtension"]
+  class N2 unresolved;
+  N3["IReadonlyBindableProperty<float>"]
+  class N3 unresolved;
+  N4["IReadonlyBindableProperty<bool>"]
+  class N4 unresolved;
+  N5["IReadonlyBindableProperty<int>"]
+  class N5 unresolved;
+  N6["Unity"]
+  N0 -->|Calls| N1
+  N0 -->|Calls| N2
+  N0 -->|Calls| N3
+  N0 -->|Calls| N4
+  N0 -->|Calls| N5
+  N0 -->|Calls| N6

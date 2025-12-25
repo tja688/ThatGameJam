@@ -1,0 +1,10 @@
+﻿flowchart LR
+  classDef unresolved fill:#ffd6d6,stroke:#cc0000,color:#330000;
+  N0["ThatGameJam.Features.SafeZone.Controllers.PlayerSafeZoneSensor"]
+  N1["ThatGameJam.Features.SafeZone.Controllers.SafeZone2D"]
+  N2["ThatGameJam.Features.SafeZone.Commands.SetSafeZoneCountCommand"]
+  N3["ThatGameJam.Features.SafeZone.Systems.SafeZoneSystem"]
+  N4["ThatGameJam.Features.SafeZone.Models.SafeZoneModel"]
+  N5["ThatGameJam.Features.SafeZone.Controllers.SafeZoneTickController"]
+  N0 -->|Calls| N0
+  N1 -->|Calls| N0

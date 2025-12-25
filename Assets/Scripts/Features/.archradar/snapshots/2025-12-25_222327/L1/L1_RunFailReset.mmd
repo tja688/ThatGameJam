@@ -1,0 +1,11 @@
+﻿flowchart LR
+  classDef unresolved fill:#ffd6d6,stroke:#cc0000,color:#330000;
+  N0["MarkRunFailedCommand"]
+  N1["RunFailResetSystem"]
+  N2["ResetRunCommand"]
+  N3["RunResetController"]
+  N4["RunFailSettingsController"]
+  N5["RunFailResetModel"]
+  N6["SetMaxDeathsCommand"]
+  N1 -->|Creates| N0
+  N6 -->|Calls| N5

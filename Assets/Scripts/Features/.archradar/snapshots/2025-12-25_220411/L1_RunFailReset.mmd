@@ -1,0 +1,12 @@
+﻿flowchart LR
+  classDef unresolved fill:#ffd6d6,stroke:#cc0000,color:#330000;
+  N0["ThatGameJam.Features.RunFailReset.Commands.MarkRunFailedCommand"]
+  N1["ThatGameJam.Features.RunFailReset.Systems.RunFailResetSystem"]
+  N2["ThatGameJam.Features.RunFailReset.Commands.ResetRunCommand"]
+  N3["ThatGameJam.Features.RunFailReset.Controllers.RunResetController"]
+  N4["ThatGameJam.Features.RunFailReset.Controllers.RunFailSettingsController"]
+  N5["ThatGameJam.Features.RunFailReset.Models.RunFailResetModel"]
+  N6["ThatGameJam.Features.RunFailReset.Commands.SetMaxDeathsCommand"]
+  N1 -->|Calls| N1
+  N1 -->|Creates| N0
+  N6 -->|Calls| N5

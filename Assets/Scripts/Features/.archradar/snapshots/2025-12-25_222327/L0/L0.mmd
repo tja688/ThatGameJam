@@ -1,0 +1,36 @@
+﻿flowchart LR
+  classDef unresolved fill:#ffd6d6,stroke:#cc0000,color:#330000;
+  F0["Darkness"]
+  F1["DeathRespawn"]
+  F2["External"]
+  F3["HUD"]
+  F4["KeroseneLamp"]
+  F5["LightVitality"]
+  F6["Mechanisms"]
+  F7["PlayerCharacter2D"]
+  F8["RunFailHandling"]
+  F9["RunFailReset"]
+  F10["SafeZone"]
+  F11["Unresolved"]
+  class F11 unresolved;
+  F0 -->|17| F2
+  F0 -->|20| F11
+  F1 -->|6| F2
+  F1 -->|32| F11
+  F3 -->|2| F2
+  F3 -->|19| F11
+  F4 -->|5| F2
+  F4 -->|22| F11
+  F5 -->|11| F2
+  F5 -->|39| F11
+  F6 -->|82| F2
+  F6 -->|1| F5
+  F6 -->|14| F11
+  F7 -->|49| F2
+  F7 -->|45| F11
+  F8 -->|3| F2
+  F8 -->|5| F11
+  F9 -->|2| F2
+  F9 -->|29| F11
+  F10 -->|18| F2
+  F10 -->|20| F11

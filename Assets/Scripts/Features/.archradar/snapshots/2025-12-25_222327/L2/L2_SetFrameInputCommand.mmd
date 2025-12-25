@@ -1,0 +1,9 @@
+﻿flowchart LR
+  classDef unresolved fill:#ffd6d6,stroke:#cc0000,color:#330000;
+  N0["SetFrameInputCommand"]
+  style N0 stroke-width:3px;
+  N1["PlatformerCharacterController"]
+  N2["CanGetModelExtension"]
+  class N2 unresolved;
+  N1 -->|Creates| N0
+  N0 -->|Calls| N2

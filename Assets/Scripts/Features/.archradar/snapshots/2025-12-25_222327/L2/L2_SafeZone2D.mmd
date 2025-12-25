@@ -1,0 +1,25 @@
+﻿flowchart LR
+  classDef unresolved fill:#ffd6d6,stroke:#cc0000,color:#330000;
+  N0["SafeZone2D"]
+  style N0 stroke-width:3px;
+  N1["Unity"]
+  N2["PlayerSafeZoneSensor"]
+  N3["DotNet"]
+  N4["UnRegisterExtension"]
+  class N4 unresolved;
+  N5["CanRegisterEventExtension"]
+  class N5 unresolved;
+  N6["CanSendCommandExtension"]
+  class N6 unresolved;
+  N7["SetSafeZoneCountCommand"]
+  class N7 unresolved;
+  N0 -->|Calls| N1
+  N0 -->|Calls| N2
+  N2 -->|Creates| N3
+  N2 -->|Creates| N1
+  N2 -->|Calls| N1
+  N2 -->|Calls| N4
+  N2 -->|Calls| N5
+  N2 -->|Calls| N3
+  N2 -->|Calls| N6
+  N2 -->|Creates| N7
