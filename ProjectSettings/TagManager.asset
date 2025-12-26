@@ -45,8 +45,14 @@ TagManager:
   - name: BackGroud
     uniqueID: 1266441837
     locked: 0
-  - name: Actor
+  - name: Far
     uniqueID: 1930414455
+    locked: 0
+  - name: Closer
+    uniqueID: 2698248137
+    locked: 0
+  - name: Player
+    uniqueID: 3323585445
     locked: 0
   - name: Front
     uniqueID: 534207805
