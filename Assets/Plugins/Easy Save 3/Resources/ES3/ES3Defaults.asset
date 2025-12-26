@@ -30,7 +30,29 @@ MonoBehaviour:
     referenceMode: 2
     serializationDepthLimit: 64
     assemblyNames:
+    - Assembly-CSharp
     - Assembly-CSharp-firstpass
+    - AudioKit
+    - Documents.Editor
+    - DOTween.Modules
+    - DOTweenPro.Scripts
+    - Kybernetik.Animancer
+    - Kybernetik.Animancer.FSM
+    - Lofelt.NiceVibrations
+    - MoreMountains.Tools
+    - QFramework
+    - QFramework.CoreKit
+    - ResKit
+    - spine-unity
+    - SupportOldQF
+    - UIKit
+    - UniRx
+    - UniRx.Examples
+    - UniTask
+    - UniTask.Addressables
+    - UniTask.DOTween
+    - UniTask.Linq
+    - UniTask.TextMeshPro
     showAdvancedSettings: 0
   addMgrToSceneAutomatically: 0
   autoUpdateReferences: 1
