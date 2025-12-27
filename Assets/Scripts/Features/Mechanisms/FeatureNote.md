@@ -1,15 +1,17 @@
 # Feature: Mechanisms
 
 ## 1. Purpose
-- Provide extensible level mechanisms (hazards/traps) implemented as scene controllers.
-- Prototype spike hazards (touch to die) and lamp-activated vine growth platforms.
+- 提供机关/环境交互的基础脚本与可扩展基类。
+- 统一 HardReset 回滚入口，并提供区域进出钩子。
+- 内置示例：Spike、Vine、Door 机关。
 
 ## 2. Folder & Key Files
 - Root: `Assets/Scripts/Features/Mechanisms/`
 - Controllers:
-  - `MechanismControllerBase.cs` - base IController for mechanism scripts
-  - `SpikeHazard2D.cs` - trigger hazard that kills the player on contact
-  - `VineMechanism2D.cs` - grows a vine/platform when a lamp spawns nearby
+  - `MechanismControllerBase.cs` 〞 机关基类（HardReset/AreaEnter/AreaExit）
+  - `SpikeHazard2D.cs` 〞 碰撞即死亡
+  - `VineMechanism2D.cs` 〞 持续光照生长/无光回退
+  - `DoorMechanism2D.cs` 〞 门的表现层（监听 DoorGate 事件）
 - Systems/Models/Commands/Queries: None.
 
 ## 3. Runtime Wiring
@@ -17,23 +19,23 @@
 - None.
 
 ### 3.2 Scene setup (Unity)
-- Required MonoBehaviours:
-  - `SpikeHazard2D` on spike objects with a Trigger Collider2D
-  - `VineMechanism2D` on a vine object with a BoxCollider2D (set size/offset for the fully grown shape)
+- Required MonoBehaviours (按需):
+  - `SpikeHazard2D`（触发碰撞）
+  - `VineMechanism2D`（藤蔓平台）
+  - `DoorMechanism2D`（门模型/碰撞体）
 - Inspector fields (if any):
-  - `SpikeHazard2D.deathReason` - death reason sent to DeathRespawn (default Script)
-  - `VineMechanism2D.lightAffectRadius` - lamp influence radius
-  - `VineMechanism2D.growthDirection` / `growthLength` - axis and length of growth
-  - `VineMechanism2D.growthDuration` / `growthCurve` - growth animation timing
-  - `VineMechanism2D.visualRoot` / `growthCollider` - visuals and collider targets (use a child for visuals if you want collider sizing to stay independent of scaling)
-  - `VineMechanism2D.enableColliderDuringGrowth` - whether the collider grows during the animation
+  - `MechanismControllerBase.areaId` 〞 区域进入/离开钩子目标区域
+  - `VineMechanism2D.lightAffectRadius` / `growthSpeed` / `decaySpeed`
+  - `DoorMechanism2D.doorId` / `startOpen`
 
 ## 4. Public API Surface (How other Features integrate)
 ### 4.1 Events (Outbound)
-- None. (Mechanisms listen to `LampSpawnedEvent` and `RunResetEvent`.)
+- None.（机关主要监听事件）
 
 ### 4.2 Request Events (Inbound write requests, optional)
-- None.
+- 通过 `DoorGate` 监听 `DoorStateChangedEvent`。
+- 通过 `RunResetEvent`（HardReset）回滚状态。
+- 可选监听 `AreaChangedEvent` 进行区域性能策略。
 
 ### 4.3 Commands (Write Path)
 - None.
@@ -45,26 +47,13 @@
 - None.
 
 ## 5. Typical Integrations
-- Example: Extend a new mechanism by listening to reset events.
-  ```csharp
-  public class CustomMechanism2D : MechanismControllerBase
-  {
-      private void OnEnable()
-      {
-          this.RegisterEvent<RunResetEvent>(_ => ResetState())
-              .UnRegisterWhenDisabled(gameObject);
-      }
-
-      private void ResetState()
-      {
-      }
-  }
-  ```
+- 示例：藤蔓读取 KeroseneLamp GameplayEnabled 灯列表，持续光照生长。
 
 ## 6. Verify Checklist
-1. Add `SpikeHazard2D` to a trigger collider and touch it with the player; expect `PlayerDiedEvent` and lamp spawn.
-2. Place `VineMechanism2D` within `lightAffectRadius` of a lamp spawn; after death, vine grows and becomes walkable.
-3. Trigger `RunResetEvent`; vine resets to the collapsed state and collider is disabled.
+1. 放置 `SpikeHazard2D`，触碰后应触发死亡。
+2. 放置 `VineMechanism2D`，在光源范围内逐步生长，无光逐步回退。
+3. 触发 `RunResetEvent`（HardReset），藤蔓回到初始状态。
+4. 放置 `DoorMechanism2D` 并配置 `doorId`，当 DoorGate 打开事件触发时门碰撞/视觉关闭。
 
 ## 7. UNVERIFIED (only if needed)
 - None.

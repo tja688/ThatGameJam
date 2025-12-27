@@ -1,23 +1,22 @@
 # Feature: Darkness
 
 ## 1. Purpose
-- Track whether the player is inside darkness zones and publish state changes.
-- Drain Light Vitality while in darkness (unless a Safe Zone is active).
-- Refresh overlap on reset/respawn so starting inside darkness is detected immediately.
+- 追踪玩家是否处于黑暗区域，并广播状态变化。
+- 在黑暗中持续扣光（安全区生效时不扣）。
+- 在 HardReset/Respawn 时刷新重叠检测。
 
 ## 2. Folder & Key Files
 - Root: `Assets/Scripts/Features/Darkness/`
 - Controllers:
-  - `PlayerDarknessSensor.cs` 〞 detects zone enter/exit and refreshes overlap on reset/respawn
-  - `DarknessZone2D.cs` 〞 trigger volume that reports to the sensor
-  - `DarknessTickController.cs` 〞 ticks `IDarknessSystem` each frame
+  - `PlayerDarknessSensor.cs`
+  - `DarknessZone2D.cs`
+  - `DarknessTickController.cs`
 - Systems:
-  - `IDarknessSystem`, `DarknessSystem` 〞 drains light on tick
+  - `IDarknessSystem`, `DarknessSystem`
 - Models:
-  - `IDarknessModel`, `DarknessModel` 〞 `IsInDarkness` bindable state
+  - `IDarknessModel`, `DarknessModel`
 - Commands:
-  - `SetInDarknessCommand` 〞 updates model + broadcasts event
-- Utilities: None
+  - `SetInDarknessCommand`
 
 ## 3. Runtime Wiring
 ### 3.1 Root registration (`GameRootApp`)
@@ -27,49 +26,33 @@
 
 ### 3.2 Scene setup (Unity)
 - Required MonoBehaviours:
-  - `PlayerDarknessSensor` on the player root (tracks overlapping darkness zones)
-  - `DarknessZone2D` on each darkness trigger volume (Collider2D marked as Trigger)
-  - `DarknessTickController` on any active GameObject (ticks the system)
-- Inspector fields (if any):
-  - `PlayerDarknessSensor.enterDelay` / `exitDelay` 〞 debounce for zone enter/exit
+  - `PlayerDarknessSensor`（玩家根节点）
+  - `DarknessZone2D`（黑暗触发体）
+  - `DarknessTickController`（系统 Tick）
 
 ## 4. Public API Surface (How other Features integrate)
 ### 4.1 Events (Outbound)
-> Other Features listen to these
 - `struct DarknessStateChangedEvent`
-  - When fired: `SetInDarknessCommand` changes the darkness state
-  - Payload: `IsInDarkness` (bool)
-  - Typical listener: UI/HUD, audio/FX
-  - Example:
-    ```csharp
-    this.RegisterEvent<DarknessStateChangedEvent>(e => { /* react */ })
-        .UnRegisterWhenDisabled(gameObject);
-    ```
 
 ### 4.2 Request Events (Inbound write requests, optional)
 - None.
 
 ### 4.3 Commands (Write Path)
 - `SetInDarknessCommand`
-  - What state it mutates: `IDarknessModel.IsInDarkness`
-  - Typical sender: `PlayerDarknessSensor`
 
 ### 4.4 Queries (Read Path, optional)
 - None.
 
 ### 4.5 Model Read Surface
-- Bindables / readonly properties:
-  - `IReadonlyBindableProperty<bool> IsInDarkness`
-  - Usage notes: use for UI or gameplay gating
+- `IReadonlyBindableProperty<bool> IsInDarkness`
 
 ## 5. Typical Integrations
-- Example: On darkness enter ↙ play a sound (listen to `DarknessStateChangedEvent`).
+- 示例：进入黑暗时播放氛围音效（监听 `DarknessStateChangedEvent`）。
 
 ## 6. Verify Checklist
-1. Add `PlayerDarknessSensor` to the player and `DarknessZone2D` to a trigger volume.
-2. Enter/exit the trigger; expect `DarknessStateChangedEvent` to fire and `IsInDarkness` to toggle.
-3. With `DarknessTickController` active and Light Vitality enabled, light should drain while in darkness.
-4. Place spawn inside darkness, then respawn/reset; expect darkness state to activate without relying on TriggerEnter.
+1. 放置 `DarknessZone2D`，进入/离开后状态切换。
+2. 黑暗中扣光，安全区内不扣光。
+3. 出生点在黑暗区内时，Respawn/HardReset 后状态能立即刷新。
 
 ## 7. UNVERIFIED (only if needed)
 - None.

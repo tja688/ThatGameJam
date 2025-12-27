@@ -1,7 +1,9 @@
 using System.Collections;
 using QFramework;
+using ThatGameJam.Features.Checkpoint.Queries;
 using ThatGameJam.Features.DeathRespawn.Commands;
 using ThatGameJam.Features.DeathRespawn.Systems;
+using ThatGameJam.Features.PlayerCharacter2D.Commands;
 using ThatGameJam.Features.Shared;
 using UnityEngine;
 
@@ -91,7 +93,11 @@ namespace ThatGameJam.Features.DeathRespawn.Controllers
 
         private void ExecuteRespawn()
         {
-            var target = respawnPoint != null ? respawnPoint.position : transform.position;
+            var checkpoint = this.SendQuery(new GetCurrentCheckpointQuery());
+            var target = checkpoint.IsValid
+                ? checkpoint.SpawnPoint
+                : (respawnPoint != null ? respawnPoint.position : transform.position);
+
             transform.position = target;
 
             if (_rigidbody2D != null)
@@ -100,6 +106,7 @@ namespace ThatGameJam.Features.DeathRespawn.Controllers
                 _rigidbody2D.angularVelocity = 0f;
             }
 
+            this.SendCommand(new ResetClimbStateCommand());
             this.GetSystem<IDeathRespawnSystem>().MarkRespawned(target);
         }
     }

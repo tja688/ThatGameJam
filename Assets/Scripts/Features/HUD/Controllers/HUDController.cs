@@ -2,7 +2,6 @@ using QFramework;
 using ThatGameJam.Features.Darkness.Models;
 using ThatGameJam.Features.KeroseneLamp.Models;
 using ThatGameJam.Features.LightVitality.Models;
-using ThatGameJam.Features.RunFailReset.Models;
 using ThatGameJam.Features.SafeZone.Models;
 using UnityEngine;
 using UnityEngine.UI;
@@ -21,9 +20,6 @@ namespace ThatGameJam.Features.HUD.Controllers
 
         [Header("Lamps")]
         [SerializeField] private Text lampText;
-
-        [Header("Fail")]
-        [SerializeField] private Text failText;
 
         private float _currentLight;
         private float _maxLight;
@@ -55,9 +51,6 @@ namespace ThatGameJam.Features.HUD.Controllers
             lampModel.LampCount.RegisterWithInitValue(OnLampCountChanged)
                 .UnRegisterWhenDisabled(gameObject);
 
-            var runModel = this.GetModel<IRunFailResetModel>();
-            runModel.IsFailed.RegisterWithInitValue(OnRunFailedChanged)
-                .UnRegisterWhenDisabled(gameObject);
         }
 
         private void OnCurrentLightChanged(float value)
@@ -132,13 +125,5 @@ namespace ThatGameJam.Features.HUD.Controllers
             }
         }
 
-        private void OnRunFailedChanged(bool isFailed)
-        {
-            if (failText != null)
-            {
-                failText.gameObject.SetActive(isFailed);
-                failText.text = isFailed ? "RUN FAILED" : string.Empty;
-            }
-        }
     }
 }

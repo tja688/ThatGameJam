@@ -11,8 +11,7 @@ namespace ThatGameJam.Features.KeroseneLamp.Commands
             var model = (KeroseneLampModel)this.GetModel<IKeroseneLampModel>();
             var countChanged = model.CountValue != 0;
 
-            model.SetCount(0);
-            model.ResetNextLampId();
+            model.ResetAll();
 
             if (countChanged)
             {

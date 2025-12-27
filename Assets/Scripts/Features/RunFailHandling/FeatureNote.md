@@ -1,29 +1,24 @@
 # Feature: RunFailHandling
 
 ## 1. Purpose
-- Handle run failure events with a placeholder flow (log + delay + reset) until real failure UX is implemented.
+- 已废弃的失败处理占位，不再监听 `RunFailedEvent`。
+- 仅保留手动调用 HardReset 的测试入口（不推荐放在正式场景）。
 
 ## 2. Folder & Key Files
 - Root: `Assets/Scripts/Features/RunFailHandling/`
 - Controllers:
-  - `RunFailHandlingController.cs` 〞 listens for `RunFailedEvent` and performs placeholder handling
-- Systems: None
-- Models: None
-- Utilities: None
+  - `RunFailHandlingController.cs` 〞 提供 `RequestHardResetFromTest()` 手动触发接口
+- Systems/Models/Commands/Queries: None
 
 ## 3. Runtime Wiring
 ### 3.1 Root registration (`GameRootApp`)
 - Registered modules: None.
 
 ### 3.2 Scene setup (Unity)
-- Required MonoBehaviours:
-  - `RunFailHandlingController` on a scene manager object (handles run failure flow)
-- Inspector fields (if any):
-  - `RunFailHandlingController.resetDelaySeconds` 〞 seconds to wait before issuing reset (default 3)
+- **不建议**在场景中保留该组件；请从关卡中移除。
 
 ## 4. Public API Surface (How other Features integrate)
 ### 4.1 Events (Outbound)
-> Other Features listen to these
 - None.
 
 ### 4.2 Request Events (Inbound write requests, optional)
@@ -39,12 +34,11 @@
 - None.
 
 ## 5. Typical Integrations
-- Example: Let `RunFailResetSystem` emit `RunFailedEvent` on death-count threshold, then `RunFailHandlingController` issues a delayed `RequestResetFromFail()`.
+- None（仅测试手动调用）。
 
 ## 6. Verify Checklist
-1. Add `RunFailHandlingController` to a scene.
-2. Trigger `RunFailedEvent` (reach the configured death threshold).
-3. Observe a `LogKit` info message and a reset after `resetDelaySeconds`.
+1. 确认场景中已移除 `RunFailHandlingController` 组件。
+2. 如需调试，编写临时脚本调用 `RequestHardResetFromTest()`，应触发 `RunResetEvent`。
 
 ## 7. UNVERIFIED (only if needed)
 - None.

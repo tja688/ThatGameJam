@@ -1,19 +1,19 @@
 # Feature: LightVitality
 
 ## 1. Purpose
-- Maintain player light resource (current/max) and broadcast changes.
-- Provide commands/queries for consuming, adding, and reading light.
-- Refill to max on `RunResetEvent` (fail/test only) and `PlayerRespawnedEvent`.
+- 维护光量（当前/最大）并广播变化。
+- 提供消耗/增加/读取光量的 Command/Query。
+- 在 HardReset（`RunResetEvent`）与 `PlayerRespawnedEvent` 时回满。
 
 ## 2. Folder & Key Files
 - Root: `Assets/Scripts/Features/LightVitality/`
 - Controllers:
-  - `LightVitalityDebugController.cs` 〞 debug keybindings for light changes
-  - `LightVitalityResetController.cs` 〞 legacy/optional reset listener for scene-only setups
+  - `LightVitalityDebugController.cs` 〞 调试用光量按键
+  - `LightVitalityResetController.cs` 〞 场景级重置监听（可选）
 - Systems:
-  - `ILightVitalityResetSystem`, `LightVitalityResetSystem` 〞 listens for run reset/respawn and refills light
+  - `ILightVitalityResetSystem`, `LightVitalityResetSystem` 〞 监听 HardReset/Respawn 回满
 - Models:
-  - `ILightVitalityModel`, `LightVitalityModel` 〞 current/max light bindables
+  - `ILightVitalityModel`, `LightVitalityModel`
 - Commands:
   - `AddLightCommand`
   - `ConsumeLightCommand`
@@ -23,7 +23,6 @@
   - `GetCurrentLightQuery`
   - `GetMaxLightQuery`
   - `GetLightPercentQuery`
-- Utilities: None
 
 ## 3. Runtime Wiring
 ### 3.1 Root registration (`GameRootApp`)
@@ -32,79 +31,41 @@
   - System: `ThatGameJam.Features.LightVitality.Systems.ILightVitalityResetSystem`
 
 ### 3.2 Scene setup (Unity)
-- Required MonoBehaviours:
-  - `LightVitalityDebugController` on a scene object (optional, for debug keys)
 - Optional MonoBehaviours:
-  - `LightVitalityResetController` (legacy, only if you want scene-only reset listeners)
-- Inspector fields (if any):
-  - `LightVitalityDebugController.addAmount`, `consumeAmount`, `addKey`, `consumeKey`, `setToMaxKey`
+  - `LightVitalityDebugController`（调试）
+  - `LightVitalityResetController`（旧场景兼容）
 
 ## 4. Public API Surface (How other Features integrate)
 ### 4.1 Events (Outbound)
-> Other Features listen to these
 - `struct LightChangedEvent`
-  - When fired: any command updates current/max light
-  - Payload: `Current` (float), `Max` (float)
-  - Typical listener: HUD
-  - Example:
-    ```csharp
-    this.RegisterEvent<LightChangedEvent>(OnLightChanged)
-        .UnRegisterWhenDisabled(gameObject);
-    ```
 - `struct LightConsumedEvent`
-  - When fired: `ConsumeLightCommand`
-  - Payload: `Amount` (float), `Reason` (ELightConsumeReason)
-  - Typical listener: analytics/FX
 - `struct LightDepletedEvent`
-  - When fired: current light crosses from >0 to <=0
-  - Payload: none
-  - Typical listener: DeathRespawn (kills on depletion)
 
 ### 4.2 Request Events (Inbound write requests, optional)
 - None.
 
 ### 4.3 Commands (Write Path)
 - `AddLightCommand`
-  - What state it mutates: `ILightVitalityModel.CurrentLight`
-  - Typical sender: Safe Zone regen system
 - `ConsumeLightCommand`
-  - What state it mutates: `ILightVitalityModel.CurrentLight`
-  - Typical sender: Darkness drain system
 - `SetLightCommand`
-  - What state it mutates: `ILightVitalityModel.CurrentLight`
-  - Typical sender: reset controller/debug
 - `SetMaxLightCommand`
-  - What state it mutates: `ILightVitalityModel.MaxLight` (optionally clamps current)
-  - Typical sender: setup or progression
 
 ### 4.4 Queries (Read Path, optional)
 - `GetCurrentLightQuery`
-  - What it returns: current light value (float)
-  - Typical caller: UI/debug
 - `GetMaxLightQuery`
-  - What it returns: max light value (float)
-  - Typical caller: UI/debug
 - `GetLightPercentQuery`
-  - What it returns: current/max ratio (0..1)
-  - Typical caller: UI fill
 
 ### 4.5 Model Read Surface
-- Bindables / readonly properties:
-  - `IReadonlyBindableProperty<float> CurrentLight`
-  - `IReadonlyBindableProperty<float> MaxLight`
-  - Usage notes: bind in UI for live updates
+- `IReadonlyBindableProperty<float> CurrentLight`
+- `IReadonlyBindableProperty<float> MaxLight`
 
 ## 5. Typical Integrations
-- Example: Drain light on hit ↙ send `ConsumeLightCommand`.
-  ```csharp
-  this.SendCommand(new ConsumeLightCommand(10f, ELightConsumeReason.Script));
-  ```
+- 示例：危险体积调用 `ConsumeLightCommand` 扣光。
 
 ## 6. Verify Checklist
-1. Add `LightVitalityDebugController` to a scene and press the configured keys.
-2. Expect `LightChangedEvent` logs and HUD updates on add/consume.
-3. Drain to zero; expect `LightDepletedEvent` to fire.
-4. Trigger `RunResetEvent` (from fail/test) or `PlayerRespawnedEvent`; expect current light to refill to max.
+1. 使用 `LightVitalityDebugController` 测试加/减光。
+2. 光量归零后触发 `LightDepletedEvent`。
+3. 触发 `RunResetEvent` 或 `PlayerRespawnedEvent`，光量回满。
 
 ## 7. UNVERIFIED (only if needed)
 - None.

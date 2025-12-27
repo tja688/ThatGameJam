@@ -1,19 +1,20 @@
 # Feature: DeathRespawn
 
 ## 1. Purpose
-- Track player alive/dead state and broadcast death/respawn events.
-- Maintain per-run death count and publish count changes.
+- 追踪玩家生死状态并广播死亡/复活事件。
+- 维护死亡次数（仅统计/提示，不再用于失败判定）。
+- 复活点通过 Checkpoint 查询获取（Mailbox/LevelNode）。
 
 ## 2. Folder & Key Files
 - Root: `Assets/Scripts/Features/DeathRespawn/`
 - Controllers:
-  - `DeathController.cs` 〞 detects death conditions and calls system
-  - `RespawnController.cs` 〞 handles respawn timing/position and run-reset death count reset
-  - `KillVolume2D.cs` 〞 trigger volume that kills on contact
+  - `DeathController.cs` 〞 检测死亡条件并通知系统
+  - `RespawnController.cs` 〞 处理复活时机与位置
+  - `KillVolume2D.cs` 〞 触发即死亡体积
 - Systems:
-  - `IDeathRespawnSystem`, `DeathRespawnSystem` 〞 sends death/respawn commands
+  - `IDeathRespawnSystem`, `DeathRespawnSystem`
 - Models:
-  - `IDeathRespawnModel`, `DeathRespawnModel` 〞 alive state + death count
+  - `IDeathRespawnModel`, `DeathRespawnModel`
 - Commands:
   - `MarkPlayerDeadCommand`
   - `MarkPlayerRespawnedCommand`
@@ -28,68 +29,51 @@
 
 ### 3.2 Scene setup (Unity)
 - Required MonoBehaviours:
-  - `DeathController` on player root (monitors fall/light-depleted)
-  - `RespawnController` on player root (teleports and signals respawn)
-  - `KillVolume2D` on trigger volumes that should kill the player
+  - `DeathController`（玩家根节点）
+  - `RespawnController`（玩家根节点）
+  - `KillVolume2D`（可致死的触发器）
 - Inspector fields (if any):
-  - `DeathController.listenToLightDepleted` 〞 listen for `LightDepletedEvent`
-  - `DeathController.useFallCheck` / `fallYThreshold` 〞 auto-kill below Y
-  - `RespawnController.respawnPoint` / `respawnDelay` 〞 respawn target and delay
-  - `RespawnController.respawnOnDeath` / `respawnOnRunReset` 〞 event-driven respawn
-  - `RespawnController.resetVelocity` 〞 zero Rigidbody2D velocity on respawn
+  - `RespawnController.respawnDelay`
+  - `RespawnController.respawnOnDeath` / `respawnOnRunReset`
+  - `RespawnController.respawnPoint` 〞 仅在无 Checkpoint 时作为兜底
 
 ## 4. Public API Surface (How other Features integrate)
 ### 4.1 Events (Outbound)
 > Other Features listen to these
 - `struct PlayerDiedEvent`
-  - When fired: `MarkPlayerDeadCommand` executes
-  - Payload: `Reason` (EDeathReason), `WorldPos` (Vector3)
-  - Typical listener: Kerosene lamp spawner, audio/FX
-  - Example:
-    ```csharp
-    this.RegisterEvent<PlayerDiedEvent>(OnPlayerDied)
-        .UnRegisterWhenDisabled(gameObject);
-    ```
+  - When fired: `MarkPlayerDeadCommand`
+  - Payload: `Reason`, `WorldPos`
 - `struct PlayerRespawnedEvent`
-  - When fired: `MarkPlayerRespawnedCommand` executes
-  - Payload: `WorldPos` (Vector3)
-  - Typical listener: checkpoint/UI, LightVitality reset system
+  - When fired: `MarkPlayerRespawnedCommand`
+  - Payload: `WorldPos`
 - `struct DeathCountChangedEvent`
-  - When fired: death count increments or resets
-  - Payload: `Count` (int)
-  - Typical listener: RunFailReset
+  - When fired: death count changes
+  - Payload: `Count`
 
 ### 4.2 Request Events (Inbound write requests, optional)
 - None.
 
 ### 4.3 Commands (Write Path)
 - `MarkPlayerDeadCommand`
-  - What state it mutates: `IDeathRespawnModel.IsAlive`, `DeathCount`
-  - Typical sender: `DeathRespawnSystem`
 - `MarkPlayerRespawnedCommand`
-  - What state it mutates: `IDeathRespawnModel.IsAlive`
-  - Typical sender: `DeathRespawnSystem`
-- `ResetDeathCountCommand`
-  - What state it mutates: `IDeathRespawnModel.DeathCount`
-  - Typical sender: `RespawnController` on `RunResetEvent`
+- `ResetDeathCountCommand` 〞 HardReset 时归零
 
 ### 4.4 Queries (Read Path, optional)
 - None.
 
 ### 4.5 Model Read Surface
-- Bindables / readonly properties:
+- Bindables:
   - `IReadonlyBindableProperty<bool> IsAlive`
   - `IReadonlyBindableProperty<int> DeathCount`
-  - Usage notes: HUD or analytics counters
 
 ## 5. Typical Integrations
-- Example: On death count change ↙ RunFailReset checks threshold.
+- 示例：死亡时灯生成（监听 `PlayerDiedEvent`）。
 
 ## 6. Verify Checklist
-1. Add `DeathController` + `RespawnController` to the player and a `KillVolume2D` trigger in the scene.
-2. Enter the kill volume; expect `PlayerDiedEvent` to fire with `Reason=Fall`.
-3. After `respawnDelay`, player teleports and `PlayerRespawnedEvent` fires.
-4. Trigger `RunResetEvent`; expect death count to reset to 0 and `DeathCountChangedEvent` to fire (if count was > 0).
+1. 添加 `DeathController` + `RespawnController`，设置 `respawnDelay`。
+2. 触发 `KillVolume2D`，确认 `PlayerDiedEvent` 触发。
+3. 触发复活后，角色位置来自 Checkpoint（Mailbox 最新 nodeId），速度清零、攀爬状态重置。
+4. 触发 `RunResetEvent`（HardReset），死亡次数归零且可选复活。
 
 ## 7. UNVERIFIED (only if needed)
 - None.

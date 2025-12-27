@@ -2,9 +2,8 @@ using QFramework;
 
 namespace ThatGameJam.Features.RunFailReset.Systems
 {
-    public interface IRunFailResetSystem : ISystem, ICanSendCommand
+    public interface IRunFailResetSystem : ISystem
     {
-        void RequestResetFromFail();
         void RequestResetFromTest();
     }
 }

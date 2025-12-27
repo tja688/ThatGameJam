@@ -1,6 +1,5 @@
-using System.Collections;
 using QFramework;
-using ThatGameJam.Features.Shared;
+using ThatGameJam.Features.KeroseneLamp.Queries;
 using UnityEngine;
 
 namespace ThatGameJam.Features.Mechanisms.Controllers
@@ -8,17 +7,25 @@ namespace ThatGameJam.Features.Mechanisms.Controllers
     [RequireComponent(typeof(BoxCollider2D))]
     public class VineMechanism2D : MechanismControllerBase
     {
+        [Header("Light")]
         [SerializeField] private float lightAffectRadius = 3f;
+        [SerializeField] private float lightRequiredSeconds = 0f;
+
+        [Header("Growth")]
+        [SerializeField] private float growthSpeed = 1f;
+        [SerializeField] private float decaySpeed = 0.75f;
         [SerializeField] private Vector2 growthDirection = Vector2.up;
         [SerializeField] private float growthLength = 3f;
-        [SerializeField] private float growthDuration = 0.5f;
         [SerializeField] private AnimationCurve growthCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+
+        [Header("Visual")]
         [SerializeField] private Transform visualRoot;
         [SerializeField] private BoxCollider2D growthCollider;
         [SerializeField] private bool enableColliderDuringGrowth = true;
 
-        private Coroutine _growRoutine;
-        private bool _isGrown;
+        [SerializeField] [Range(0f, 1f)] private float growthValue;
+
+        private float _lightTimer;
         private Vector3 _visualFullScale;
         private Vector2 _colliderBaseAnchor;
         private float _colliderThickness;
@@ -70,38 +77,66 @@ namespace ThatGameJam.Features.Mechanisms.Controllers
             ResetGrowthImmediate();
         }
 
-        private void OnEnable()
+        private void Update()
         {
-            this.RegisterEvent<LampSpawnedEvent>(OnLampSpawned)
-                .UnRegisterWhenDisabled(gameObject);
-            this.RegisterEvent<RunResetEvent>(OnRunReset)
-                .UnRegisterWhenDisabled(gameObject);
+            var hasLight = IsLighted();
+            UpdateLightTimer(hasLight, Time.deltaTime);
+
+            var isLightReady = lightRequiredSeconds <= 0f
+                ? hasLight
+                : _lightTimer >= lightRequiredSeconds;
+
+            var target = isLightReady ? 1f : 0f;
+            var speed = isLightReady ? growthSpeed : decaySpeed;
+
+            growthValue = Mathf.MoveTowards(growthValue, target, Mathf.Max(0f, speed) * Time.deltaTime);
+            ApplyGrowth(growthValue);
         }
 
-        private void OnDisable()
-        {
-            StopGrowthRoutine();
-        }
-
-        private void OnLampSpawned(LampSpawnedEvent e)
-        {
-            if (_isGrown || _growRoutine != null)
-            {
-                return;
-            }
-
-            var distance = Vector2.Distance(transform.position, e.WorldPos);
-            if (distance > lightAffectRadius)
-            {
-                return;
-            }
-
-            StartGrowth();
-        }
-
-        private void OnRunReset(RunResetEvent e)
+        protected override void OnHardReset()
         {
             ResetGrowthImmediate();
+        }
+
+        private bool IsLighted()
+        {
+            if (lightAffectRadius <= 0f)
+            {
+                return false;
+            }
+
+            var lamps = this.SendQuery(new GetGameplayEnabledLampsQuery());
+            var pos = (Vector2)transform.position;
+            var radius = lightAffectRadius;
+
+            for (var i = 0; i < lamps.Count; i++)
+            {
+                var lampPos = (Vector2)lamps[i].WorldPos;
+                if (Vector2.Distance(pos, lampPos) <= radius)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private void UpdateLightTimer(bool hasLight, float deltaTime)
+        {
+            if (lightRequiredSeconds <= 0f)
+            {
+                _lightTimer = hasLight ? lightRequiredSeconds : 0f;
+                return;
+            }
+
+            if (hasLight)
+            {
+                _lightTimer = Mathf.Min(lightRequiredSeconds, _lightTimer + deltaTime);
+            }
+            else
+            {
+                _lightTimer = Mathf.Max(0f, _lightTimer - deltaTime);
+            }
         }
 
         private void CacheAxis()
@@ -147,72 +182,30 @@ namespace ThatGameJam.Features.Mechanisms.Controllers
             }
         }
 
-        private void StartGrowth()
+        private void ApplyGrowth(float normalized)
         {
-            StopGrowthRoutine();
+            var clamped = Mathf.Clamp01(normalized);
+            var eased = growthCurve != null ? growthCurve.Evaluate(clamped) : clamped;
+            SetGrowth(growthLength * eased);
 
             if (growthCollider != null)
             {
-                growthCollider.enabled = enableColliderDuringGrowth || growthDuration <= 0f;
-            }
-
-            if (growthDuration <= 0f)
-            {
-                SetGrowth(growthLength);
-                CompleteGrowth();
-                return;
-            }
-
-            _growRoutine = StartCoroutine(GrowRoutine());
-        }
-
-        private IEnumerator GrowRoutine()
-        {
-            var elapsed = 0f;
-            while (elapsed < growthDuration)
-            {
-                elapsed += Time.deltaTime;
-                var t = Mathf.Clamp01(elapsed / growthDuration);
-                var eased = growthCurve != null ? growthCurve.Evaluate(t) : t;
-                SetGrowth(growthLength * eased);
-                yield return null;
-            }
-
-            SetGrowth(growthLength);
-            CompleteGrowth();
-        }
-
-        private void CompleteGrowth()
-        {
-            _growRoutine = null;
-            _isGrown = true;
-
-            if (growthCollider != null && !enableColliderDuringGrowth)
-            {
-                growthCollider.enabled = true;
+                if (enableColliderDuringGrowth)
+                {
+                    growthCollider.enabled = clamped > 0f;
+                }
+                else
+                {
+                    growthCollider.enabled = clamped >= 1f;
+                }
             }
         }
 
         private void ResetGrowthImmediate()
         {
-            StopGrowthRoutine();
-            _isGrown = false;
-
-            SetGrowth(0f);
-
-            if (growthCollider != null)
-            {
-                growthCollider.enabled = false;
-            }
-        }
-
-        private void StopGrowthRoutine()
-        {
-            if (_growRoutine != null)
-            {
-                StopCoroutine(_growRoutine);
-                _growRoutine = null;
-            }
+            _lightTimer = 0f;
+            growthValue = 0f;
+            ApplyGrowth(0f);
         }
 
         private void SetGrowth(float length)
