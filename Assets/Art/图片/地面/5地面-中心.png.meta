@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 55ac50b46c251af4587ebf31022fb02a
+guid: 1e05695b016e66840aa34d448e373898
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -744988603412704465
-    second: "5-1\u5730\u9762\u62D0\u89D2_0"
+      213: -2202713091114384912
+    second: "5\u5730\u9762-\u4E2D\u5FC3_0"
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -49,9 +49,9 @@ TextureImporter:
   spriteMode: 1
   spriteExtrude: 1
   spriteMeshType: 0
-  alignment: 7
+  alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 200
+  spritePixelsToUnits: 100
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -74,7 +74,7 @@ TextureImporter:
     buildTarget: DefaultTexturePlatform
     maxTextureSize: 2048
     resizeAlgorithm: 1
-    textureFormat: -1
+    textureFormat: 4
     textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
@@ -100,13 +100,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: "5-1\u5730\u9762\u62D0\u89D2_0"
+      name: "5\u5730\u9762-\u4E2D\u5FC3_0"
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 566
-        height: 565
+        width: 283
+        height: 283
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: f231fd3ffc449a5f0800000000000000
-      internalID: -744988603412704465
+      spriteID: 0f146063d146e61e0800000000000000
+      internalID: -2202713091114384912
       vertices: []
       indices: 
       edges: []
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      "5-1\u5730\u9762\u62D0\u89D2_0": -744988603412704465
+      "5\u5730\u9762-\u4E2D\u5FC3_0": -2202713091114384912
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

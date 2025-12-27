@@ -1,10 +1,13 @@
 fileFormatVersion: 2
-guid: 758425890c1c4574194f2dfd90415418
+guid: 4a13db2b90214b64c8260476cad79d24
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 2678459126645646978
-    second: "5\u5730\u9762_0"
+      213: 6094069826233730837
+    second: "5\u5730\u9762\u53F3_pad2_0"
+  - first:
+      213: 1526345995439220030
+    second: "5\u5730\u9762\u53F3"
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -49,7 +52,7 @@ TextureImporter:
   spriteMode: 1
   spriteExtrude: 1
   spriteMeshType: 0
-  alignment: 7
+  alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
   spritePixelsToUnits: 100
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
@@ -73,9 +76,9 @@ TextureImporter:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
     maxTextureSize: 2048
-    resizeAlgorithm: 1
+    resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 1
+    textureCompression: 0
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -100,23 +103,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: "5\u5730\u9762_0"
+      name: "5\u5730\u9762\u53F3"
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 283
-        height: 282
+        x: 2
+        y: 2
+        width: 282
+        height: 283
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 286ed15726ccb2520800000000000000
-      internalID: 2678459126645646978
+      spriteID: e35ae7e889bae2510800000000000000
+      internalID: 1526345995439220030
       vertices: []
       indices: 
       edges: []
@@ -135,7 +138,8 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      "5\u5730\u9762_0": 2678459126645646978
+      "5\u5730\u9762\u53F3": 1526345995439220030
+      "5\u5730\u9762\u53F3_pad2_0": 6094069826233730837
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
