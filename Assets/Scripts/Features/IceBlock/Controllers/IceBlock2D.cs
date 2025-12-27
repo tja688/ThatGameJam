@@ -2,151 +2,124 @@ using System.Collections;
 using QFramework;
 using ThatGameJam.Features.LightVitality.Commands;
 using ThatGameJam.Features.LightVitality.Queries;
+using ThatGameJam.Features.DeathRespawn.Commands; // 引入死亡命令
 using ThatGameJam.Features.Shared;
 using UnityEngine;
 
 namespace ThatGameJam.Features.IceBlock.Controllers
 {
-    [RequireComponent(typeof(Collider2D))]
     public class IceBlock2D : MonoBehaviour, IController
     {
-        [SerializeField] private Collider2D triggerCollider;
-        [SerializeField] private Collider2D solidCollider;
-        [SerializeField] private GameObject frozenVisual;
-        [SerializeField] private GameObject meltedVisual;
-        [SerializeField] private float lightCostRatio = 0.25f;
-        [SerializeField] private float recoverSeconds = 5f;
-        [SerializeField] private string playerTag = "Player";
+        [Header("核心引用")]
+        [SerializeField] private Collider2D triggerCollider; 
+        [SerializeField] private Collider2D solidCollider;   
+        [SerializeField] private SpriteRenderer visualRenderer; // 替换原有的GameObject
 
-        private bool _isFrozen = true;
-        private Coroutine _recoverRoutine;
+        [Header("消融/凝结配置")]
+        [SerializeField] private Color meltedColor = new Color(1, 1, 1, 0.2f); // 消融后的颜色/透明度
+        [SerializeField] private float transitionDuration = 2f;               // 渐变耗时
+        [SerializeField] private float waitDuration = 5f;                     // 物理消失后的持续时间
+        [SerializeField] private float lightCostRatio = 0.25f;
+
+        private Color _originalColor;
+        private bool _isProcessing = false; // 防止重复触发
+        private Coroutine _activeRoutine;
 
         public IArchitecture GetArchitecture() => GameRootApp.Interface;
 
         private void Awake()
         {
-            if (triggerCollider == null)
-            {
-                triggerCollider = GetComponent<Collider2D>();
-            }
-
-            if (triggerCollider != null && !triggerCollider.isTrigger)
-            {
-                LogKit.W("IceBlock2D expects triggerCollider.isTrigger = true.");
-            }
+            if (visualRenderer != null) _originalColor = visualRenderer.color;
+            if (triggerCollider == null) triggerCollider = GetComponent<Collider2D>();
         }
 
         private void OnEnable()
         {
-            this.RegisterEvent<RunResetEvent>(_ => ForceFrozen())
+            this.RegisterEvent<RunResetEvent>(_ => ResetToInitial())
                 .UnRegisterWhenDisabled(gameObject);
-            SetFrozen(true);
-        }
-
-        private void OnDisable()
-        {
-            if (_recoverRoutine != null)
-            {
-                StopCoroutine(_recoverRoutine);
-                _recoverRoutine = null;
-            }
+            ResetToInitial();
         }
 
         private void OnTriggerEnter2D(Collider2D other)
         {
-            if (!_isFrozen || !IsPlayer(other))
-            {
-                return;
-            }
-
-            Melt();
+            if (_isProcessing || !other.CompareTag("Player")) return;
+            StartCoroutine(MeltSequence());
         }
 
-        private bool IsPlayer(Collider2D other)
+        private IEnumerator MeltSequence()
         {
-            if (string.IsNullOrEmpty(playerTag))
-            {
-                return true;
-            }
+            _isProcessing = true;
 
-            return other.CompareTag(playerTag);
-        }
-
-        private void Melt()
-        {
-            if (!_isFrozen)
-            {
-                return;
-            }
-
-            _isFrozen = false;
-            UpdateVisuals();
-
-            if (solidCollider != null)
-            {
-                solidCollider.enabled = false;
-            }
-
+            // 1. 扣除光量
             var maxLight = this.SendQuery(new GetMaxLightQuery());
-            var amount = maxLight * Mathf.Clamp01(lightCostRatio);
-            if (amount > 0f)
-            {
-                this.SendCommand(new ConsumeLightCommand(amount, ELightConsumeReason.Script));
-            }
+            this.SendCommand(new ConsumeLightCommand(maxLight * lightCostRatio, ELightConsumeReason.Script));
 
-            if (_recoverRoutine != null)
-            {
-                StopCoroutine(_recoverRoutine);
-            }
+            // 2. 消融阶段：颜色渐变，此时物理碰撞还在
+            yield return StartCoroutine(FadeRoutine(_originalColor, meltedColor, transitionDuration));
 
-            _recoverRoutine = StartCoroutine(RecoverRoutine());
-        }
+            // 3. 物理消失：玩家可通过
+            if (solidCollider != null) solidCollider.enabled = false;
 
-        private IEnumerator RecoverRoutine()
-        {
-            if (recoverSeconds > 0f)
-            {
-                yield return new WaitForSeconds(recoverSeconds);
-            }
+            // 4. 等待阶段
+            yield return new WaitForSeconds(waitDuration);
 
-            _recoverRoutine = null;
-            SetFrozen(true);
-        }
+            // 5. 凝结阶段：颜色恢复，此时物理碰撞还没回来
+            yield return StartCoroutine(FadeRoutine(meltedColor, _originalColor, transitionDuration));
 
-        private void ForceFrozen()
-        {
-            if (_recoverRoutine != null)
-            {
-                StopCoroutine(_recoverRoutine);
-                _recoverRoutine = null;
-            }
-
-            SetFrozen(true);
-        }
-
-        private void SetFrozen(bool frozen)
-        {
-            _isFrozen = frozen;
-
+            // 6. 物理恢复并检查死亡判定
             if (solidCollider != null)
             {
-                solidCollider.enabled = frozen;
+                solidCollider.enabled = true;
+                CheckOverlapDeath();
             }
 
-            UpdateVisuals();
+            _isProcessing = false;
         }
 
-        private void UpdateVisuals()
+        private IEnumerator FadeRoutine(Color from, Color to, float duration)
         {
-            if (frozenVisual != null)
+            float elapsed = 0;
+            while (elapsed < duration)
             {
-                frozenVisual.SetActive(_isFrozen);
+                elapsed += Time.deltaTime;
+                if (visualRenderer != null)
+                {
+                    visualRenderer.color = Color.Lerp(from, to, elapsed / duration);
+                }
+                yield return null;
             }
+            if (visualRenderer != null) visualRenderer.color = to;
+        }
 
-            if (meltedVisual != null)
+        /// <summary>
+        /// 检查物理碰撞恢复瞬间是否卡住了玩家
+        /// </summary>
+        private void CheckOverlapDeath()
+        {
+            if (solidCollider == null) return;
+
+            // 检查 solidCollider 内部是否有 Player 标签的对象
+            ContactFilter2D filter = new ContactFilter2D().NoFilter();
+            Collider2D[] results = new Collider2D[5];
+            int count = solidCollider.Overlap(filter, results);
+
+            for (int i = 0; i < count; i++)
             {
-                meltedVisual.SetActive(!_isFrozen);
+                if (results[i].CompareTag("Player"))
+                {
+                    // 触发死亡命令
+                    this.SendCommand(new MarkPlayerDeadCommand(EDeathReason.Script, transform.position));
+                    break;
+                }
             }
+        }
+
+        private void ResetToInitial()
+        {
+            StopAllCoroutines();
+            _isProcessing = false;
+            if (solidCollider != null) solidCollider.enabled = true;
+            if (visualRenderer != null) visualRenderer.color = _originalColor;
         }
     }
 }
