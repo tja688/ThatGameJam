@@ -14,6 +14,11 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
         private bool _visualEnabled = true;
         private bool _gameplayEnabled = true;
 
+        private void OnEnable()
+        {
+            SyncGameplayState();
+        }
+
         public void SetVisualEnabled(bool enabled)
         {
             if (_visualEnabled == enabled)
@@ -60,17 +65,22 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
 
             _gameplayEnabled = enabled;
 
+            SyncGameplayState();
+        }
+
+        private void SyncGameplayState()
+        {
             if (gameplayEnabledRoot != null)
             {
-                gameplayEnabledRoot.SetActive(enabled);
+                gameplayEnabledRoot.SetActive(_gameplayEnabled);
             }
 
             if (gameplayDisabledRoot != null)
             {
-                gameplayDisabledRoot.SetActive(!enabled);
+                gameplayDisabledRoot.SetActive(!_gameplayEnabled);
             }
 
-            if (!enabled && gameplayDisabledSfx != null)
+            if (!_gameplayEnabled && gameplayDisabledSfx != null)
             {
                 gameplayDisabledSfx.Play();
             }

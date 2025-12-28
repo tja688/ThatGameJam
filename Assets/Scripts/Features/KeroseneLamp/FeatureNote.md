@@ -115,3 +115,17 @@
   - `Assets/Scripts/Features/KeroseneLamp/Models/KeroseneLampModel.cs`
   - `Assets/Scripts/Features/KeroseneLamp/Models/LampInfo.cs`
   - `Assets/Scripts/Features/KeroseneLamp/Commands/RecordLampSpawnedCommand.cs`
+- **Date**: 2025-12-28
+- **Change**: 生成时强制同步 gameplay 子对象状态，避免可用/熄灭同时激活。
+- **Reason**: 运行时生成煤油灯出现可用与熄灭子对象同时激活。
+- **Behavior Now**:
+  - Given 运行时生成煤油灯
+  - When 初始化完成
+  - Then 仅与 `GameplayEnabled` 对应的子对象激活，另一个保持失活
+- **Config**:
+  - None.
+- **Risk & Regression**:
+  - 影响范围：煤油灯初始外观与熄灭切换表现
+  - 回归用例：新生成灯默认可用；超上限淘汰时熄灭视觉正确
+- **Files Touched**:
+  - `Assets/Scripts/Features/KeroseneLamp/Controllers/KeroseneLampInstance.cs`

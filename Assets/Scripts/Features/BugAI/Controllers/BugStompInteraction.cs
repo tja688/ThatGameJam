@@ -5,9 +5,12 @@ namespace ThatGameJam.Features.BugAI.Controllers
     [RequireComponent(typeof(Collider2D))]
     public class BugStompInteraction : MonoBehaviour
     {
-        [SerializeField] private BugMovementBase movement;
-        [SerializeField] private float bounceVelocity = 8f;
-        [SerializeField] private string playerTag = "Player";
+        [SerializeField, Tooltip("目标虫子移动脚本（为空则在同物体上寻找）。")]
+        private BugMovementBase movement;
+        [SerializeField, Tooltip("踩踏反弹的最小向上速度。")]
+        private float bounceVelocity = 8f;
+        [SerializeField, Tooltip("玩家物体的 Tag（为空则不做 Tag 校验）。")]
+        private string playerTag = "Player";
 
         private void Awake()
         {
