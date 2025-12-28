@@ -70,7 +70,13 @@ namespace ThatGameJam.Features.KeroseneLamp.Models
                     continue;
                 }
 
-                list.Add(record.Info);
+                var info = record.Info;
+                if (record.Instance != null)
+                {
+                    info.WorldPos = record.Instance.transform.position;
+                }
+
+                list.Add(info);
             }
 
             return list;

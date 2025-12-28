@@ -11,9 +11,13 @@ namespace ThatGameJam.Features.Mechanisms.Controllers
         [Header("Light Detection")]
         [SerializeField] private float lightAffectRadius = 3f;
         [SerializeField] private float lightRequiredSeconds = 0f;
+        [SerializeField] private float shrinkRequiredSeconds = 20f; 
+
+        [Header("Optimization")]
+        [Tooltip("扫描光照的间隔时间（秒）")]
+        [SerializeField] private float scanInterval = 3f; 
 
         [Header("Growth Animation")]
-        [Tooltip("The target height/length when fully activated.")]
         [SerializeField] private float targetGrowthLength = 5f;
         [SerializeField] private float growthDuration = 1.0f;
         [SerializeField] private Vector2 growthDirection = Vector2.up;
@@ -23,13 +27,16 @@ namespace ThatGameJam.Features.Mechanisms.Controllers
         [SerializeField] private BoxCollider2D growthCollider;
         [SerializeField] private bool enableColliderDuringGrowth = true;
 
-        [Header("Status")]
-        [SerializeField] private float growthValue; // 0 (inactive) to 1 (activated)
+        [Header("Status (Read Only)")]
+        [SerializeField] private float growthValue; 
+        [SerializeField] private bool hasLightCached; // 上一次扫描的结果
 
         private float _lightTimer;
+        private float _scanTimer;
         private bool _isActivated;
         private Tween _growthTween;
 
+        // 基础物理与显示参数
         private Vector2 _initialSpriteSize;
         private float _initialGrowthLength;
         private Vector2 _colliderBaseAnchor;
@@ -37,23 +44,12 @@ namespace ThatGameJam.Features.Mechanisms.Controllers
         private GrowthAxis _axis;
         private float _axisSign = 1f;
 
-        private enum GrowthAxis
-        {
-            X,
-            Y
-        }
+        private enum GrowthAxis { X, Y }
 
         private void Awake()
         {
-            if (spriteRenderer == null)
-            {
-                spriteRenderer = GetComponentInChildren<SpriteRenderer>();
-            }
-
-            if (growthCollider == null)
-            {
-                growthCollider = GetComponent<BoxCollider2D>();
-            }
+            if (spriteRenderer == null) spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+            if (growthCollider == null) growthCollider = GetComponent<BoxCollider2D>();
 
             CacheAxis();
 
@@ -63,28 +59,90 @@ namespace ThatGameJam.Features.Mechanisms.Controllers
                 _initialGrowthLength = (_axis == GrowthAxis.X) ? _initialSpriteSize.x : _initialSpriteSize.y;
             }
 
-            if (growthCollider != null)
-            {
-                CacheColliderBase();
-            }
+            if (growthCollider != null) CacheColliderBase();
 
+            // 随机化初始扫描计时器，防止大量植物在同一帧启动扫描
+            _scanTimer = Random.Range(0f, scanInterval);
+            
             ResetGrowthImmediate();
         }
 
         private void Update()
         {
-            var hasLight = IsLighted();
-            UpdateLightTimer(hasLight, Time.deltaTime);
+            // 1. 性能优化：每隔 scanInterval 时间才扫描一次环境
+            _scanTimer += Time.deltaTime;
+            if (_scanTimer >= scanInterval)
+            {
+                _scanTimer = 0f;
+                hasLightCached = IsLighted(); // 执行昂贵的查询和距离计算
+            }
 
-            var shouldActivate = (lightRequiredSeconds <= 0f)
-                ? hasLight
-                : (_lightTimer >= lightRequiredSeconds);
+            // 2. 逻辑更新：根据缓存的光照结果更新生长/回缩进度
+            UpdateLightTimer(hasLightCached, Time.deltaTime);
+
+            // 3. 状态判定
+            bool shouldActivate;
+            if (hasLightCached)
+            {
+                shouldActivate = _lightTimer >= lightRequiredSeconds;
+            }
+            else
+            {
+                shouldActivate = _lightTimer > 0;
+            }
 
             if (shouldActivate != _isActivated)
             {
                 _isActivated = shouldActivate;
                 PlayGrowthAnimation(_isActivated ? 1f : 0f);
             }
+        }
+
+        private void UpdateLightTimer(bool hasLight, float deltaTime)
+        {
+            if (hasLight)
+            {
+                _lightTimer = Mathf.Min(lightRequiredSeconds, _lightTimer + deltaTime);
+            }
+            else
+            {
+                // 计算回缩速率
+                float shrinkRate = (lightRequiredSeconds <= 0) ? 1f : (lightRequiredSeconds / Mathf.Max(0.1f, shrinkRequiredSeconds));
+                
+                if (lightRequiredSeconds <= 0)
+                {
+                    // 针对即时生长的植物（RequiredSeconds=0），使用 0-1 的归一化计时处理回缩
+                    _lightTimer = Mathf.Max(0f, _lightTimer - (deltaTime / shrinkRequiredSeconds));
+                }
+                else
+                {
+                    _lightTimer = Mathf.Max(0f, _lightTimer - (deltaTime * shrinkRate));
+                }
+            }
+        }
+
+        // 执行一次性的场景灯光扫描
+        private bool IsLighted()
+        {
+            if (lightAffectRadius <= 0f) return false;
+
+            var lamps = this.SendQuery(new GetGameplayEnabledLampsQuery());
+            var pos = (Vector2)transform.position;
+            var radiusSqr = lightAffectRadius * lightAffectRadius; // 使用平方比较进一步优化
+
+            foreach (var lamp in lamps)
+            {
+                if (!lamp.VisualEnabled)
+                {
+                    continue;
+                }
+
+                var lampRealPos = (Vector2)lamp.WorldPos;
+
+                // 使用 sqrMagnitude 代替 Distance (省去开方运算)
+                if ((lampRealPos - pos).sqrMagnitude <= radiusSqr) return true;
+            }
+            return false;
         }
 
         private void PlayGrowthAnimation(float target)
@@ -106,13 +164,9 @@ namespace ThatGameJam.Features.Mechanisms.Controllers
             if (growthCollider != null)
             {
                 if (enableColliderDuringGrowth)
-                {
                     growthCollider.enabled = normalized > 0.01f;
-                }
                 else
-                {
                     growthCollider.enabled = normalized >= 0.99f;
-                }
             }
         }
 
@@ -147,10 +201,7 @@ namespace ThatGameJam.Features.Mechanisms.Controllers
             }
         }
 
-        protected override void OnHardReset()
-        {
-            ResetGrowthImmediate();
-        }
+        protected override void OnHardReset() => ResetGrowthImmediate();
 
         private void ResetGrowthImmediate()
         {
@@ -159,33 +210,6 @@ namespace ThatGameJam.Features.Mechanisms.Controllers
             growthValue = 0f;
             _growthTween?.Kill();
             ApplyGrowth(0f);
-        }
-
-        private bool IsLighted()
-        {
-            if (lightAffectRadius <= 0f) return false;
-
-            var lamps = this.SendQuery(new GetGameplayEnabledLampsQuery());
-            var pos = (Vector2)transform.position;
-            var radius = lightAffectRadius;
-
-            foreach (var lamp in lamps)
-            {
-                if (Vector2.Distance(pos, lamp.WorldPos) <= radius) return true;
-            }
-            return false;
-        }
-
-        private void UpdateLightTimer(bool hasLight, float deltaTime)
-        {
-            if (lightRequiredSeconds <= 0f)
-            {
-                _lightTimer = hasLight ? lightRequiredSeconds : 0f;
-                return;
-            }
-
-            if (hasLight) _lightTimer = Mathf.Min(lightRequiredSeconds, _lightTimer + deltaTime);
-            else _lightTimer = Mathf.Max(0f, _lightTimer - deltaTime);
         }
 
         private void CacheAxis()
@@ -201,7 +225,6 @@ namespace ThatGameJam.Features.Mechanisms.Controllers
                 _axis = GrowthAxis.Y;
                 _axisSign = Mathf.Sign(direction.y);
             }
-            if (_axisSign == 0f) _axisSign = 1f;
         }
 
         private void CacheColliderBase()
@@ -221,20 +244,12 @@ namespace ThatGameJam.Features.Mechanisms.Controllers
             }
         }
 
-        private void OnDestroy()
-        {
-            _growthTween?.Kill();
-        }
+        private void OnDestroy() => _growthTween?.Kill();
 
         private void OnDrawGizmosSelected()
         {
             Gizmos.color = new Color(0.2f, 0.8f, 0.2f, 0.4f);
             Gizmos.DrawWireSphere(transform.position, lightAffectRadius);
-
-            var direction = (growthDirection == Vector2.zero) ? Vector2.up : growthDirection;
-            var end = transform.position + (Vector3)(direction.normalized * targetGrowthLength);
-            Gizmos.DrawLine(transform.position, end);
         }
     }
 }
-

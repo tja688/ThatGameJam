@@ -152,10 +152,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ThatGameJam.Features.Mechanisms.Controllers.VineMechanism2D
   areaId: 
+  shouldResetOnRunReset: 0
   lightAffectRadius: 3
   lightRequiredSeconds: 0
-  targetGrowthLength: 30
-  growthDuration: 2
+  targetGrowthLength: 33
+  growthDuration: 10
   growthDirection: {x: 0, y: 1}
   spriteRenderer: {fileID: 0}
   growthCollider: {fileID: 7312550887862436217}
