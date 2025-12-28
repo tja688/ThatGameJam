@@ -81,15 +81,11 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Commands
 
             var wantsClimb = model.FrameInput.GrabHeld
                              && model.RegrabLockoutTimer <= 0f;
-            var climbJumpRequested = model.IsClimbing.Value && model.FrameInput.JumpDown;
-            if (climbJumpRequested)
-            {
-                model.IsClimbing.Value = false;
-                model.WallContactTimer = 0f;
-                model.ClimbIsHorizontal = false;
-                model.RegrabLockoutTimer = Mathf.Max(model.RegrabLockoutTimer, _stats.ClimbRegrabLockout);
-                model.ClimbJumpProtected = true;
-            }
+
+            // Use latched jump status to avoid missing the JumpDown pulse in FixedUpdate
+            var jumpRequested = model.JumpToConsume;
+            // Define climbJumpRequested for the re-entry prevention logic and later jump logic
+            var climbJumpRequested = model.IsClimbing.Value && jumpRequested;
 
             if (model.IsClimbing.Value)
             {
@@ -125,7 +121,8 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Commands
             else
             {
                 model.WallContactTimer = 0f;
-                if (wantsClimb && _wallDetected && !climbJumpRequested && !model.ClimbJumpProtected)
+                // If jump is requested, we should NOT enter climbing from the ground/air to ensure jump priority
+                if (wantsClimb && _wallDetected && !jumpRequested && !model.ClimbJumpProtected)
                 {
                     model.IsClimbing.Value = true;
                     model.WallContactTimer = _stats.WallCoyoteTime;
@@ -141,25 +138,32 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Commands
             var performedClimbJump = false;
             if (model.IsClimbing.Value)
             {
-                if (model.FrameInput.JumpDown)
+                if (jumpRequested)
                 {
                     if (model.Grounded.Value)
                     {
-                        model.IsClimbing.Value = false;
-                        model.WallContactTimer = 0f;
-                    }
-                    else
-                    {
+                        // From climb to grounded jump: exit climb and let normal jump logic below handle it
                         model.IsClimbing.Value = false;
                         model.WallContactTimer = 0f;
                         model.ClimbIsHorizontal = false;
                         model.RegrabLockoutTimer = Mathf.Max(model.RegrabLockoutTimer, _stats.ClimbRegrabLockout);
+                        model.ClimbJumpProtected = true;
+                        // model.JumpToConsume is NOT consumed here, so it falls through to regular jump logic
+                    }
+                    else
+                    {
+                        // Perform specialized Climb Jump
+                        model.IsClimbing.Value = false;
+                        model.WallContactTimer = 0f;
+                        model.ClimbIsHorizontal = false;
+                        model.RegrabLockoutTimer = Mathf.Max(model.RegrabLockoutTimer, _stats.ClimbRegrabLockout);
+                        model.ClimbJumpProtected = true;
 
                         model.EndedJumpEarly = false;
                         model.TimeJumpWasPressed = 0f;
                         model.BufferedJumpUsable = false;
                         model.CoyoteUsable = false;
-                        model.JumpToConsume = false;
+                        model.JumpToConsume = false; // Consume the jump request
 
                         velocity.y = _stats.ClimbJumpPower;
 
