@@ -153,8 +153,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ThatGameJam.Features.Mechanisms.Controllers.VineMechanism2D
   areaId: 
   shouldResetOnRunReset: 0
-  lightAffectRadius: 3
+  lightAffectRadius: 7
   lightRequiredSeconds: 0
+  shrinkRequiredSeconds: 20
+  scanInterval: 3
   targetGrowthLength: 33
   growthDuration: 10
   growthDirection: {x: 0, y: 1}
@@ -162,3 +164,4 @@ MonoBehaviour:
   growthCollider: {fileID: 7312550887862436217}
   enableColliderDuringGrowth: 1
   growthValue: 0
+  hasLightCached: 0

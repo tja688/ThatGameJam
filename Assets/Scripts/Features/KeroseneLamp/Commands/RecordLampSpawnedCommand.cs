@@ -15,8 +15,19 @@ namespace ThatGameJam.Features.KeroseneLamp.Commands
         private readonly bool _visualEnabled;
         private readonly string _presetId;
         private readonly int _maxActivePerArea;
+        private readonly bool _ignoreAreaLimit;
+        private readonly bool _countInLampCount;
 
-        public RecordLampSpawnedCommand(int lampId, Vector3 worldPos, string areaId, GameObject instance, bool visualEnabled, string presetId, int maxActivePerArea)
+        public RecordLampSpawnedCommand(
+            int lampId,
+            Vector3 worldPos,
+            string areaId,
+            GameObject instance,
+            bool visualEnabled,
+            string presetId,
+            int maxActivePerArea,
+            bool ignoreAreaLimit,
+            bool countInLampCount)
         {
             _lampId = lampId;
             _worldPos = worldPos;
@@ -25,6 +36,8 @@ namespace ThatGameJam.Features.KeroseneLamp.Commands
             _visualEnabled = visualEnabled;
             _presetId = presetId ?? string.Empty;
             _maxActivePerArea = Mathf.Max(1, maxActivePerArea);
+            _ignoreAreaLimit = ignoreAreaLimit;
+            _countInLampCount = countInLampCount;
         }
 
         protected override void OnExecute()
@@ -42,6 +55,8 @@ namespace ThatGameJam.Features.KeroseneLamp.Commands
                     SpawnOrderInArea = spawnOrder,
                     VisualEnabled = _visualEnabled,
                     GameplayEnabled = true,
+                    IgnoreAreaLimit = _ignoreAreaLimit,
+                    CountInLampCount = _countInLampCount,
                     PresetId = _presetId
                 },
                 Instance = _instance
@@ -49,10 +64,16 @@ namespace ThatGameJam.Features.KeroseneLamp.Commands
 
             model.RegisterLamp(record);
             model.AddAreaOrder(_areaId, _lampId);
-            model.IncrementActiveCount(_areaId);
+            if (!_ignoreAreaLimit)
+            {
+                model.IncrementActiveCount(_areaId);
+            }
 
-            var nextCount = model.CountValue + 1;
-            model.SetCount(nextCount);
+            var nextCount = model.CountValue + (_countInLampCount ? 1 : 0);
+            if (model.CountValue != nextCount)
+            {
+                model.SetCount(nextCount);
+            }
             model.UpdateNextLampId(_lampId + 1);
 
             this.SendEvent(new LampSpawnedEvent
@@ -61,23 +82,29 @@ namespace ThatGameJam.Features.KeroseneLamp.Commands
                 WorldPos = _worldPos
             });
 
-            this.SendEvent(new LampCountChangedEvent
+            if (_countInLampCount)
             {
-                Count = nextCount
-            });
-
-            var activeCount = model.GetActiveCountForArea(_areaId);
-            if (activeCount > _maxActivePerArea)
-            {
-                var oldestLampId = model.FindOldestActiveLampId(_areaId);
-                if (oldestLampId >= 0 && oldestLampId != _lampId)
+                this.SendEvent(new LampCountChangedEvent
                 {
-                    model.SetLampGameplayEnabled(oldestLampId, false);
-                    this.SendEvent(new LampGameplayStateChangedEvent
+                    Count = nextCount
+                });
+            }
+
+            if (!_ignoreAreaLimit)
+            {
+                var activeCount = model.GetActiveCountForArea(_areaId);
+                if (activeCount > _maxActivePerArea)
+                {
+                    var oldestLampId = model.FindOldestActiveLampId(_areaId);
+                    if (oldestLampId >= 0 && oldestLampId != _lampId)
                     {
-                        LampId = oldestLampId,
-                        GameplayEnabled = false
-                    });
+                        model.SetLampGameplayEnabled(oldestLampId, false);
+                        this.SendEvent(new LampGameplayStateChangedEvent
+                        {
+                            LampId = oldestLampId,
+                            GameplayEnabled = false
+                        });
+                    }
                 }
             }
         }

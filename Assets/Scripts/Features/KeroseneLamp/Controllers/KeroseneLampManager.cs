@@ -19,6 +19,7 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
         [SerializeField] private string fallbackAreaId = "Unknown";
 
         private readonly Dictionary<int, KeroseneLampInstance> _lampInstances = new Dictionary<int, KeroseneLampInstance>();
+        private readonly HashSet<KeroseneLampPreplaced> _registeredPreplaced = new HashSet<KeroseneLampPreplaced>();
         private int _nextLampId;
 
         public IArchitecture GetArchitecture() => GameRootApp.Interface;
@@ -39,6 +40,11 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
                 .UnRegisterWhenDisabled(gameObject);
         }
 
+        private void Start()
+        {
+            RegisterPreplacedLamps();
+        }
+
         private void OnPlayerDied(PlayerDiedEvent e)
         {
             SpawnLamp(e.WorldPos, null, string.Empty);
@@ -48,7 +54,9 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
         {
             ClearLamps();
             _nextLampId = 0;
+            _registeredPreplaced.Clear();
             this.SendCommand(new ResetLampsCommand());
+            RegisterPreplacedLamps();
         }
 
         private void OnRequestSpawnLamp(RequestSpawnLampEvent e)
@@ -98,7 +106,9 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
                 instance,
                 visualEnabled,
                 presetId,
-                maxActivePerArea));
+                maxActivePerArea,
+                false,
+                true));
         }
 
         private void ClearLamps()
@@ -107,7 +117,10 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
             {
                 if (instance != null)
                 {
-                    Destroy(instance.gameObject);
+                    if (instance.GetComponent<KeroseneLampPreplaced>() == null)
+                    {
+                        Destroy(instance.gameObject);
+                    }
                 }
             }
 
@@ -143,6 +156,63 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
                 }
 
                 this.SendCommand(new SetLampVisualStateCommand(lamp.LampId, shouldEnable));
+            }
+        }
+
+        private void RegisterPreplacedLamps()
+        {
+            var preplaced = Resources.FindObjectsOfTypeAll<KeroseneLampPreplaced>();
+            if (preplaced == null || preplaced.Length == 0)
+            {
+                return;
+            }
+
+            var currentAreaId = this.SendQuery(new GetCurrentAreaIdQuery());
+            for (var i = 0; i < preplaced.Length; i++)
+            {
+                var item = preplaced[i];
+                if (item == null || _registeredPreplaced.Contains(item))
+                {
+                    continue;
+                }
+
+                if (!item.gameObject.scene.IsValid())
+                {
+                    continue;
+                }
+
+                if (!item.isActiveAndEnabled)
+                {
+                    continue;
+                }
+
+                var instance = item.GetComponent<KeroseneLampInstance>();
+                if (instance == null)
+                {
+                    LogKit.W($"KeroseneLampPreplaced missing KeroseneLampInstance on {item.name}.");
+                    continue;
+                }
+
+                var lampId = _nextLampId++;
+                var areaId = string.IsNullOrEmpty(item.AreaId) ? fallbackAreaId : item.AreaId;
+                var visualEnabled = string.IsNullOrEmpty(currentAreaId) || areaId == currentAreaId;
+
+                instance.SetVisualEnabled(visualEnabled);
+                instance.SetGameplayEnabled(true);
+
+                _lampInstances[lampId] = instance;
+                _registeredPreplaced.Add(item);
+
+                this.SendCommand(new RecordLampSpawnedCommand(
+                    lampId,
+                    instance.transform.position,
+                    areaId,
+                    instance.gameObject,
+                    visualEnabled,
+                    string.Empty,
+                    maxActivePerArea,
+                    true,
+                    false));
             }
         }
 

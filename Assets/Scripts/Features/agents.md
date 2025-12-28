@@ -82,7 +82,7 @@
 
 > 如果“看起来像缺失”，也要先证明：搜不到、或只有 stub、或只在旧场景里出现。
 >
-> 你可以通过Assets/Scripts/Features/Feature Description.md 这个feature概览和每个feature根目录的feature note快速了解目前的实现和定位，但仅起到辅助作用，不可直接当做真实实现。
+> 你可以通过Assets/Scripts/Features/Feature Description.md 这个feature概览和每个feature根目录的feature note快速了解目前的实现说明和架构以及实现的具体定位
 
 ### Step 3 — 画出触发链路（最少画到 2 层调用）
 

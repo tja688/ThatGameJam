@@ -11,6 +11,7 @@
 - Controllers:
   - `KeroseneLampManager.cs` 〞 生成/清理灯并响应区域切换
   - `KeroseneLampInstance.cs` 〞 控制灯的视觉/玩法状态表现
+  - `KeroseneLampPreplaced.cs` 〞 场景预摆路灯标记
 - Models:
   - `IKeroseneLampModel`, `KeroseneLampModel` 〞 注册表与计数
   - `LampInfo.cs` 〞 查询用灯快照
@@ -36,6 +37,7 @@
 ### 3.2 Scene setup (Unity)
 - Required MonoBehaviours:
   - `KeroseneLampManager` 〞 负责生成/回收
+  - `KeroseneLampPreplaced` 〞 预摆路灯标记（需搭配 `KeroseneLampInstance`）
 - Inspector fields (if any):
   - `lampPrefab` 〞 灯预制体（推荐挂 `KeroseneLampInstance`）
   - `lampParent` 〞 生成父节点（可选）
@@ -93,3 +95,23 @@
 
 ## 7. UNVERIFIED (only if needed)
 - None.
+
+## 8. Change Log
+- **Date**: 2025-12-28
+- **Change**: 增加预摆路灯注册，支持不占用上限且不计入 HUD。
+- **Reason**: 新策划要求“路灯”始终有效、随区域切换仅关视觉，且不影响掉落灯上限/计数。
+- **Behavior Now**:
+  - Given 场景内放置带 `KeroseneLampPreplaced` + `KeroseneLampInstance` 的路灯
+  - When 进入与路灯 AreaId 不同的区域
+  - Then 路灯视觉关闭但仍参与灯光判定，且不占用上限/不计入 HUD
+- **Config**:
+  - `KeroseneLampPreplaced.areaId`：路灯所属区域 Id；空则使用 `fallbackAreaId`
+- **Risk & Regression**:
+  - 影响范围：区域切换视觉开关、灯上限淘汰逻辑
+  - 回归用例：预摆路灯不计数、掉落灯仍按上限淘汰、区域切换时路灯光源开关
+- **Files Touched**:
+  - `Assets/Scripts/Features/KeroseneLamp/Controllers/KeroseneLampManager.cs`
+  - `Assets/Scripts/Features/KeroseneLamp/Controllers/KeroseneLampPreplaced.cs`
+  - `Assets/Scripts/Features/KeroseneLamp/Models/KeroseneLampModel.cs`
+  - `Assets/Scripts/Features/KeroseneLamp/Models/LampInfo.cs`
+  - `Assets/Scripts/Features/KeroseneLamp/Commands/RecordLampSpawnedCommand.cs`

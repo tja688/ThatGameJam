@@ -43,7 +43,7 @@ namespace ThatGameJam.Features.KeroseneLamp.Models
 
             _lamps.Remove(lampId);
 
-            if (record.Info.GameplayEnabled && !string.IsNullOrEmpty(record.Info.AreaId))
+            if (record.Info.GameplayEnabled && !record.Info.IgnoreAreaLimit && !string.IsNullOrEmpty(record.Info.AreaId))
             {
                 var count = GetActiveCountForArea(record.Info.AreaId);
                 _areaActiveCounts[record.Info.AreaId] = Mathf.Max(0, count - 1);
@@ -161,7 +161,9 @@ namespace ThatGameJam.Features.KeroseneLamp.Models
             for (var i = 0; i < list.Count; i++)
             {
                 var lampId = list[i];
-                if (_lamps.TryGetValue(lampId, out var record) && record.Info.GameplayEnabled)
+                if (_lamps.TryGetValue(lampId, out var record)
+                    && record.Info.GameplayEnabled
+                    && !record.Info.IgnoreAreaLimit)
                 {
                     return lampId;
                 }
@@ -185,7 +187,7 @@ namespace ThatGameJam.Features.KeroseneLamp.Models
             record.Info.GameplayEnabled = enabled;
             _lamps[lampId] = record;
 
-            if (!string.IsNullOrEmpty(record.Info.AreaId))
+            if (!record.Info.IgnoreAreaLimit && !string.IsNullOrEmpty(record.Info.AreaId))
             {
                 var count = GetActiveCountForArea(record.Info.AreaId);
                 _areaActiveCounts[record.Info.AreaId] = Mathf.Max(0, count + (enabled ? 1 : -1));

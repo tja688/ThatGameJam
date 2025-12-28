@@ -10,6 +10,8 @@ namespace ThatGameJam.Features.KeroseneLamp.Models
         public int SpawnOrderInArea;
         public bool VisualEnabled;
         public bool GameplayEnabled;
+        public bool IgnoreAreaLimit;
+        public bool CountInLampCount;
         public string PresetId;
     }
 }
