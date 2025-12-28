@@ -12,9 +12,14 @@ GameObject:
   - component: {fileID: 7499970314456234032}
   - component: {fileID: 72228696210307874}
   - component: {fileID: 1520714469465960875}
+  - component: {fileID: 6286290569183139665}
+  - component: {fileID: 4410488159656562688}
+  - component: {fileID: 3925916631422863329}
+  - component: {fileID: 3314493880362783344}
+  - component: {fileID: 7415549655380765996}
   m_Layer: 0
   m_Name: "\u866B\u5B50"
-  m_TagString: Untagged
+  m_TagString: Climbable
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -86,8 +91,8 @@ MeshRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: -1596719159
-  m_SortingLayer: 3
+  m_SortingLayerID: -971381851
+  m_SortingLayer: 4
   m_SortingOrder: 15
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
@@ -128,3 +133,134 @@ MonoBehaviour:
   _animationName: animation
   loop: 1
   timeScale: 2
+--- !u!114 &6286290569183139665
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8788048871714658262}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e5f86fa42c98744409193261ca76b100, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThatGameJam.Features.BugAI.Controllers.BugMovementBase
+  body: {fileID: 7415549655380765996}
+  moveBounds: {fileID: 0}
+  homeBounds: {fileID: 0}
+  homeAnchor: {fileID: 0}
+  useRigidbody: 1
+  faceMovement: 1
+  overrideHomeCenterOnAwake: 1
+  facingAxis: 1
+  facingAngleOffset: 0
+  homeCenter: {x: 0, y: 0}
+  homeEnterRadius: 0.3
+  homeExitRadius: 0.5
+  loiterSpeed: 1.2
+  loiterTargetInterval: 1.2
+  loiterTargetReachDistance: 0.15
+  loiterJitterRadius: 0.4
+  scanTrigger: {fileID: 0}
+  attentionRadius: 4
+  scanInterval: 3
+  releaseScanCooldown: 5
+  turnSpeed: 360
+  chaseSpeed: 3
+  returnSpeed: 1.4
+--- !u!70 &4410488159656562688
+CapsuleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8788048871714658262}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0.0071167946, y: 1.6384754}
+  m_Size: {x: 5.6266828, y: 3.1169977}
+  m_Direction: 0
+--- !u!114 &3925916631422863329
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8788048871714658262}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 61e8f94b8e244ec8811cb0746dfb6a40, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThatGameJam.Features.BugAI.Controllers.BugGrabInteraction
+  movement: {fileID: 6286290569183139665}
+  playerTag: Player
+  requireGrabHeld: 1
+  autoGrabOnTouch: 0
+--- !u!114 &3314493880362783344
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8788048871714658262}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c77b5e05901886a44923399a4eda62f3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThatGameJam.Features.BugAI.Controllers.BugStompInteraction
+  movement: {fileID: 6286290569183139665}
+  enableStompResponse: 0
+  bounceVelocity: 8
+  playerTag: Player
+--- !u!50 &7415549655380765996
+Rigidbody2D:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8788048871714658262}
+  m_BodyType: 1
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 3
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_GravityScale: 0
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 0

@@ -7,7 +7,9 @@ namespace ThatGameJam.Features.BugAI.Controllers
     {
         [SerializeField, Tooltip("目标虫子移动脚本（为空则在同物体上寻找）。")]
         private BugMovementBase movement;
-        [SerializeField, Tooltip("踩踏反弹的最小向上速度。")]
+        [SerializeField, Tooltip("是否启用踩踏反馈（关闭后不影响玩家与虫子）。")]
+        private bool enableStompResponse = false;
+        [SerializeField, Tooltip("踩踏反弹的最小向上速度（仅启用踩踏反馈时使用）。")]
         private float bounceVelocity = 8f;
         [SerializeField, Tooltip("玩家物体的 Tag（为空则不做 Tag 校验）。")]
         private string playerTag = "Player";
@@ -23,6 +25,11 @@ namespace ThatGameJam.Features.BugAI.Controllers
         private void OnTriggerEnter2D(Collider2D other)
         {
             if (!IsPlayer(other))
+            {
+                return;
+            }
+
+            if (!enableStompResponse)
             {
                 return;
             }

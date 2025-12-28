@@ -13,6 +13,8 @@ namespace ThatGameJam.Features.BugAI.Controllers
         private string playerTag = "Player";
         [SerializeField, Tooltip("是否要求玩家按住抓取键才触发抓取。")]
         private bool requireGrabHeld = true;
+        [SerializeField, Tooltip("进入触发器就自动抓取（会导致触碰即回巢，默认关闭）。")]
+        private bool autoGrabOnTouch = false;
 
         private bool _playerInside;
         private bool _isGrabbed;
@@ -53,6 +55,17 @@ namespace ThatGameJam.Features.BugAI.Controllers
 
             if (!requireGrabHeld)
             {
+                if (!autoGrabOnTouch)
+                {
+                    if (_isGrabbed)
+                    {
+                        movement?.NotifyPlayerReleased();
+                        _isGrabbed = false;
+                    }
+
+                    return;
+                }
+
                 if (!_isGrabbed)
                 {
                     movement?.NotifyPlayerGrabbed();

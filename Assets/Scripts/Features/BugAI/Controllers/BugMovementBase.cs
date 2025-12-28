@@ -14,6 +14,24 @@ namespace ThatGameJam.Features.BugAI.Controllers
             ReturnHome
         }
 
+        private enum FacingAxis
+        {
+            Right,
+            Up,
+            Left,
+            Down
+        }
+
+        private enum LoiterFacingMode
+        {
+            /// <summary>旧行为：巢内只应用 Overlay，不叠加方向角（等价永远朝右）。</summary>
+            OverlayOnly = 0,
+            /// <summary>巢内固定朝向（比如朝上）。</summary>
+            FixedDirection = 1,
+            /// <summary>巢内也跟随移动方向。</summary>
+            FaceMovement = 2
+        }
+
         [Header("References")]
         [SerializeField, Tooltip("可选：用于移动的 Rigidbody2D（为空时将直接改 Transform 位置）。")]
         private Rigidbody2D body;
@@ -25,10 +43,25 @@ namespace ThatGameJam.Features.BugAI.Controllers
         private Transform homeAnchor;
         [SerializeField, Tooltip("是否使用 Rigidbody2D 进行移动。")]
         private bool useRigidbody = true;
-        [SerializeField, Tooltip("是否根据移动方向翻转朝向。")]
+        [SerializeField, Tooltip("是否根据移动方向旋转朝向。")]
         private bool faceMovement = true;
         [SerializeField, Tooltip("启动时用当前坐标覆盖 Home Center。")]
         private bool overrideHomeCenterOnAwake = true;
+        [SerializeField, Tooltip("虫子正朝向轴（用于对齐移动方向）。")]
+        private FacingAxis facingAxis = FacingAxis.Right;
+        [SerializeField, Tooltip("正朝向叠加偏移角度（度）。")]
+        private float facingAngleOffset = 0f;
+
+        [Header("Facing (Visual)")]
+        [SerializeField, Tooltip("巢内（Loiter）朝向模式。FixedDirection 可用于“回巢后默认朝上”。")]
+        private LoiterFacingMode loiterFacingMode = LoiterFacingMode.FixedDirection;
+        [SerializeField, Tooltip("当 LoiterFacingMode=FixedDirection 时，巢内固定朝向的世界轴。")]
+        private FacingAxis loiterFixedFacingAxis = FacingAxis.Up;
+
+        [SerializeField, Tooltip("是否对“最终旋转”做平滑过渡（只影响视觉朝向，不影响移动）。")]
+        private bool smoothFacing = true;
+        [SerializeField, Tooltip("视觉朝向平滑速度（度/秒）。<=0 则为硬切。")]
+        private float facingSmoothSpeed = 720f;
 
         [Header("Home")]
         [SerializeField, Tooltip("巢穴中心点（homeBounds 为空时使用）。")]
@@ -45,9 +78,13 @@ namespace ThatGameJam.Features.BugAI.Controllers
         private float loiterTargetInterval = 1.2f;
         [SerializeField, Tooltip("接近目标点的判定距离。")]
         private float loiterTargetReachDistance = 0.15f;
+        [SerializeField, Tooltip("巢内乱飞每次目标点的最大偏移半径。")]
+        private float loiterJitterRadius = 0.4f;
 
         [Header("Light Scan")]
-        [SerializeField, Tooltip("感光范围半径。")]
+        [SerializeField, Tooltip("扫描触发器（每次扫描仅在该触发器范围内）。")]
+        private Collider2D scanTrigger;
+        [SerializeField, Tooltip("扫描半径（scanTrigger 为空时使用）。")]
         private float attentionRadius = 4f;
         [SerializeField, Tooltip("扫描光源的时间间隔（秒）。")]
         private float scanInterval = 3f;
@@ -55,12 +92,18 @@ namespace ThatGameJam.Features.BugAI.Controllers
         private float releaseScanCooldown = 5f;
 
         [Header("Movement")]
-        [SerializeField, Tooltip("转向速度（度/秒）。")]
+        [SerializeField, Tooltip("移动方向转向速度（度/秒）。")]
         private float turnSpeed = 360f;
         [SerializeField, Tooltip("追光移动速度。")]
         private float chaseSpeed = 3f;
         [SerializeField, Tooltip("正常归巢速度。")]
         private float returnSpeed = 1.4f;
+
+        [Header("Light Interaction")]
+        [SerializeField, Tooltip("追光停留距离（距离光源中心多少距离时停下）。")]
+        private float chaseStopDistance = 0.5f;
+        [SerializeField, Tooltip("进入停留距离前开始减速的缓冲距离（距离 = stopDistance + slowingDistance 时开始减速）。")]
+        private float chaseSlowDistance = 0.3f;
 
         private BugState _state = BugState.Loiter;
         private bool _playerGrabbed;
@@ -74,8 +117,11 @@ namespace ThatGameJam.Features.BugAI.Controllers
         private Vector2 _desiredDirection;
         private float _currentSpeed;
         private Vector2 _forwardDirection;
-        private Vector3 _baseScale;
+        private float _baseRotation;
         private bool _initialized;
+
+        // NEW: 用于视觉朝向平滑
+        private float _currentFacingRotation;
 
         public IArchitecture GetArchitecture() => GameRootApp.Interface;
 
@@ -101,6 +147,9 @@ namespace ThatGameJam.Features.BugAI.Controllers
             _scanTimer = 0f;
             SetPositionImmediate(ClampToBounds(GetHomeCenter()));
             TransitionTo(BugState.Loiter, true);
+
+            // 保证重置后视觉朝向从当前角度开始平滑（避免瞬跳）
+            _currentFacingRotation = GetCurrentZRotation();
         }
 
         private void Awake()
@@ -110,7 +159,14 @@ namespace ThatGameJam.Features.BugAI.Controllers
                 body = GetComponent<Rigidbody2D>();
             }
 
-            _baseScale = transform.localScale;
+            if (body != null)
+            {
+                body.bodyType = RigidbodyType2D.Kinematic;
+                body.gravityScale = 0f;
+            }
+
+            _baseRotation = transform.eulerAngles.z;
+            _currentFacingRotation = _baseRotation;
 
             if (overrideHomeCenterOnAwake)
             {
@@ -126,11 +182,15 @@ namespace ThatGameJam.Features.BugAI.Controllers
                 TransitionTo(BugState.Loiter, true);
             }
 
+            // 初始化移动前向（用于移动转向插值）
             _forwardDirection = transform.right;
             if (_forwardDirection.sqrMagnitude <= Mathf.Epsilon)
             {
                 _forwardDirection = Vector2.right;
             }
+
+            // 初始化视觉朝向基准（避免启用瞬跳）
+            _currentFacingRotation = GetCurrentZRotation();
         }
 
         private void Update()
@@ -175,7 +235,7 @@ namespace ThatGameJam.Features.BugAI.Controllers
 
         private void LateUpdate()
         {
-            ApplyFacing();
+            ApplyFacing(Time.deltaTime);
         }
 
         private void UpdateStateMachine(float deltaTime)
@@ -202,7 +262,7 @@ namespace ThatGameJam.Features.BugAI.Controllers
             _loiterTargetTimer -= deltaTime;
             if (_loiterTargetTimer <= 0f || Vector2.Distance(position, _loiterTarget) <= loiterTargetReachDistance)
             {
-                _loiterTarget = GetRandomPointInHomeArea();
+                _loiterTarget = GetRandomLoiterTarget(position);
                 _loiterTargetTimer = Mathf.Max(0.1f, loiterTargetInterval);
             }
 
@@ -255,8 +315,27 @@ namespace ThatGameJam.Features.BugAI.Controllers
             }
 
             _trackedLampPosition = info.WorldPos;
-            _currentSpeed = Mathf.Max(0f, chaseSpeed);
-            SetDesiredMovement(_trackedLampPosition - GetPosition());
+
+
+            var toTarget = _trackedLampPosition - GetPosition();
+            var distance = toTarget.magnitude;
+
+            // 根据距离计算目标速度：进圈减速，入圈停住
+            if (distance <= chaseStopDistance)
+            {
+                _currentSpeed = 0f;
+            }
+            else if (distance <= chaseStopDistance + chaseSlowDistance && chaseSlowDistance > 0f)
+            {
+                float t = (distance - chaseStopDistance) / chaseSlowDistance;
+                _currentSpeed = chaseSpeed * t;
+            }
+            else
+            {
+                _currentSpeed = chaseSpeed;
+            }
+
+            SetDesiredMovement(toTarget);
         }
 
         private void UpdateReturnHome()
@@ -288,17 +367,17 @@ namespace ThatGameJam.Features.BugAI.Controllers
                 var lamp = lamps[i];
                 var lampPosition = lamp.WorldPos;
 
+                if (!IsWithinScanArea(origin, lampPosition))
+                {
+                    continue;
+                }
+
                 if (!IsWithinActivityBounds(lampPosition))
                 {
                     continue;
                 }
 
                 var distance = Vector2.Distance(origin, lampPosition);
-                if (distance > attentionRadius)
-                {
-                    continue;
-                }
-
                 if (distance < bestDistance)
                 {
                     bestDistance = distance;
@@ -391,10 +470,8 @@ namespace ThatGameJam.Features.BugAI.Controllers
         private void ApplyMovement(float deltaTime)
         {
             var position = GetPosition();
-            if (_currentSpeed <= 0f)
-            {
-                return;
-            }
+
+            // 即使移动速度为 0，也通过转向插值更新 _forwardDirection，从而支持原地转头（朝向 _desiredDirection）
 
             var desired = _desiredDirection;
             if (desired.sqrMagnitude <= Mathf.Epsilon)
@@ -408,6 +485,11 @@ namespace ThatGameJam.Features.BugAI.Controllers
                 _forwardDirection = desired.sqrMagnitude > Mathf.Epsilon ? desired : Vector2.right;
             }
 
+            if (_currentSpeed <= 0f)
+            {
+                return;
+            }
+
             var newPosition = position + _forwardDirection * _currentSpeed * deltaTime;
             if (_state == BugState.Loiter)
             {
@@ -418,24 +500,67 @@ namespace ThatGameJam.Features.BugAI.Controllers
             SetPosition(newPosition);
         }
 
-        private void ApplyFacing()
+        // CHANGED: 支持 Loiter 固定朝向 + 视觉平滑
+        private void ApplyFacing(float deltaTime)
         {
             if (!faceMovement)
             {
                 return;
             }
 
-            if (_forwardDirection.sqrMagnitude <= Mathf.Epsilon)
+            var overlayRotation = GetFacingOverlayRotation();
+            var targetRotation = overlayRotation;
+
+            // 计算要叠加的“方向角”
+            float addAngle = 0f;
+
+            if (_state == BugState.Loiter)
             {
+                switch (loiterFacingMode)
+                {
+                    case LoiterFacingMode.OverlayOnly:
+                        addAngle = 0f; // 旧行为：等价朝右
+                        break;
+
+                    case LoiterFacingMode.FixedDirection:
+                        addAngle = GetWorldAxisAngle(loiterFixedFacingAxis); // 默认 Up => 90
+                        break;
+
+                    case LoiterFacingMode.FaceMovement:
+                        if (_forwardDirection.sqrMagnitude > Mathf.Epsilon)
+                        {
+                            addAngle = Mathf.Atan2(_forwardDirection.y, _forwardDirection.x) * Mathf.Rad2Deg;
+                        }
+                        else
+                        {
+                            addAngle = 0f;
+                        }
+                        break;
+                }
+
+                targetRotation = overlayRotation + addAngle;
+            }
+            else
+            {
+                if (_forwardDirection.sqrMagnitude <= Mathf.Epsilon)
+                {
+                    return;
+                }
+
+                addAngle = Mathf.Atan2(_forwardDirection.y, _forwardDirection.x) * Mathf.Rad2Deg;
+                targetRotation = overlayRotation + addAngle;
+            }
+
+            // 平滑过渡（避免硬切）
+            if (!smoothFacing || facingSmoothSpeed <= 0f || deltaTime <= 0f)
+            {
+                _currentFacingRotation = targetRotation;
+                ApplyRotation(targetRotation);
                 return;
             }
 
-            var scale = _baseScale;
-            if (_forwardDirection.x != 0f)
-            {
-                scale.x = Mathf.Sign(_forwardDirection.x) * Mathf.Abs(_baseScale.x);
-                transform.localScale = scale;
-            }
+            _currentFacingRotation = Mathf.MoveTowardsAngle(_currentFacingRotation, targetRotation, facingSmoothSpeed * deltaTime);
+            ApplyRotation(_currentFacingRotation);
         }
 
         private void UpdateHomeStatus()
@@ -542,6 +667,21 @@ namespace ThatGameJam.Features.BugAI.Controllers
             return moveBounds == null || moveBounds.OverlapPoint(position);
         }
 
+        private bool IsWithinScanArea(Vector2 origin, Vector2 position)
+        {
+            if (scanTrigger != null)
+            {
+                return scanTrigger.OverlapPoint(position);
+            }
+
+            if (attentionRadius <= 0f)
+            {
+                return true;
+            }
+
+            return Vector2.Distance(origin, position) <= attentionRadius;
+        }
+
         private Vector2 GetHomeCenter()
         {
             return homeAnchor != null ? (Vector2)homeAnchor.position : homeCenter;
@@ -566,6 +706,76 @@ namespace ThatGameJam.Features.BugAI.Controllers
 
             var radius = Mathf.Max(0f, homeExitRadius);
             return ClampToBounds(GetHomeCenter() + Random.insideUnitCircle * radius);
+        }
+
+        private Vector2 GetRandomLoiterTarget(Vector2 origin)
+        {
+            var radius = Mathf.Max(0f, loiterJitterRadius);
+            if (radius <= Mathf.Epsilon)
+            {
+                return GetRandomPointInHomeArea();
+            }
+
+            var target = origin + Random.insideUnitCircle * radius;
+            target = ClampToHomeBounds(target);
+            return ClampToBounds(target);
+        }
+
+        private void ApplyRotation(float rotation)
+        {
+            if (useRigidbody && body != null)
+            {
+                body.MoveRotation(rotation);
+            }
+            else
+            {
+                transform.rotation = Quaternion.Euler(0f, 0f, rotation);
+            }
+        }
+
+        private float GetFacingOverlayRotation()
+        {
+            return _baseRotation + GetFacingAxisOffset() + facingAngleOffset;
+        }
+
+        private float GetFacingAxisOffset()
+        {
+            switch (facingAxis)
+            {
+                case FacingAxis.Up:
+                    return -90f;
+                case FacingAxis.Left:
+                    return 180f;
+                case FacingAxis.Down:
+                    return 90f;
+                default:
+                    return 0f;
+            }
+        }
+
+        private static float GetWorldAxisAngle(FacingAxis axis)
+        {
+            switch (axis)
+            {
+                case FacingAxis.Up:
+                    return 90f;
+                case FacingAxis.Left:
+                    return 180f;
+                case FacingAxis.Down:
+                    return -90f; // 等价 270
+                default:
+                    return 0f;   // Right
+            }
+        }
+
+        private float GetCurrentZRotation()
+        {
+            if (useRigidbody && body != null)
+            {
+                return body.rotation;
+            }
+
+            return transform.eulerAngles.z;
         }
 
         private static Vector2 RotateTowards(Vector2 current, Vector2 desired, float maxDegrees)
@@ -598,8 +808,15 @@ namespace ThatGameJam.Features.BugAI.Controllers
             returnSpeed = Mathf.Max(0f, returnSpeed);
             loiterTargetInterval = Mathf.Max(0.05f, loiterTargetInterval);
             loiterTargetReachDistance = Mathf.Max(0.01f, loiterTargetReachDistance);
+            loiterJitterRadius = Mathf.Max(0f, loiterJitterRadius);
             turnSpeed = Mathf.Max(0f, turnSpeed);
             releaseScanCooldown = Mathf.Max(0f, releaseScanCooldown);
+
+            // Facing 参数也做下保护
+            facingSmoothSpeed = Mathf.Max(0f, facingSmoothSpeed);
+
+            chaseStopDistance = Mathf.Max(0f, chaseStopDistance);
+            chaseSlowDistance = Mathf.Max(0f, chaseSlowDistance);
         }
     }
 }
