@@ -188,7 +188,11 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
                         climbSide = modelSide;
                     }
 
-                    ApplyClimbStick(wallPoint, climbSide, wallHorizontal);
+                    var model = this.GetModel<IPlayerCharacter2DModel>();
+                    if (!model.ClimbJumpProtected)
+                    {
+                        ApplyClimbStick(wallPoint, climbSide, wallHorizontal);
+                    }
                 }
             }
             finally

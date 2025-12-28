@@ -157,3 +157,35 @@
   - `Assets/Scripts/Features/PlayerCharacter2D/Models/IPlayerCharacter2DModel.cs`
   - `Assets/Scripts/Features/PlayerCharacter2D/Models/PlayerCharacter2DModel.cs`
   - `Assets/Scripts/Features/PlayerCharacter2D/Commands/ResetClimbStateCommand.cs`
+- **Date**: 2025-12-28
+- **Change**: 攀爬状态跳跃改为优先触发，并按普通跳跃逻辑执行。
+- **Reason**: 策划要求攀爬时只要按跳就必须起跳，且不影响平地控制。
+- **Behavior Now**:
+  - Given 玩家处于攀爬状态且按下跳跃
+  - When 当前仍在抓取攀爬体
+  - Then 立即退出攀爬并执行普通跳跃，不因抓取而卡住
+- **Config**:
+  - None.
+- **Risk & Regression**:
+  - 影响范围：攀爬跳与重新抓取时序
+  - 回归用例：攀爬按跳必起跳；落地跳跃手感不变；跳后短时间不立即重抓
+- **Files Touched**:
+  - `Assets/Scripts/Features/PlayerCharacter2D/Commands/TickFixedStepCommand.cs`
+- **Date**: 2025-12-28
+- **Change**: 增加攀爬跳跃保护，起跳上升阶段忽略抓取/吸附，落下后恢复。
+- **Reason**: 策划要求持续按抓也必须能起跳，避免跳起瞬间被重新抓住。
+- **Behavior Now**:
+  - Given 玩家在攀爬中按下跳跃并持续抓取
+  - When 角色处于上升态势
+  - Then 忽略抓取/吸附逻辑，保证跳跃生效
+- **Config**:
+  - None.
+- **Risk & Regression**:
+  - 影响范围：攀爬跳后重抓时序，空中贴墙吸附
+  - 回归用例：攀爬连跳稳定；落地后抓取恢复；平地跳跃不受影响
+- **Files Touched**:
+  - `Assets/Scripts/Features/PlayerCharacter2D/Commands/TickFixedStepCommand.cs`
+  - `Assets/Scripts/Features/PlayerCharacter2D/Controllers/PlatformerCharacterController.cs`
+  - `Assets/Scripts/Features/PlayerCharacter2D/Models/IPlayerCharacter2DModel.cs`
+  - `Assets/Scripts/Features/PlayerCharacter2D/Models/PlayerCharacter2DModel.cs`
+  - `Assets/Scripts/Features/PlayerCharacter2D/Commands/ResetClimbStateCommand.cs`

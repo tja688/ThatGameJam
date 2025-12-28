@@ -49,6 +49,11 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Commands
             var velocity = model.Velocity.Value;
             var wasClimbing = model.IsClimbing.Value;
 
+            if (model.ClimbJumpProtected && (model.Grounded.Value || model.Velocity.Value.y <= 0f))
+            {
+                model.ClimbJumpProtected = false;
+            }
+
             // --- Collisions ---
             if (_ceilingHit) velocity.y = Mathf.Min(0, velocity.y);
 
@@ -76,6 +81,15 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Commands
 
             var wantsClimb = model.FrameInput.GrabHeld
                              && model.RegrabLockoutTimer <= 0f;
+            var climbJumpRequested = model.IsClimbing.Value && model.FrameInput.JumpDown;
+            if (climbJumpRequested)
+            {
+                model.IsClimbing.Value = false;
+                model.WallContactTimer = 0f;
+                model.ClimbIsHorizontal = false;
+                model.RegrabLockoutTimer = Mathf.Max(model.RegrabLockoutTimer, _stats.ClimbRegrabLockout);
+                model.ClimbJumpProtected = true;
+            }
 
             if (model.IsClimbing.Value)
             {
@@ -111,7 +125,7 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Commands
             else
             {
                 model.WallContactTimer = 0f;
-                if (wantsClimb && _wallDetected)
+                if (wantsClimb && _wallDetected && !climbJumpRequested && !model.ClimbJumpProtected)
                 {
                     model.IsClimbing.Value = true;
                     model.WallContactTimer = _stats.WallCoyoteTime;
@@ -284,9 +298,9 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Commands
             bool hasBufferedJump = model.BufferedJumpUsable && model.Time < model.TimeJumpWasPressed + _stats.JumpBuffer;
             bool canUseCoyote = model.CoyoteUsable && !model.Grounded.Value && model.Time < model.FrameLeftGrounded + _stats.CoyoteTime;
 
-            if (model.JumpToConsume || hasBufferedJump)
+            if (climbJumpRequested || model.JumpToConsume || hasBufferedJump)
             {
-                if (model.Grounded.Value || canUseCoyote)
+                if (climbJumpRequested || model.Grounded.Value || canUseCoyote)
                 {
                     // Execute Jump
                     model.EndedJumpEarly = false;
