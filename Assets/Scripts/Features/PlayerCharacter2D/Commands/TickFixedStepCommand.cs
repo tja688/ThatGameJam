@@ -12,6 +12,7 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Commands
         private readonly bool _ceilingHit;
         private readonly bool _wallDetected;
         private readonly float _wallSideSign;
+        private readonly bool _wallHorizontal;
         private readonly string _wallColliderName;
         private readonly string _wallColliderTag;
         private readonly int _wallColliderLayer;
@@ -23,6 +24,7 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Commands
             bool ceilingHit,
             bool wallDetected,
             float wallSideSign,
+            bool wallHorizontal,
             string wallColliderName,
             string wallColliderTag,
             int wallColliderLayer,
@@ -33,6 +35,7 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Commands
             _ceilingHit = ceilingHit;
             _wallDetected = wallDetected;
             _wallSideSign = wallSideSign;
+            _wallHorizontal = wallHorizontal;
             _wallColliderName = wallColliderName;
             _wallColliderTag = wallColliderTag;
             _wallColliderLayer = wallColliderLayer;
@@ -79,6 +82,7 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Commands
                 if (_wallDetected)
                 {
                     model.WallContactTimer = _stats.WallCoyoteTime;
+                    model.ClimbIsHorizontal = _wallHorizontal;
                     if (_wallSideSign != 0f)
                     {
                         if (model.ClimbWallSide == 0f || Mathf.Sign(model.ClimbWallSide) == Mathf.Sign(_wallSideSign))
@@ -97,6 +101,7 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Commands
                 {
                     model.IsClimbing.Value = false;
                     model.WallContactTimer = 0f;
+                    model.ClimbIsHorizontal = false;
                     if (!wantsClimb)
                     {
                         model.RegrabLockoutTimer = Mathf.Max(model.RegrabLockoutTimer, _stats.ClimbRegrabLockout);
@@ -110,6 +115,7 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Commands
                 {
                     model.IsClimbing.Value = true;
                     model.WallContactTimer = _stats.WallCoyoteTime;
+                    model.ClimbIsHorizontal = _wallHorizontal;
                     if (_wallSideSign != 0f)
                     {
                         model.ClimbWallSide = _wallSideSign;
@@ -132,6 +138,7 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Commands
                     {
                         model.IsClimbing.Value = false;
                         model.WallContactTimer = 0f;
+                        model.ClimbIsHorizontal = false;
                         model.RegrabLockoutTimer = Mathf.Max(model.RegrabLockoutTimer, _stats.ClimbRegrabLockout);
 
                         model.EndedJumpEarly = false;
@@ -156,7 +163,14 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Commands
                                 sideSign = 1f;
                             }
 
-                            velocity.x = -Mathf.Sign(sideSign) * detachVelocity;
+                            if (model.ClimbIsHorizontal)
+                            {
+                                velocity.y += -Mathf.Sign(sideSign) * detachVelocity;
+                            }
+                            else
+                            {
+                                velocity.x = -Mathf.Sign(sideSign) * detachVelocity;
+                            }
                         }
                         else
                         {
@@ -170,26 +184,67 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Commands
 
                 if (model.IsClimbing.Value)
                 {
-                    if (_ceilingHit && model.FrameInput.Move.y > 0f)
+                    var isHorizontal = model.ClimbIsHorizontal;
+                    var move = model.FrameInput.Move;
+                    var mainInput = isHorizontal ? move.x : move.y;
+                    var secondaryInput = isHorizontal ? move.y : move.x;
+
+                    var mainVelocity = 0f;
+                    if (mainInput > 0f)
                     {
-                        velocity.y = 0f;
+                        mainVelocity = _stats.ClimbUpSpeed;
                     }
-                    else if (model.FrameInput.Move.y > 0f)
+                    else if (mainInput < 0f)
                     {
-                        velocity.y = _stats.ClimbUpSpeed;
-                    }
-                    else if (model.FrameInput.Move.y < 0f)
-                    {
-                        velocity.y = -Mathf.Min(_stats.ClimbDownSpeed, _stats.MaxFallSpeed);
+                        mainVelocity = -Mathf.Min(_stats.ClimbDownSpeed, _stats.MaxFallSpeed);
                     }
                     else
                     {
-                        velocity.y = model.Grounded.Value
+                        mainVelocity = model.Grounded.Value
                             ? 0f
                             : -Mathf.Min(_stats.ClimbIdleSlideSpeed, _stats.MaxFallSpeed);
                     }
 
-                    velocity.x = 0f;
+                    var secondaryVelocity = 0f;
+                    if (_stats != null && !_stats.ClimbLockSecondaryAxis)
+                    {
+                        var up = _stats.ClimbUpSpeed * _stats.ClimbSecondaryAxisMultiplier;
+                        var down = _stats.ClimbDownSpeed * _stats.ClimbSecondaryAxisMultiplier;
+                        if (secondaryInput > 0f)
+                        {
+                            secondaryVelocity = up;
+                        }
+                        else if (secondaryInput < 0f)
+                        {
+                            secondaryVelocity = -Mathf.Min(down, _stats.MaxFallSpeed);
+                        }
+                    }
+
+                    if (_ceilingHit)
+                    {
+                        if (isHorizontal)
+                        {
+                            if (secondaryVelocity > 0f)
+                            {
+                                secondaryVelocity = 0f;
+                            }
+                        }
+                        else if (mainVelocity > 0f)
+                        {
+                            mainVelocity = 0f;
+                        }
+                    }
+
+                    if (isHorizontal)
+                    {
+                        velocity.x = mainVelocity;
+                        velocity.y = _stats.ClimbLockSecondaryAxis ? 0f : secondaryVelocity;
+                    }
+                    else
+                    {
+                        velocity.y = mainVelocity;
+                        velocity.x = _stats.ClimbLockSecondaryAxis ? 0f : secondaryVelocity;
+                    }
                     model.Velocity.Value = velocity;
                 }
             }
@@ -211,7 +266,7 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Commands
                         LogKit.I(
                             $"[PlayerCharacter2D] Climb {wasClimbing}->{model.IsClimbing.Value} " +
                             $"groundHit={_groundHit} ceilingHit={_ceilingHit} wallDetected={_wallDetected} wallSide={_wallSideSign:0.##} " +
-                            $"grabHeld={model.FrameInput.GrabHeld} moveY={move.y:0.##} " +
+                            $"wallHorizontal={model.ClimbIsHorizontal} grabHeld={model.FrameInput.GrabHeld} moveY={move.y:0.##} " +
                             $"wallTimer={model.WallContactTimer:0.###} regrabTimer={model.RegrabLockoutTimer:0.###} " +
                             $"wallCollider={_wallColliderName} tag={_wallColliderTag} layer={_wallColliderLayer}");
                     }
@@ -286,7 +341,7 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Commands
                     LogKit.I(
                         $"[PlayerCharacter2D] Climb {wasClimbing}->{model.IsClimbing.Value} " +
                         $"groundHit={_groundHit} ceilingHit={_ceilingHit} wallDetected={_wallDetected} wallSide={_wallSideSign:0.##} " +
-                        $"grabHeld={model.FrameInput.GrabHeld} moveY={move.y:0.##} " +
+                        $"wallHorizontal={model.ClimbIsHorizontal} grabHeld={model.FrameInput.GrabHeld} moveY={move.y:0.##} " +
                         $"wallTimer={model.WallContactTimer:0.###} regrabTimer={model.RegrabLockoutTimer:0.###} " +
                         $"wallCollider={_wallColliderName} tag={_wallColliderTag} layer={_wallColliderLayer}");
                 }

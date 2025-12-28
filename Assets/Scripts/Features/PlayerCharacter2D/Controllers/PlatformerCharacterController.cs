@@ -140,7 +140,7 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
 
             // Physics queries (allowed in Controller)
             var previousQueriesStartInColliders = Physics2D.queriesStartInColliders;
-            bool wallDetected = TryGetClimbableWall(out var wallSideSign, out var wallPoint, out var wallCollider);
+            bool wallDetected = TryGetClimbableWall(out var wallSideSign, out var wallPoint, out var wallCollider, out var wallHorizontal);
             Physics2D.queriesStartInColliders = false;
 
             try
@@ -169,6 +169,7 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
                     ceilingHit,
                     wallDetected,
                     wallSideSign,
+                    wallDetected && wallHorizontal,
                     wallCollider != null ? wallCollider.name : string.Empty,
                     wallCollider != null ? wallCollider.tag : string.Empty,
                     wallCollider != null ? wallCollider.gameObject.layer : -1,
@@ -187,7 +188,7 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
                         climbSide = modelSide;
                     }
 
-                    ApplyClimbStick(wallPoint, climbSide);
+                    ApplyClimbStick(wallPoint, climbSide, wallHorizontal);
                 }
             }
             finally
@@ -217,11 +218,12 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
             _rb.gravityScale = _defaultGravityScale;
         }
 
-        private bool TryGetClimbableWall(out float wallSideSign, out Vector2 wallPoint, out Collider2D wallCollider)
+        private bool TryGetClimbableWall(out float wallSideSign, out Vector2 wallPoint, out Collider2D wallCollider, out bool wallHorizontal)
         {
             wallSideSign = 0f;
             wallPoint = default;
             wallCollider = null;
+            wallHorizontal = false;
 
             if (_climbSensor == null || !_climbSensor.enabled || string.IsNullOrEmpty(_climbableTag))
             {
@@ -277,24 +279,30 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
                 return false;
             }
 
+            wallHorizontal = IsHorizontalClimbSurface(bestCollider);
+
             if (bestHasSeparation)
             {
                 wallPoint = bestSeparation.pointB;
-                wallSideSign = Mathf.Sign(bestSeparation.normal.x);
+                wallSideSign = Mathf.Sign(wallHorizontal ? bestSeparation.normal.y : bestSeparation.normal.x);
                 if (wallSideSign == 0f)
                 {
-                    wallSideSign = Mathf.Sign(bestSeparation.pointB.x - bestSeparation.pointA.x);
+                    wallSideSign = Mathf.Sign(wallHorizontal
+                        ? bestSeparation.pointB.y - bestSeparation.pointA.y
+                        : bestSeparation.pointB.x - bestSeparation.pointA.x);
                 }
             }
             else
             {
                 wallPoint = bestCollider.ClosestPoint(center);
-                wallSideSign = Mathf.Sign(wallPoint.x - center.x);
+                wallSideSign = Mathf.Sign(wallHorizontal ? wallPoint.y - center.y : wallPoint.x - center.x);
             }
 
             if (wallSideSign == 0f)
             {
-                wallSideSign = Mathf.Sign(bestCollider.bounds.center.x - center.x);
+                wallSideSign = Mathf.Sign(wallHorizontal
+                    ? bestCollider.bounds.center.y - center.y
+                    : bestCollider.bounds.center.x - center.x);
             }
 
             if (wallSideSign == 0f)
@@ -306,21 +314,51 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
             return true;
         }
 
-        private void ApplyClimbStick(Vector2 wallPoint, float wallSideSign)
+        private void ApplyClimbStick(Vector2 wallPoint, float wallSideSign, bool wallHorizontal)
         {
             if (_climbSensor == null || _stats.ClimbStickDistance <= 0f || wallSideSign == 0f)
             {
                 return;
             }
 
+            if (!_stats.ClimbLockSecondaryAxis)
+            {
+                var move = this.GetModel<IPlayerCharacter2DModel>().FrameInput.Move;
+                var secondaryInput = wallHorizontal ? move.y : move.x;
+                if (Mathf.Abs(secondaryInput) > 0.01f)
+                {
+                    return;
+                }
+            }
+
             var center = (Vector2)_climbSensor.bounds.center;
             var offsetToTransform = (Vector2)transform.position - center;
-            var targetCenterX = wallPoint.x - wallSideSign * _stats.ClimbStickDistance;
-            var targetPositionX = targetCenterX + offsetToTransform.x;
 
             var pos = _rb.position;
-            pos.x = targetPositionX;
+            if (wallHorizontal)
+            {
+                var targetCenterY = wallPoint.y - wallSideSign * _stats.ClimbStickDistance;
+                var targetPositionY = targetCenterY + offsetToTransform.y;
+                pos.y = targetPositionY;
+            }
+            else
+            {
+                var targetCenterX = wallPoint.x - wallSideSign * _stats.ClimbStickDistance;
+                var targetPositionX = targetCenterX + offsetToTransform.x;
+                pos.x = targetPositionX;
+            }
             _rb.position = pos;
+        }
+
+        private static bool IsHorizontalClimbSurface(Collider2D collider)
+        {
+            if (collider == null)
+            {
+                return false;
+            }
+
+            var size = collider.bounds.size;
+            return size.x >= size.y;
         }
 
 #if UNITY_EDITOR

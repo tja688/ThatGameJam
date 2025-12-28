@@ -22,5 +22,6 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Models
         float WallContactTimer { get; set; }
         float RegrabLockoutTimer { get; set; }
         float ClimbWallSide { get; set; }
+        bool ClimbIsHorizontal { get; set; }
     }
 }

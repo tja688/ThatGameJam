@@ -19,6 +19,7 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Commands
             model.WallContactTimer = 0f;
             model.RegrabLockoutTimer = 0f;
             model.ClimbWallSide = 0f;
+            model.ClimbIsHorizontal = false;
         }
     }
 }

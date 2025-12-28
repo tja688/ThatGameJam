@@ -11,8 +11,10 @@ GameObject:
   - component: {fileID: 5337527186823002182}
   - component: {fileID: 6372521893942544598}
   - component: {fileID: 2031355686202739187}
+  - component: {fileID: 3361832203845634668}
+  - component: {fileID: 1429497622240440616}
   m_Layer: 0
-  m_Name: "\u68C0\u67E5\u70B9"
+  m_Name: "\u90AE\u7BB1\u68C0\u67E5\u70B9"
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -138,3 +140,35 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 10.24, y: 15.03}
   m_EdgeRadius: 0
+--- !u!114 &3361832203845634668
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5719363515087790588}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 339f8770559a1634c8c0914759d9ff4a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThatGameJam.Features.Checkpoint.Controllers.LevelNode2D
+  nodeId: 
+  areaId: 
+  spawnPoint: {fileID: 0}
+  registerOnEnable: 1
+--- !u!114 &1429497622240440616
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5719363515087790588}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce4e05216c4d34a44bb7d528e78523ac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThatGameJam.Features.Checkpoint.Controllers.Mailbox2D
+  node: {fileID: 3361832203845634668}
+  nodeId: 
+  playerTag: Player
+  triggerOnce: 0

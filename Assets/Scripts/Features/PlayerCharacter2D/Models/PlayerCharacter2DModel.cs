@@ -22,6 +22,7 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Models
         public float WallContactTimer { get; set; }
         public float RegrabLockoutTimer { get; set; }
         public float ClimbWallSide { get; set; }
+        public bool ClimbIsHorizontal { get; set; }
 
         protected override void OnInit()
         {

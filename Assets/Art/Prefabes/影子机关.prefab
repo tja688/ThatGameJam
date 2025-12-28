@@ -215,11 +215,11 @@ BoxCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.023824453, y: 0.5958607}
+  m_Offset: {x: 0.0756402, y: 0.8823209}
   m_SpriteTilingProperty:
     border: {x: 2.9199998, y: 3.05, z: 3.1, w: 0.95}
     pivot: {x: 0.5, y: 0.5}
@@ -229,7 +229,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 2.4558005, y: 2.1698031}
+  m_Size: {x: 5.2408133, y: 6.1802254}
   m_EdgeRadius: 0
 --- !u!114 &1617388401080405631
 MonoBehaviour:
@@ -244,6 +244,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ThatGameJam.Features.Mechanisms.Controllers.GhostMechanism2D
   areaId: 
+  shouldResetOnRunReset: 0
   boundsCollider: {fileID: 8992916052391027657}
   localBoundsCenter: {x: 0, y: 0}
   localBoundsSize: {x: 6, y: 4}
@@ -283,7 +284,7 @@ MonoBehaviour:
   followSmoothTime: 0.18
   followMaxSpeed: 999
   contactTrigger: {fileID: 4896310425729749449}
-  extraConsumePerSecond: 8
+  extraConsumePerSecond: 20
   consumeReason: 3
   drawGizmos: 1
   drawPathPreview: 1
@@ -314,7 +315,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8961587016714889557}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -15.8771305, y: 33.1853, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0

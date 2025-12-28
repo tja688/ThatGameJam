@@ -71,6 +71,13 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Configs
         [Tooltip("Downward drift when idle on a wall. Set to 0 for full stop.")]
         public float ClimbIdleSlideSpeed = 0f;
 
+        [Tooltip("Allow movement on the secondary axis while climbing.")]
+        public bool ClimbLockSecondaryAxis = false;
+
+        [Tooltip("Speed multiplier for the secondary climb axis when unlocked.")]
+        [Range(0f, 1f)]
+        public float ClimbSecondaryAxisMultiplier = 0.35f;
+
         [Tooltip("Jump power used when jumping from a climb (match JumpPower for normal feel).")]
         public float ClimbJumpPower = 36f;
 

@@ -48,6 +48,8 @@
   - `PlatformerCharacterController._climbableLayerMask` 〞 layer filter for climbable walls (default: Everything)
   - `PlatformerCharacterInput._move` / `_jump` 〞 InputActionReference bindings
   - `PlatformerCharacterInput._grab` 〞 InputActionReference for grab/hold
+  - `PlatformerCharacterStats.ClimbLockSecondaryAxis` 〞 是否锁定攀爬次轴（默认 false）
+  - `PlatformerCharacterStats.ClimbSecondaryAxisMultiplier` 〞 次轴速度倍率（默认 0.35）
 
 ## 4. Public API Surface (How other Features integrate)
 ### 4.1 Events (Outbound)
@@ -133,3 +135,25 @@
 
 ## 8. UNVERIFIED (only if needed)
 - None.
+
+## 9. Change Log
+- **Date**: 2025-12-28
+- **Change**: 支持横向攀爬与次轴微调；攀爬表面方向自动判断。
+- **Reason**: 新策划要求横向植物可攀爬，左右为主要移动，并允许微调。
+- **Behavior Now**:
+  - Given 具有 `Climbable` 标签的横向攀爬体
+  - When 玩家抓住并输入左右
+  - Then 以左右为主移动，且可按设置允许次轴微调
+- **Config**:
+  - `ClimbLockSecondaryAxis`：锁定次轴移动（true 为锁死）
+  - `ClimbSecondaryAxisMultiplier`：次轴速度倍率
+- **Risk & Regression**:
+  - 影响范围：攀爬移动与吸附逻辑
+  - 回归用例：竖墙攀爬上下正常；横向攀爬左右正常；攀爬跳仍可触发
+- **Files Touched**:
+  - `Assets/Scripts/Features/PlayerCharacter2D/Controllers/PlatformerCharacterController.cs`
+  - `Assets/Scripts/Features/PlayerCharacter2D/Commands/TickFixedStepCommand.cs`
+  - `Assets/Scripts/Features/PlayerCharacter2D/Configs/PlatformerCharacterStats.cs`
+  - `Assets/Scripts/Features/PlayerCharacter2D/Models/IPlayerCharacter2DModel.cs`
+  - `Assets/Scripts/Features/PlayerCharacter2D/Models/PlayerCharacter2DModel.cs`
+  - `Assets/Scripts/Features/PlayerCharacter2D/Commands/ResetClimbStateCommand.cs`
