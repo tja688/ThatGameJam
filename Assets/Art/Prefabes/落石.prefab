@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 6284912125782856108}
   - component: {fileID: 7013399324898504263}
   - component: {fileID: 5769194828963945559}
+  - component: {fileID: 1751273090453928411}
   m_Layer: 0
   m_Name: "\u843D\u77F3"
   m_TagString: Untagged
@@ -28,7 +29,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 1.23, y: 7.26, z: 0}
-  m_LocalScale: {x: 1.5, y: 1.5, z: 1.5}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 1201909879736299574}
@@ -68,8 +69,8 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_Size: {x: 4.25, y: 2.6}
+  m_Offset: {x: 0.049211144, y: 0.03406906}
+  m_Size: {x: 1.471473, y: 2.4254093}
   m_Direction: 0
 --- !u!50 &5769194828963945559
 Rigidbody2D:
@@ -98,6 +99,28 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
+--- !u!114 &1751273090453928411
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4470487719393902714}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f0695f08bfd21744bce30c7cdb217f1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThatGameJam.Features.FallingRockFromTrashCan.Controllers.FallingRockProjectile
+  angularSpeedRange: {x: -180, y: 180}
+  scaleRange: {x: 0.85, y: 1.15}
+  massRange: {x: 0.8, y: 1.2}
+  floorLayerMask:
+    serializedVersion: 2
+    m_Bits: 8
+  destroyDelaySeconds: 1
+  visualRoot: {fileID: 8139331100948911820}
+  hitVfx: {fileID: 0}
+  hitSfx: {fileID: 0}
 --- !u!1 &8139331100948911820
 GameObject:
   m_ObjectHideFlags: 0
