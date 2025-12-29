@@ -1,11 +1,13 @@
 using System.Collections;
 using QFramework;
+using ThatGameJam.Features.DeathRespawn.Commands;
+using ThatGameJam.Features.Shared;
 using UnityEngine;
 
 namespace ThatGameJam.Features.FallingRockFromTrashCan.Controllers
 {
     [RequireComponent(typeof(Rigidbody2D), typeof(Collider2D))]
-    public class FallingRockProjectile : MonoBehaviour
+    public class FallingRockProjectile : MonoBehaviour, IController
     {
         [Header("Spawn Tuning")]
         [SerializeField] private Vector2 angularSpeedRange = new Vector2(-180f, 180f);
@@ -24,6 +26,8 @@ namespace ThatGameJam.Features.FallingRockFromTrashCan.Controllers
         private Renderer[] _renderers;
         private Vector3 _baseScale;
         private bool _hit;
+
+        public IArchitecture GetArchitecture() => GameRootApp.Interface;
 
         private void Awake()
         {
@@ -101,13 +105,29 @@ namespace ThatGameJam.Features.FallingRockFromTrashCan.Controllers
                 return;
             }
 
+            // --- Player Hit Detection ---
+            if (other.CompareTag("Player"))
+            {
+                _hit = true;
+                this.SendCommand(new MarkPlayerDeadCommand(EDeathReason.Script, transform.position));
+
+
+                ProcessHitEffects();
+                return;
+            }
+
+            // --- Floor Hit Detection ---
             if (!IsFloor(other))
             {
                 return;
             }
 
             _hit = true;
+            ProcessHitEffects();
+        }
 
+        private void ProcessHitEffects()
+        {
             if (_collider2D != null)
             {
                 _collider2D.enabled = false;

@@ -25,6 +25,11 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Commands
                 model.JumpToConsume = true;
                 model.TimeJumpWasPressed = _time;
             }
+
+            if (_input.KillMeDown)
+            {
+                model.KillMeToConsume = true;
+            }
         }
     }
 }

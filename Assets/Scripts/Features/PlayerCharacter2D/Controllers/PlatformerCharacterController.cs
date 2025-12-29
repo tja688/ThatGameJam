@@ -150,36 +150,26 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
             {
                 var model = this.GetModel<IPlayerCharacter2DModel>();
                 var climbProbe = GetClimbProbePosition();
+
+                // --- Movable Grab Range Protection ---
+
+                bool isForcedByGrab = false;
+                if (model.IsClimbing.Value && _activeMovableGrab != null)
+                {
+                    if (_activeMovableGrab.IsPointWithinRange(climbProbe))
+                    {
+                        if (!wallDetected)
+                        {
+                            wallDetected = true;
+                            wallSideSign = model.ClimbWallSide;
+                            wallHorizontal = model.ClimbIsHorizontal;
+                            wallCollider = _activeMovableGrab.GetComponent<Collider2D>();
+                            isForcedByGrab = true;
+                        }
+                    }
+                }
+
                 var movableGrabCandidate = ResolveMovableGrabObject(wallCollider);
-                var forceDropFromRange = false;
-
-                if (movableGrabCandidate != null)
-                {
-                    if (!movableGrabCandidate.IsPointWithinRange(climbProbe))
-                    {
-                        forceDropFromRange = true;
-                    }
-                }
-                else if (!wallDetected && model.IsClimbing.Value && _activeMovableGrab != null)
-                {
-                    if (!_activeMovableGrab.IsPointWithinRange(climbProbe))
-                    {
-                        forceDropFromRange = true;
-                    }
-                }
-
-                if (forceDropFromRange)
-                {
-                    wallDetected = false;
-                    wallSideSign = 0f;
-                    wallHorizontal = false;
-                    wallCollider = null;
-                    movableGrabCandidate = null;
-                    if (model.IsClimbing.Value)
-                    {
-                        model.WallContactTimer = 0f;
-                    }
-                }
 
                 bool groundHit = Physics2D.CapsuleCast(
                     _col.bounds.center,
@@ -210,7 +200,8 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
                     wallCollider != null ? wallCollider.tag : string.Empty,
                     wallCollider != null ? wallCollider.gameObject.layer : -1,
                     Time.fixedDeltaTime,
-                    _stats));
+                    _stats,
+                    _activeMovableGrab != null)); // Allow free climb if grabbing a movable object
 
                 var isClimbing = model.IsClimbing.Value;
                 _rb.gravityScale = isClimbing ? 0f : _defaultGravityScale;
@@ -219,6 +210,30 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
                 if (isClimbing && _activeMovableGrab != null)
                 {
                     ApplyMovableGrabDelta();
+
+                    // Boundary Clamping: prevent player from moving out of range
+
+                    Vector2 vel = model.Velocity.Value;
+                    if (vel.sqrMagnitude > 0.0001f)
+                    {
+                        float dt = Time.fixedDeltaTime;
+                        if (!_activeMovableGrab.IsPointWithinRange(climbProbe + vel * dt))
+                        {
+                            // Axis-wise clamping allows sliding along borders
+                            if (!_activeMovableGrab.IsPointWithinRange(climbProbe + new Vector2(vel.x, 0) * dt))
+                                vel.x = 0;
+                            if (!_activeMovableGrab.IsPointWithinRange(climbProbe + new Vector2(0, vel.y) * dt))
+                                vel.y = 0;
+
+                            // Final safety check
+
+                            if (!_activeMovableGrab.IsPointWithinRange(climbProbe + vel * dt))
+                                vel = Vector2.zero;
+
+
+                            model.Velocity.Value = vel;
+                        }
+                    }
                 }
 
                 if (isClimbing && wallDetected)
@@ -230,11 +245,13 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
                         climbSide = modelSide;
                     }
 
-                    if (!model.ClimbJumpProtected)
+                    if (!model.ClimbJumpProtected && !isForcedByGrab)
                     {
                         ApplyClimbStick(wallPoint, climbSide, wallHorizontal);
                     }
                 }
+
+                model.Position.Value = transform.position;
             }
             finally
             {

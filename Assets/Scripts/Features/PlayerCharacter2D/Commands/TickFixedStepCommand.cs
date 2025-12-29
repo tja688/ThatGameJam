@@ -18,6 +18,7 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Commands
         private readonly int _wallColliderLayer;
         private readonly float _fixedDeltaTime;
         private readonly PlatformerCharacterStats _stats;
+        private readonly bool _allowFreeClimb;
 
         public TickFixedStepCommand(
             bool groundHit,
@@ -29,7 +30,8 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Commands
             string wallColliderTag,
             int wallColliderLayer,
             float fixedDeltaTime,
-            PlatformerCharacterStats stats)
+            PlatformerCharacterStats stats,
+            bool allowFreeClimb = false)
         {
             _groundHit = groundHit;
             _ceilingHit = ceilingHit;
@@ -41,6 +43,7 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Commands
             _wallColliderLayer = wallColliderLayer;
             _fixedDeltaTime = fixedDeltaTime;
             _stats = stats;
+            _allowFreeClimb = allowFreeClimb;
         }
 
         protected override void OnExecute()
@@ -55,6 +58,16 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Commands
             }
 
             // --- Collisions ---
+            if (model.KillMeToConsume)
+            {
+                model.KillMeToConsume = false;
+                this.SendCommand(new ThatGameJam.Features.DeathRespawn.Commands.MarkPlayerDeadCommand(
+                    ThatGameJam.Features.Shared.EDeathReason.Debug,
+
+                    model.Position.Value
+                ));
+            }
+
             if (_ceilingHit) velocity.y = Mathf.Min(0, velocity.y);
 
             if (!model.Grounded.Value && _groundHit)
@@ -224,7 +237,7 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Commands
                     }
 
                     var secondaryVelocity = 0f;
-                    if (_stats != null && !_stats.ClimbLockSecondaryAxis)
+                    if (_stats != null && (!_stats.ClimbLockSecondaryAxis || _allowFreeClimb))
                     {
                         var up = _stats.ClimbUpSpeed * _stats.ClimbSecondaryAxisMultiplier;
                         var down = _stats.ClimbDownSpeed * _stats.ClimbSecondaryAxisMultiplier;

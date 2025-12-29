@@ -10,6 +10,7 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
         [SerializeField] private InputActionReference _move;
         [SerializeField] private InputActionReference _jump;
         [SerializeField] private InputActionReference _grab;
+        [SerializeField] private InputActionReference _killMe;
 
         [Header("Lifecycle")]
         [SerializeField] private bool _enableActionsOnEnable = true;
@@ -20,6 +21,7 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
             _move?.action?.Enable();
             _jump?.action?.Enable();
             _grab?.action?.Enable();
+            _killMe?.action?.Enable();
         }
 
         private void OnDisable()
@@ -28,6 +30,7 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
             _move?.action?.Disable();
             _jump?.action?.Disable();
             _grab?.action?.Disable();
+            _killMe?.action?.Disable();
         }
 
         public PlatformerFrameInput ReadInput()
@@ -41,12 +44,16 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
             var grabAction = _grab?.action;
             var grabHeld = grabAction != null && grabAction.IsPressed();
 
+            var killMeAction = _killMe?.action;
+            var killMeDown = killMeAction != null && killMeAction.WasPressedThisFrame();
+
             return new PlatformerFrameInput
             {
                 Move = move,
                 JumpDown = jumpDown,
                 JumpHeld = jumpHeld,
                 GrabHeld = grabHeld,
+                KillMeDown = killMeDown,
             };
         }
 

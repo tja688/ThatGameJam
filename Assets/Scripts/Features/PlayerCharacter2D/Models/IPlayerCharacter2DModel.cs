@@ -8,12 +8,14 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Models
         BindableProperty<bool> Grounded { get; }
         BindableProperty<bool> IsClimbing { get; }
         BindableProperty<Vector2> Velocity { get; }
+        BindableProperty<Vector2> Position { get; }
 
         PlatformerFrameInput FrameInput { get; set; }
         float Time { get; set; }
 
         float FrameLeftGrounded { get; set; }
         bool JumpToConsume { get; set; }
+        bool KillMeToConsume { get; set; }
         bool BufferedJumpUsable { get; set; }
         bool EndedJumpEarly { get; set; }
         bool CoyoteUsable { get; set; }

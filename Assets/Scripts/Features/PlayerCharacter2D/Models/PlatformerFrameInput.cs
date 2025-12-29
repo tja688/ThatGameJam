@@ -7,6 +7,7 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Models
         public bool JumpDown;
         public bool JumpHeld;
         public bool GrabHeld;
+        public bool KillMeDown;
         public Vector2 Move;
     }
 
