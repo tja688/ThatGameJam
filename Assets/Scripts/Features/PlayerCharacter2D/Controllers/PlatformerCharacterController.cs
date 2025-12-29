@@ -6,6 +6,7 @@ using ThatGameJam.Features.PlayerCharacter2D.Configs;
 using ThatGameJam.Features.PlayerCharacter2D.Events;
 using ThatGameJam.Features.PlayerCharacter2D.Models;
 using ThatGameJam.Features.PlayerCharacter2D.Queries;
+using ThatGameJam.Features.PlayerCharacter2D.Utilities;
 using ThatGameJam.Features.Shared;
 using UnityEngine;
 
@@ -34,6 +35,8 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
         private float _defaultGravityScale;
         private float _time;
         private bool _inputLocked;
+        private MovableGrabObjectBase _activeMovableGrab;
+        private Vector2 _activeMovableGrabAnchor;
 
         public IArchitecture GetArchitecture() => GameRootApp.Interface;
 
@@ -145,6 +148,39 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
 
             try
             {
+                var model = this.GetModel<IPlayerCharacter2DModel>();
+                var climbProbe = GetClimbProbePosition();
+                var movableGrabCandidate = ResolveMovableGrabObject(wallCollider);
+                var forceDropFromRange = false;
+
+                if (movableGrabCandidate != null)
+                {
+                    if (!movableGrabCandidate.IsPointWithinRange(climbProbe))
+                    {
+                        forceDropFromRange = true;
+                    }
+                }
+                else if (!wallDetected && model.IsClimbing.Value && _activeMovableGrab != null)
+                {
+                    if (!_activeMovableGrab.IsPointWithinRange(climbProbe))
+                    {
+                        forceDropFromRange = true;
+                    }
+                }
+
+                if (forceDropFromRange)
+                {
+                    wallDetected = false;
+                    wallSideSign = 0f;
+                    wallHorizontal = false;
+                    wallCollider = null;
+                    movableGrabCandidate = null;
+                    if (model.IsClimbing.Value)
+                    {
+                        model.WallContactTimer = 0f;
+                    }
+                }
+
                 bool groundHit = Physics2D.CapsuleCast(
                     _col.bounds.center,
                     _col.size,
@@ -176,19 +212,24 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
                     Time.fixedDeltaTime,
                     _stats));
 
-                var isClimbing = this.GetModel<IPlayerCharacter2DModel>().IsClimbing.Value;
+                var isClimbing = model.IsClimbing.Value;
                 _rb.gravityScale = isClimbing ? 0f : _defaultGravityScale;
+
+                UpdateActiveMovableGrab(isClimbing, wallDetected, movableGrabCandidate);
+                if (isClimbing && _activeMovableGrab != null)
+                {
+                    ApplyMovableGrabDelta();
+                }
 
                 if (isClimbing && wallDetected)
                 {
                     var climbSide = wallSideSign;
-                    var modelSide = this.GetModel<IPlayerCharacter2DModel>().ClimbWallSide;
+                    var modelSide = model.ClimbWallSide;
                     if (modelSide != 0f)
                     {
                         climbSide = modelSide;
                     }
 
-                    var model = this.GetModel<IPlayerCharacter2DModel>();
                     if (!model.ClimbJumpProtected)
                     {
                         ApplyClimbStick(wallPoint, climbSide, wallHorizontal);
@@ -220,6 +261,7 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
         {
             this.SendCommand(new ResetClimbStateCommand());
             _rb.gravityScale = _defaultGravityScale;
+            ClearActiveMovableGrab();
         }
 
         private bool TryGetClimbableWall(out float wallSideSign, out Vector2 wallPoint, out Collider2D wallCollider, out bool wallHorizontal)
@@ -363,6 +405,78 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
 
             var size = collider.bounds.size;
             return size.x >= size.y;
+        }
+
+        private MovableGrabObjectBase ResolveMovableGrabObject(Collider2D collider)
+        {
+            if (collider == null)
+            {
+                return null;
+            }
+
+            if (collider.TryGetComponent(out MovableGrabObjectBase movableGrab))
+            {
+                return movableGrab;
+            }
+
+            return collider.GetComponentInParent<MovableGrabObjectBase>();
+        }
+
+        private Vector2 GetClimbProbePosition()
+        {
+            if (_climbSensor != null)
+            {
+                return _climbSensor.bounds.center;
+            }
+
+            return _rb.position;
+        }
+
+        private void UpdateActiveMovableGrab(bool isClimbing, bool wallDetected, MovableGrabObjectBase movableGrabCandidate)
+        {
+            if (!isClimbing)
+            {
+                ClearActiveMovableGrab();
+                return;
+            }
+
+            if (movableGrabCandidate != null)
+            {
+                if (_activeMovableGrab != movableGrabCandidate)
+                {
+                    _activeMovableGrab = movableGrabCandidate;
+                    _activeMovableGrabAnchor = movableGrabCandidate.AnchorPosition;
+                }
+
+                return;
+            }
+
+            if (wallDetected)
+            {
+                ClearActiveMovableGrab();
+            }
+        }
+
+        private void ApplyMovableGrabDelta()
+        {
+            if (_activeMovableGrab == null)
+            {
+                return;
+            }
+
+            var anchor = _activeMovableGrab.AnchorPosition;
+            var delta = anchor - _activeMovableGrabAnchor;
+            if (delta != Vector2.zero)
+            {
+                _rb.position += delta;
+            }
+
+            _activeMovableGrabAnchor = anchor;
+        }
+
+        private void ClearActiveMovableGrab()
+        {
+            _activeMovableGrab = null;
         }
 
 #if UNITY_EDITOR

@@ -4,7 +4,7 @@ using ThatGameJam.Features.PlayerCharacter2D.Controllers;
 using ThatGameJam.Features.PlayerCharacter2D.Models;
 using UnityEngine;
 
-namespace ThatGameJam.Debug
+namespace Unity.Debug
 {
     /// <summary>
     /// 为 PlayerCharacter2D 专门构建的调试控制台模块

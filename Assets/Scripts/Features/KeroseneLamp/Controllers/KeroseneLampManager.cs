@@ -6,6 +6,7 @@ using ThatGameJam.Features.KeroseneLamp.Commands;
 using ThatGameJam.Features.KeroseneLamp.Events;
 using ThatGameJam.Features.KeroseneLamp.Models;
 using ThatGameJam.Features.KeroseneLamp.Queries;
+using ThatGameJam.Features.PlayerCharacter2D.Controllers;
 using ThatGameJam.Features.Shared;
 using UnityEngine;
 
@@ -17,16 +18,25 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
         [SerializeField] private Transform lampParent;
         [SerializeField] private int maxActivePerArea = 3;
         [SerializeField] private string fallbackAreaId = "Unknown";
+        [SerializeField] private Transform playerHoldPoint;
+        [SerializeField] private Vector3 heldLampLocalOffset;
+        [SerializeField] private Vector3 heldLampLocalEulerAngles;
+        [SerializeField] private bool spawnHeldLampOnStart = true;
 
         private readonly Dictionary<int, KeroseneLampInstance> _lampInstances = new Dictionary<int, KeroseneLampInstance>();
         private readonly HashSet<KeroseneLampPreplaced> _registeredPreplaced = new HashSet<KeroseneLampPreplaced>();
         private int _nextLampId;
+        private int _heldLampId = -1;
+        private KeroseneLampInstance _heldLampInstance;
+        private Transform _resolvedHoldPoint;
 
         public IArchitecture GetArchitecture() => GameRootApp.Interface;
 
         private void OnEnable()
         {
             this.RegisterEvent<PlayerDiedEvent>(OnPlayerDied)
+                .UnRegisterWhenDisabled(gameObject);
+            this.RegisterEvent<PlayerRespawnedEvent>(OnPlayerRespawned)
                 .UnRegisterWhenDisabled(gameObject);
             this.RegisterEvent<RunResetEvent>(OnRunReset)
                 .UnRegisterWhenDisabled(gameObject);
@@ -43,20 +53,31 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
         private void Start()
         {
             RegisterPreplacedLamps();
+            SpawnHeldLampIfNeeded();
         }
 
         private void OnPlayerDied(PlayerDiedEvent e)
         {
-            SpawnLamp(e.WorldPos, null, string.Empty);
+            if (!DropHeldLamp(e.WorldPos))
+            {
+                SpawnLamp(e.WorldPos, null, string.Empty);
+            }
+        }
+
+        private void OnPlayerRespawned(PlayerRespawnedEvent e)
+        {
+            SpawnHeldLampIfNeeded();
         }
 
         private void OnRunReset(RunResetEvent e)
         {
+            ClearHeldLampState();
             ClearLamps();
             _nextLampId = 0;
             _registeredPreplaced.Clear();
             this.SendCommand(new ResetLampsCommand());
             RegisterPreplacedLamps();
+            SpawnHeldLampIfNeeded();
         }
 
         private void OnRequestSpawnLamp(RequestSpawnLampEvent e)
@@ -149,6 +170,11 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
             for (var i = 0; i < lamps.Count; i++)
             {
                 var lamp = lamps[i];
+                if (lamp.LampId == _heldLampId)
+                {
+                    continue;
+                }
+
                 var shouldEnable = string.IsNullOrEmpty(e.CurrentAreaId) || lamp.AreaId == e.CurrentAreaId;
                 if (lamp.VisualEnabled == shouldEnable)
                 {
@@ -157,6 +183,131 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
 
                 this.SendCommand(new SetLampVisualStateCommand(lamp.LampId, shouldEnable));
             }
+        }
+
+        private void SpawnHeldLampIfNeeded()
+        {
+            if (!spawnHeldLampOnStart || _heldLampInstance != null)
+            {
+                return;
+            }
+
+            var holdPoint = ResolveHoldPoint();
+            if (holdPoint == null)
+            {
+                LogKit.W("KeroseneLampManager missing player hold point. Held lamp will not be spawned.");
+                return;
+            }
+
+            if (lampPrefab == null)
+            {
+                LogKit.W("KeroseneLampManager missing lampPrefab. Held lamp will not be instantiated.");
+                return;
+            }
+
+            var lampId = _nextLampId++;
+            var instance = Instantiate(lampPrefab, holdPoint.position, holdPoint.rotation, lampParent);
+            if (instance == null)
+            {
+                return;
+            }
+
+            var lampInstance = instance.GetComponent<KeroseneLampInstance>();
+            if (lampInstance == null)
+            {
+                Destroy(instance);
+                LogKit.W("KeroseneLampManager spawned lamp missing KeroseneLampInstance.");
+                return;
+            }
+
+            _heldLampId = lampId;
+            _heldLampInstance = lampInstance;
+            _lampInstances[lampId] = lampInstance;
+
+            var currentAreaId = this.SendQuery(new GetCurrentAreaIdQuery());
+            var areaId = string.IsNullOrEmpty(currentAreaId) ? fallbackAreaId : currentAreaId;
+
+            lampInstance.SetVisualEnabled(true);
+            lampInstance.SetGameplayEnabled(true);
+            AttachHeldLamp(lampInstance, holdPoint);
+
+            this.SendCommand(new RecordLampSpawnedCommand(
+                lampId,
+                lampInstance.transform.position,
+                areaId,
+                instance,
+                true,
+                string.Empty,
+                maxActivePerArea,
+                true,
+                false));
+        }
+
+        private bool DropHeldLamp(Vector3 worldPos)
+        {
+            if (_heldLampInstance == null || _heldLampId < 0)
+            {
+                return false;
+            }
+
+            var lampTransform = _heldLampInstance.transform;
+            lampTransform.SetParent(lampParent, true);
+            lampTransform.position = worldPos;
+            _heldLampInstance.SetHeld(false);
+
+            var currentAreaId = this.SendQuery(new GetCurrentAreaIdQuery());
+            var areaId = string.IsNullOrEmpty(currentAreaId) ? fallbackAreaId : currentAreaId;
+
+            this.SendCommand(new ConvertHeldLampToDroppedCommand(
+                _heldLampId,
+                areaId,
+                worldPos,
+                maxActivePerArea));
+
+            _heldLampId = -1;
+            _heldLampInstance = null;
+            return true;
+        }
+
+        private void AttachHeldLamp(KeroseneLampInstance lampInstance, Transform holdPoint)
+        {
+            if (lampInstance == null || holdPoint == null)
+            {
+                return;
+            }
+
+            var lampTransform = lampInstance.transform;
+            lampTransform.SetParent(holdPoint, false);
+            lampTransform.localPosition = heldLampLocalOffset;
+            lampTransform.localEulerAngles = heldLampLocalEulerAngles;
+            lampInstance.SetHeld(true);
+        }
+
+        private Transform ResolveHoldPoint()
+        {
+            if (playerHoldPoint != null)
+            {
+                return playerHoldPoint;
+            }
+
+            if (_resolvedHoldPoint != null)
+            {
+                return _resolvedHoldPoint;
+            }
+
+            var controller = FindObjectOfType<PlatformerCharacterController>();
+            if (controller != null)
+            {
+                _resolvedHoldPoint = controller.transform;
+            }
+
+            return _resolvedHoldPoint;
+        }
+
+        private void ClearHeldLampState()
+        {
+            _heldLampId = -1;
+            _heldLampInstance = null;
         }
 
         private void RegisterPreplacedLamps()
