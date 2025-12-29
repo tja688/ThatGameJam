@@ -132,13 +132,14 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
                 true));
         }
 
-        private void ClearLamps()
+        private void ClearLamps(bool includePreplaced = false)
         {
             foreach (var instance in _lampInstances.Values)
             {
                 if (instance != null)
                 {
-                    if (instance.GetComponent<KeroseneLampPreplaced>() == null)
+                    var isPreplaced = instance.GetComponent<KeroseneLampPreplaced>() != null;
+                    if (includePreplaced || !isPreplaced)
                     {
                         Destroy(instance.gameObject);
                     }
@@ -365,6 +366,246 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
                     true,
                     false));
             }
+        }
+
+        public KeroseneLampSaveState CaptureSaveState()
+        {
+            var model = (KeroseneLampModel)this.GetModel<IKeroseneLampModel>();
+            var infos = model.GetLampInfos(false);
+            var state = new KeroseneLampSaveState
+            {
+                nextLampId = _nextLampId,
+                heldLampId = _heldLampId
+            };
+
+            for (var i = 0; i < infos.Count; i++)
+            {
+                var info = infos[i];
+                var isHeld = info.LampId == _heldLampId;
+                var isPreplaced = false;
+
+                if (model.TryGetLamp(info.LampId, out var record) && record.Instance != null)
+                {
+                    isPreplaced = record.Instance.GetComponent<KeroseneLampPreplaced>() != null;
+                }
+
+                state.lamps.Add(new KeroseneLampSaveEntry
+                {
+                    lampId = info.LampId,
+                    worldPos = info.WorldPos,
+                    areaId = info.AreaId ?? string.Empty,
+                    spawnOrderInArea = info.SpawnOrderInArea,
+                    visualEnabled = info.VisualEnabled,
+                    gameplayEnabled = info.GameplayEnabled,
+                    ignoreAreaLimit = info.IgnoreAreaLimit,
+                    countInLampCount = info.CountInLampCount,
+                    presetId = info.PresetId ?? string.Empty,
+                    isHeld = isHeld,
+                    isPreplaced = isPreplaced
+                });
+            }
+
+            state.lamps.Sort((a, b) =>
+            {
+                var areaCompare = string.CompareOrdinal(a.areaId, b.areaId);
+                if (areaCompare != 0) return areaCompare;
+                var orderCompare = a.spawnOrderInArea.CompareTo(b.spawnOrderInArea);
+                if (orderCompare != 0) return orderCompare;
+                return a.lampId.CompareTo(b.lampId);
+            });
+
+            return state;
+        }
+
+        public void RestoreFromSave(KeroseneLampSaveState state)
+        {
+            if (state == null)
+            {
+                return;
+            }
+            if (state.lamps == null)
+            {
+                state.lamps = new List<KeroseneLampSaveEntry>();
+            }
+
+            ClearHeldLampState();
+            ClearLamps();
+            _registeredPreplaced.Clear();
+            this.SendCommand(new ResetLampsCommand());
+
+            var preplaced = Resources.FindObjectsOfTypeAll<KeroseneLampPreplaced>();
+            var preplacedInstances = new List<KeroseneLampInstance>();
+            if (preplaced != null)
+            {
+                for (var i = 0; i < preplaced.Length; i++)
+                {
+                    var item = preplaced[i];
+                    if (item == null || !item.gameObject.scene.IsValid())
+                    {
+                        continue;
+                    }
+
+                    var instance = item.GetComponent<KeroseneLampInstance>();
+                    if (instance != null)
+                    {
+                        preplacedInstances.Add(instance);
+                    }
+                }
+            }
+
+            var usedPreplaced = new HashSet<KeroseneLampInstance>();
+            var holdPoint = ResolveHoldPoint();
+
+            var maxLampId = -1;
+            for (var i = 0; i < state.lamps.Count; i++)
+            {
+                var entry = state.lamps[i];
+                if (entry == null)
+                {
+                    continue;
+                }
+
+                maxLampId = Mathf.Max(maxLampId, entry.lampId);
+
+                KeroseneLampInstance instance = null;
+                var usedSceneInstance = false;
+                if (entry.isPreplaced)
+                {
+                    instance = FindMatchingPreplaced(entry.worldPos, preplacedInstances, usedPreplaced);
+                    if (instance != null)
+                    {
+                        usedSceneInstance = true;
+                        usedPreplaced.Add(instance);
+                        instance.gameObject.SetActive(true);
+                        var preplacedComponent = instance.GetComponent<KeroseneLampPreplaced>();
+                        if (preplacedComponent != null)
+                        {
+                            _registeredPreplaced.Add(preplacedComponent);
+                        }
+                    }
+                }
+
+                if (instance == null)
+                {
+                    if (lampPrefab == null)
+                    {
+                        LogKit.W("KeroseneLampManager missing lampPrefab during restore.");
+                        continue;
+                    }
+
+                    instance = Instantiate(lampPrefab, entry.worldPos, Quaternion.identity, lampParent)
+                        .GetComponent<KeroseneLampInstance>();
+                }
+
+                if (instance == null)
+                {
+                    continue;
+                }
+
+                if (!entry.isHeld)
+                {
+                    var lampTransform = instance.transform;
+                    if (lampParent != null && !usedSceneInstance)
+                    {
+                        lampTransform.SetParent(lampParent, true);
+                    }
+                    lampTransform.position = entry.worldPos;
+                    instance.SetHeld(false);
+                }
+
+                instance.SetVisualEnabled(entry.visualEnabled);
+                instance.SetGameplayEnabled(entry.gameplayEnabled);
+
+                _lampInstances[entry.lampId] = instance;
+
+                this.SendCommand(new RecordLampSpawnedCommand(
+                    entry.lampId,
+                    entry.worldPos,
+                    entry.areaId ?? string.Empty,
+                    instance.gameObject,
+                    entry.visualEnabled,
+                    entry.presetId ?? string.Empty,
+                    maxActivePerArea,
+                    entry.ignoreAreaLimit,
+                    entry.countInLampCount));
+
+                if (!entry.gameplayEnabled)
+                {
+                    this.SendCommand(new SetLampGameplayStateCommand(entry.lampId, false));
+                }
+                if (!entry.visualEnabled)
+                {
+                    this.SendCommand(new SetLampVisualStateCommand(entry.lampId, false));
+                }
+
+                if (entry.isHeld)
+                {
+                    _heldLampId = entry.lampId;
+                    _heldLampInstance = instance;
+                    if (holdPoint != null)
+                    {
+                        AttachHeldLamp(instance, holdPoint);
+                    }
+                    else
+                    {
+                        instance.SetHeld(true);
+                    }
+                }
+            }
+
+            if (preplacedInstances.Count > 0)
+            {
+                for (var i = 0; i < preplacedInstances.Count; i++)
+                {
+                    var instance = preplacedInstances[i];
+                    if (instance != null && !usedPreplaced.Contains(instance))
+                    {
+                        instance.gameObject.SetActive(false);
+                    }
+                }
+            }
+
+            _nextLampId = Mathf.Max(state.nextLampId, maxLampId + 1);
+            var model = (KeroseneLampModel)this.GetModel<IKeroseneLampModel>();
+            model.UpdateNextLampId(_nextLampId);
+        }
+
+        private static KeroseneLampInstance FindMatchingPreplaced(
+            Vector3 worldPos,
+            List<KeroseneLampInstance> preplacedInstances,
+            HashSet<KeroseneLampInstance> used)
+        {
+            if (preplacedInstances == null || preplacedInstances.Count == 0)
+            {
+                return null;
+            }
+
+            const float maxDistanceSqr = 0.25f * 0.25f;
+            KeroseneLampInstance best = null;
+            var bestDistance = float.MaxValue;
+
+            for (var i = 0; i < preplacedInstances.Count; i++)
+            {
+                var candidate = preplacedInstances[i];
+                if (candidate == null || used.Contains(candidate))
+                {
+                    continue;
+                }
+
+                var dist = (candidate.transform.position - worldPos).sqrMagnitude;
+                if (dist < bestDistance)
+                {
+                    bestDistance = dist;
+                    best = candidate;
+                }
+            }
+
+            if (best != null && bestDistance <= maxDistanceSqr)
+            {
+                return best;
+            }
+
+            return null;
         }
 
     }

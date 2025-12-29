@@ -27,6 +27,16 @@ namespace ThatGameJam.Features.StoryTasks.Models
             _flags.Add(flagId);
         }
 
+        internal List<string> GetAllFlags()
+        {
+            return new List<string>(_flags);
+        }
+
+        internal void ClearFlags()
+        {
+            _flags.Clear();
+        }
+
         protected override void OnInit()
         {
             _flags.Clear();
