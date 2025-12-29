@@ -980,6 +980,13 @@ GameObject:
   - component: {fileID: 306621834}
   - component: {fileID: 306621833}
   - component: {fileID: 306621832}
+  - component: {fileID: 306621841}
+  - component: {fileID: 306621840}
+  - component: {fileID: 306621839}
+  - component: {fileID: 306621838}
+  - component: {fileID: 306621837}
+  - component: {fileID: 306621836}
+  - component: {fileID: 306621835}
   m_Layer: 0
   m_Name: SaveSystem
   m_TagString: Untagged
@@ -1029,6 +1036,104 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &306621835
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 306621831}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3806a6b219ecc034ab5e084c937aee6b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThatGameJam.SaveSystem.Adapters.StoryFlagsSaveAdapter
+  loadOrder: 0
+  saveKey: story.flags
+--- !u!114 &306621836
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 306621831}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 78544381e11c92a4f82597f50fe44c80, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThatGameJam.SaveSystem.Adapters.SafeZoneSaveAdapter
+  loadOrder: 0
+  saveKey: player.safezone
+--- !u!114 &306621837
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 306621831}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc322d12b4a2d334e82b75e65ad480bb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThatGameJam.SaveSystem.Adapters.LightVitalitySaveAdapter
+  loadOrder: 0
+  saveKey: player.light
+--- !u!114 &306621838
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 306621831}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 615db85bdda0359459724cd840deb0f3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThatGameJam.SaveSystem.Adapters.DoorGateSaveAdapter
+  loadOrder: 0
+  saveKey: door.gates
+--- !u!114 &306621839
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 306621831}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a889afdd97f487241a83dfd6f2fd7f61, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThatGameJam.SaveSystem.Adapters.DarknessSaveAdapter
+  loadOrder: 0
+  saveKey: player.darkness
+--- !u!114 &306621840
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 306621831}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1c3e36f5930bfba4789504f35acc0380, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThatGameJam.SaveSystem.Adapters.CheckpointSaveAdapter
+  loadOrder: 0
+  saveKey: checkpoint.current
+--- !u!114 &306621841
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 306621831}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca61e78844861d744bda463af6ec7241, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThatGameJam.SaveSystem.Adapters.AreaSystemSaveAdapter
+  loadOrder: 0
+  saveKey: area.current
 --- !u!1 &309434659
 GameObject:
   m_ObjectHideFlags: 0
@@ -153574,6 +153679,38 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1cc1050835ecc0f4684d423e2bb0cb9b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ThatGameJam.Features.AreaSystem.Controllers.PlayerAreaSensor
+--- !u!114 &2088347279 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6520375823046296086, guid: d517678a051c1104fabc68c1e46505bf, type: 3}
+  m_PrefabInstance: {fileID: 3173432583773227641}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1550042484}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4c43ef82b1c8c8f4dbbfcb4f2f6f2ee1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThatGameJam.Features.PlayerCharacter2D.Controllers.PlatformerCharacterController
+--- !u!50 &2088347282 stripped
+Rigidbody2D:
+  m_CorrespondingSourceObject: {fileID: 5982544224618333446, guid: d517678a051c1104fabc68c1e46505bf, type: 3}
+  m_PrefabInstance: {fileID: 3173432583773227641}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2088347284
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1550042484}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cac9847c27118844299b2296efdfa820, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThatGameJam.SaveSystem.Adapters.PlayerSaveAdapter
+  loadOrder: 0
+  saveKey: player.core
+  playerController: {fileID: 2088347279}
+  playerRigidbody: {fileID: 2088347282}
 --- !u!1001 &2108058559
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -153653,6 +153790,7 @@ GameObject:
   - component: {fileID: 2108122864}
   - component: {fileID: 2108122863}
   - component: {fileID: 2108122865}
+  - component: {fileID: 2108122866}
   m_Layer: 0
   m_Name: GameSystems
   m_TagString: Untagged
@@ -153744,6 +153882,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 22f1a1a8bdd5bf44daa1fbd07a8be777, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ThatGameJam.Test.QuickExit
+--- !u!114 &2108122866
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2108122858}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3b573539247b90142b57c988a7ba25cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThatGameJam.SaveSystem.Adapters.KeroseneLampSaveAdapter
+  loadOrder: 0
+  saveKey: lamp.kerosene
+  lampManager: {fileID: 2108122864}
 --- !u!1001 &2112403927
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -154421,6 +154574,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 5348652786061501277, guid: d517678a051c1104fabc68c1e46505bf, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2088347273}
+    - targetCorrespondingSourceObject: {fileID: 5348652786061501277, guid: d517678a051c1104fabc68c1e46505bf, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2088347284}
   m_SourcePrefab: {fileID: 100100000, guid: d517678a051c1104fabc68c1e46505bf, type: 3}
 --- !u!1001 &3690812901348677590
 PrefabInstance:
