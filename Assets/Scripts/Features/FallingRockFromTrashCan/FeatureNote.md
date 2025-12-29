@@ -1,17 +1,17 @@
 # Feature: FallingRockFromTrashCan
 
 ## 1. Purpose
-- 触发后生成落石（一次性或循环）。
-- 使用对象池避免频繁 Instantiate。
-- 落石伤害统一走 HazardSystem。
+- 玩家进入区域后按顺序生成落石，玩家离开后延迟停止生成。
+- 落石生成时随机旋转/缩放/质量，落地触发特效音效后销毁。
 
 ## 2. Folder & Key Files
 - Root: `Assets/Scripts/Features/FallingRockFromTrashCan/`
 - Controllers:
-  - `FallingRockFromTrashCanController.cs` 〞 生成与调度
-  - `FallingRockProjectile.cs` 〞 落石行为与伤害
-- Utilities:
-  - `SimpleGameObjectPool.cs`
+  - `FallingRockFromTrashCanController.cs` 〞 触发区检测与生成调度
+  - `FallingRockProjectile.cs` 〞 落石随机化与落地销毁
+- Events:
+  - `FallingRockFromTrashCanStartedEvent.cs`
+  - `FallingRockFromTrashCanEndedEvent.cs`
 
 ## 3. Runtime Wiring
 ### 3.1 Root registration (`GameRootApp`)
@@ -19,15 +19,26 @@
 
 ### 3.2 Scene setup (Unity)
 - Required MonoBehaviours:
-  - `FallingRockFromTrashCanController`（触发器）
-  - `FallingRockProjectile`（挂在落石预制体上）
+  - `FallingRockFromTrashCanController`（触发器区域）
+  - `FallingRockProjectile`（挂在落石预制体上，需 Rigidbody2D + Collider2D）
 - Inspector fields (if any):
-  - `rockPrefab` / `spawnPoints` / `preloadCount`
-  - `spawnInterval` / `spawnCount` / `loopSpawn`
+  - `rockPrefab` / `spawnPoints` / `spawnInterval` / `stopDelaySeconds`
+  - `floorLayerMask` / `angularSpeedRange` / `scaleRange` / `massRange`
+  - `visualRoot` / `hitVfx` / `hitSfx`
 
 ## 4. Public API Surface (How other Features integrate)
 ### 4.1 Events (Outbound)
-- None.
+- `FallingRockFromTrashCanStartedEvent`
+  - When fired: 玩家进入触发区，落石事件开始。
+  - Payload: `AreaTransform`
+  - Typical listener:
+    ```csharp
+    this.RegisterEvent<FallingRockFromTrashCanStartedEvent>(OnFallingStart)
+        .UnRegisterWhenDisabled(gameObject);
+    ```
+- `FallingRockFromTrashCanEndedEvent`
+  - When fired: 玩家离开触发区，落石事件结束。
+  - Payload: `AreaTransform`
 
 ### 4.2 Request Events (Inbound write requests, optional)
 - None.
@@ -42,12 +53,13 @@
 - None.
 
 ## 5. Typical Integrations
-- 示例：垃圾桶触发器触发落石，落石碰到玩家即死亡。
+- 示例：进入落石区域时开启警示 UI，离开时关闭。
+- 示例：监听结束事件后停止其他机关联动。
 
 ## 6. Verify Checklist
 1. 在场景中放置 `FallingRockFromTrashCanController` 并配置生成点。
-2. 触发后生成落石，确认使用对象池复用对象。
-3. 落石命中玩家触发死亡（统一走 `HazardSystem`）。
+2. 玩家进入触发区后按顺序生成落石，离开后 5 秒停止生成。
+3. 落石碰到 Floor 层后隐藏本体并播放特效/音效，1 秒后销毁。
 
 ## 7. UNVERIFIED (only if needed)
 - None.

@@ -1,108 +1,233 @@
-using System;
+using System.Collections;
 using QFramework;
-using ThatGameJam.Features.Hazard.Systems;
-using ThatGameJam.Features.Shared;
 using UnityEngine;
 
 namespace ThatGameJam.Features.FallingRockFromTrashCan.Controllers
 {
-    [RequireComponent(typeof(Collider2D))]
-    public class FallingRockProjectile : MonoBehaviour, IController
+    [RequireComponent(typeof(Rigidbody2D), typeof(Collider2D))]
+    public class FallingRockProjectile : MonoBehaviour
     {
-        [SerializeField] private float lifeSeconds = 6f;
-        [SerializeField] private EDeathReason deathReason = EDeathReason.Script;
-        [SerializeField] private string playerTag = "Player";
+        [Header("Spawn Tuning")]
+        [SerializeField] private Vector2 angularSpeedRange = new Vector2(-180f, 180f);
+        [SerializeField] private Vector2 scaleRange = new Vector2(0.85f, 1.15f);
+        [SerializeField] private Vector2 massRange = new Vector2(0.8f, 1.2f);
+
+        [Header("Hit")]
+        [SerializeField] private LayerMask floorLayerMask;
+        [SerializeField] private float destroyDelaySeconds = 1f;
+        [SerializeField] private GameObject visualRoot;
+        [SerializeField] private ParticleSystem hitVfx;
+        [SerializeField] private AudioSource hitSfx;
 
         private Rigidbody2D _rigidbody2D;
-        private float _lifeTimer;
-        private Action<FallingRockProjectile> _despawnHandler;
-
-        public IArchitecture GetArchitecture() => GameRootApp.Interface;
+        private Collider2D _collider2D;
+        private Renderer[] _renderers;
+        private Vector3 _baseScale;
+        private bool _hit;
 
         private void Awake()
         {
             _rigidbody2D = GetComponent<Rigidbody2D>();
+            _collider2D = GetComponent<Collider2D>();
+            _baseScale = transform.localScale;
+
+            if (_rigidbody2D == null)
+            {
+                LogKit.E("FallingRockProjectile requires Rigidbody2D.");
+            }
+
+            if (_collider2D == null)
+            {
+                LogKit.E("FallingRockProjectile requires Collider2D.");
+            }
+
+            if (floorLayerMask.value == 0)
+            {
+                var floorLayer = LayerMask.NameToLayer("Floor");
+                if (floorLayer >= 0)
+                {
+                    floorLayerMask = 1 << floorLayer;
+                }
+                else
+                {
+                    LogKit.W("FallingRockProjectile floorLayerMask is empty; hits are ignored until set.");
+                }
+            }
+
+            if (visualRoot == null)
+            {
+                _renderers = GetComponentsInChildren<Renderer>(true);
+            }
         }
 
         private void OnEnable()
         {
-            _lifeTimer = 0f;
-        }
-
-        private void Update()
-        {
-            if (lifeSeconds <= 0f)
+            _hit = false;
+            if (_collider2D != null)
             {
-                return;
+                _collider2D.enabled = true;
             }
 
-            _lifeTimer += Time.deltaTime;
-            if (_lifeTimer >= lifeSeconds)
-            {
-                Despawn();
-            }
-        }
-
-        public void SetDespawnHandler(Action<FallingRockProjectile> handler)
-        {
-            _despawnHandler = handler;
-        }
-
-        public void ResetState(Vector3 position, Quaternion rotation)
-        {
-            transform.SetPositionAndRotation(position, rotation);
             if (_rigidbody2D != null)
             {
+                _rigidbody2D.simulated = true;
                 _rigidbody2D.linearVelocity = Vector2.zero;
-                _rigidbody2D.angularVelocity = 0f;
             }
+
+            RestoreVisuals();
+            ResetEffects();
+            ApplySpawnTuning();
         }
 
         private void OnCollisionEnter2D(Collision2D collision)
         {
-            HandleHit(collision.collider);
-            Despawn();
-        }
-
-        private void OnTriggerEnter2D(Collider2D other)
-        {
-            HandleHit(other);
-            Despawn();
-        }
-
-        private void HandleHit(Collider2D collider2D)
-        {
-            if (collider2D == null)
+            if (collision == null)
             {
                 return;
             }
 
-            if (IsPlayer(collider2D))
+            TryHandleHit(collision.collider);
+        }
+
+        private void OnTriggerEnter2D(Collider2D other)
+        {
+            TryHandleHit(other);
+        }
+
+        private void TryHandleHit(Collider2D other)
+        {
+            if (_hit || other == null)
             {
-                this.GetSystem<IHazardSystem>().ApplyInstantKill(deathReason, collider2D.transform.position);
+                return;
+            }
+
+            if (!IsFloor(other))
+            {
+                return;
+            }
+
+            _hit = true;
+
+            if (_collider2D != null)
+            {
+                _collider2D.enabled = false;
+            }
+
+            if (_rigidbody2D != null)
+            {
+                _rigidbody2D.simulated = false;
+            }
+
+            HideVisuals();
+            PlayEffects();
+            StartCoroutine(DestroyAfterDelay());
+        }
+
+        private bool IsFloor(Collider2D other)
+        {
+            if (floorLayerMask.value == 0)
+            {
+                return false;
+            }
+
+            return (floorLayerMask.value & (1 << other.gameObject.layer)) != 0;
+        }
+
+        private void ApplySpawnTuning()
+        {
+            var scale = Mathf.Max(0.01f, PickRange(scaleRange));
+            transform.localScale = new Vector3(_baseScale.x * scale, _baseScale.y * scale, _baseScale.z);
+
+            if (_rigidbody2D == null)
+            {
+                return;
+            }
+
+            _rigidbody2D.mass = Mathf.Max(0.01f, PickRange(massRange));
+            _rigidbody2D.angularVelocity = PickRange(angularSpeedRange);
+        }
+
+        private void HideVisuals()
+        {
+            if (visualRoot != null)
+            {
+                visualRoot.SetActive(false);
+                return;
+            }
+
+            if (_renderers == null)
+            {
+                return;
+            }
+
+            for (var i = 0; i < _renderers.Length; i++)
+            {
+                if (_renderers[i] != null)
+                {
+                    _renderers[i].enabled = false;
+                }
             }
         }
 
-        private bool IsPlayer(Collider2D other)
+        private void RestoreVisuals()
         {
-            if (string.IsNullOrEmpty(playerTag))
+            if (visualRoot != null)
             {
-                return true;
+                visualRoot.SetActive(true);
+                return;
             }
 
-            return other.CompareTag(playerTag);
+            if (_renderers == null)
+            {
+                return;
+            }
+
+            for (var i = 0; i < _renderers.Length; i++)
+            {
+                if (_renderers[i] != null)
+                {
+                    _renderers[i].enabled = true;
+                }
+            }
         }
 
-        private void Despawn()
+        private void PlayEffects()
         {
-            if (_despawnHandler != null)
+            if (hitVfx != null)
             {
-                _despawnHandler(this);
+                hitVfx.gameObject.SetActive(true);
+                hitVfx.Play(true);
             }
-            else
+
+            if (hitSfx != null)
             {
-                Destroy(gameObject);
+                hitSfx.Play();
             }
+        }
+
+        private void ResetEffects()
+        {
+            if (hitVfx != null)
+            {
+                hitVfx.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            }
+        }
+
+        private IEnumerator DestroyAfterDelay()
+        {
+            if (destroyDelaySeconds > 0f)
+            {
+                yield return new WaitForSeconds(destroyDelaySeconds);
+            }
+
+            Destroy(gameObject);
+        }
+
+        private static float PickRange(Vector2 range)
+        {
+            var min = Mathf.Min(range.x, range.y);
+            var max = Mathf.Max(range.x, range.y);
+            return Random.Range(min, max);
         }
     }
 }

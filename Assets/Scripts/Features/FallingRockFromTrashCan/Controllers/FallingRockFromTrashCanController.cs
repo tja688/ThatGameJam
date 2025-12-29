@@ -1,48 +1,150 @@
 using System.Collections;
 using QFramework;
-using ThatGameJam.Features.FallingRockFromTrashCan.Utilities;
+using ThatGameJam.Features.FallingRockFromTrashCan.Events;
 using UnityEngine;
 
 namespace ThatGameJam.Features.FallingRockFromTrashCan.Controllers
 {
     [RequireComponent(typeof(Collider2D))]
-    public class FallingRockFromTrashCanController : MonoBehaviour, IController
+    public class FallingRockFromTrashCanController : MonoBehaviour, IController, ICanSendEvent
     {
         [SerializeField] private GameObject rockPrefab;
         [SerializeField] private Transform[] spawnPoints;
-        [SerializeField] private Transform poolParent;
-        [SerializeField] private int preloadCount = 6;
-        [SerializeField] private bool triggerOnEnter = true;
+        [SerializeField] private float spawnInterval = 0.5f;
+        [SerializeField] private float stopDelaySeconds = 5f;
         [SerializeField] private string playerTag = "Player";
-        [SerializeField] private float startDelay = 0f;
-        [SerializeField] private float spawnInterval = 0f;
-        [SerializeField] private int spawnCount = 1;
-        [SerializeField] private bool loopSpawn;
 
-        private SimpleGameObjectPool _pool;
+        private readonly Collider2D[] _overlapResults = new Collider2D[8];
+        private ContactFilter2D _contactFilter;
+        private Collider2D _triggerCollider;
         private Coroutine _spawnRoutine;
-        private bool _triggered;
+        private Coroutine _stopRoutine;
+        private int _spawnIndex;
+        private bool _eventActive;
+        private bool _missingPrefabLogged;
 
         public IArchitecture GetArchitecture() => GameRootApp.Interface;
 
         private void Awake()
         {
-            var collider2D = GetComponent<Collider2D>();
-            if (collider2D != null && !collider2D.isTrigger)
+            _triggerCollider = GetComponent<Collider2D>();
+            if (_triggerCollider != null && !_triggerCollider.isTrigger)
             {
                 LogKit.W("FallingRockFromTrashCanController expects Collider2D.isTrigger = true.");
             }
+
+            _contactFilter = new ContactFilter2D
+            {
+                useLayerMask = true,
+                layerMask = Physics2D.AllLayers,
+                useTriggers = true
+            };
+        }
+
+        private void OnTriggerEnter2D(Collider2D other)
+        {
+            if (!IsPlayer(other))
+            {
+                return;
+            }
+
+            StartFallingEvent();
         }
 
         private void OnEnable()
         {
-            if (_pool == null)
+            _eventActive = false;
+            _spawnIndex = 0;
+            _missingPrefabLogged = false;
+
+            if (IsPlayerInside())
             {
-                _pool = new SimpleGameObjectPool(rockPrefab, preloadCount, poolParent);
+                StartFallingEvent();
             }
         }
 
         private void OnDisable()
+        {
+            _eventActive = false;
+            StopSpawningImmediate();
+        }
+
+        private void Update()
+        {
+            if (!_eventActive)
+            {
+                return;
+            }
+
+            if (!IsPlayerInside())
+            {
+                EndFallingEvent();
+            }
+        }
+
+        private void StartFallingEvent()
+        {
+            if (_eventActive)
+            {
+                return;
+            }
+
+            _eventActive = true;
+            _spawnIndex = 0;
+            this.SendEvent(new FallingRockFromTrashCanStartedEvent
+            {
+                AreaTransform = transform
+            });
+
+            if (_stopRoutine != null)
+            {
+                StopCoroutine(_stopRoutine);
+                _stopRoutine = null;
+            }
+
+            if (_spawnRoutine == null)
+            {
+                _spawnRoutine = StartCoroutine(SpawnRoutine());
+            }
+        }
+
+        private void EndFallingEvent()
+        {
+            if (!_eventActive)
+            {
+                return;
+            }
+
+            _eventActive = false;
+            this.SendEvent(new FallingRockFromTrashCanEndedEvent
+            {
+                AreaTransform = transform
+            });
+
+            if (_stopRoutine == null)
+            {
+                _stopRoutine = StartCoroutine(StopAfterDelay());
+            }
+        }
+
+        private IEnumerator StopAfterDelay()
+        {
+            if (stopDelaySeconds > 0f)
+            {
+                yield return new WaitForSeconds(stopDelaySeconds);
+            }
+
+            _stopRoutine = null;
+
+            if (_eventActive)
+            {
+                yield break;
+            }
+
+            StopSpawningImmediate();
+        }
+
+        private void StopSpawningImmediate()
         {
             if (_spawnRoutine != null)
             {
@@ -50,117 +152,89 @@ namespace ThatGameJam.Features.FallingRockFromTrashCan.Controllers
                 _spawnRoutine = null;
             }
 
-            _triggered = false;
-        }
-
-        private void OnTriggerEnter2D(Collider2D other)
-        {
-            if (!triggerOnEnter || _triggered || !IsPlayer(other))
+            if (_stopRoutine != null)
             {
-                return;
+                StopCoroutine(_stopRoutine);
+                _stopRoutine = null;
             }
-
-            _triggered = true;
-            TriggerSpawn();
-        }
-
-        public void TriggerSpawn()
-        {
-            if (_spawnRoutine != null)
-            {
-                return;
-            }
-
-            _spawnRoutine = StartCoroutine(SpawnRoutine());
         }
 
         private IEnumerator SpawnRoutine()
         {
-            if (startDelay > 0f)
+            while (true)
             {
-                yield return new WaitForSeconds(startDelay);
-            }
-
-            if (loopSpawn)
-            {
-                while (true)
+                SpawnOnce();
+                if (spawnInterval > 0f)
                 {
-                    SpawnOnce();
-                    if (spawnInterval > 0f)
-                    {
-                        yield return new WaitForSeconds(spawnInterval);
-                    }
-                    else
-                    {
-                        yield return null;
-                    }
+                    yield return new WaitForSeconds(spawnInterval);
+                }
+                else
+                {
+                    yield return null;
                 }
             }
-            else
-            {
-                var count = Mathf.Max(1, spawnCount);
-                for (var i = 0; i < count; i++)
-                {
-                    SpawnOnce();
-                    if (spawnInterval > 0f)
-                    {
-                        yield return new WaitForSeconds(spawnInterval);
-                    }
-                }
-            }
-
-            _spawnRoutine = null;
         }
 
         private void SpawnOnce()
         {
-            if (_pool == null)
+            if (rockPrefab == null)
             {
-                _pool = new SimpleGameObjectPool(rockPrefab, preloadCount, poolParent);
-            }
+                if (!_missingPrefabLogged)
+                {
+                    LogKit.W("FallingRockFromTrashCanController missing rockPrefab.");
+                    _missingPrefabLogged = true;
+                }
 
-            var instance = _pool.Get();
-            if (instance == null)
-            {
-                LogKit.W("FallingRockFromTrashCanController missing rockPrefab.");
                 return;
             }
 
-            var spawnTransform = PickSpawnPoint();
+            var spawnTransform = GetNextSpawnPoint();
             var position = spawnTransform != null ? spawnTransform.position : transform.position;
             var rotation = spawnTransform != null ? spawnTransform.rotation : Quaternion.identity;
 
-            var projectile = instance.GetComponent<FallingRockProjectile>();
-            if (projectile != null)
-            {
-                projectile.SetDespawnHandler(OnRockDespawned);
-                projectile.ResetState(position, rotation);
-            }
-            else
-            {
-                instance.transform.SetPositionAndRotation(position, rotation);
-            }
+            Instantiate(rockPrefab, position, rotation);
         }
 
-        private Transform PickSpawnPoint()
+        private Transform GetNextSpawnPoint()
         {
             if (spawnPoints == null || spawnPoints.Length == 0)
             {
                 return null;
             }
 
-            var index = Random.Range(0, spawnPoints.Length);
-            return spawnPoints[index];
-        }
-
-        private void OnRockDespawned(FallingRockProjectile projectile)
-        {
-            if (projectile == null)
+            if (_spawnIndex < 0 || _spawnIndex >= spawnPoints.Length)
             {
-                return;
+                _spawnIndex = 0;
             }
 
-            _pool.Return(projectile.gameObject);
+            var spawnTransform = spawnPoints[_spawnIndex];
+            _spawnIndex = (_spawnIndex + 1) % spawnPoints.Length;
+            return spawnTransform;
+        }
+
+        private bool IsPlayerInside()
+        {
+            if (_triggerCollider == null)
+            {
+                return false;
+            }
+
+            var count = _triggerCollider.Overlap(_contactFilter, _overlapResults);
+            if (count <= 0)
+            {
+                return false;
+            }
+
+            for (var i = 0; i < count; i++)
+            {
+                var collider = _overlapResults[i];
+                if (collider != null && IsPlayer(collider))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private bool IsPlayer(Collider2D other)
@@ -170,7 +244,7 @@ namespace ThatGameJam.Features.FallingRockFromTrashCan.Controllers
                 return true;
             }
 
-            return other.CompareTag(playerTag);
+            return other != null && other.CompareTag(playerTag);
         }
     }
 }
