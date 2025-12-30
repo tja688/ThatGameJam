@@ -1,0 +1,8 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:Template name="SliderRowTemplate" src="project://database/Assets/UI/Toolkit/UXML/Components/SliderRow.uxml" />
+    <ui:VisualElement name="AudioRoot" class="settings-page">
+        <ui:Instance template="SliderRowTemplate" name="BgmRow" />
+        <ui:Instance template="SliderRowTemplate" name="SfxRow" />
+        <ui:Instance template="SliderRowTemplate" name="UiRow" />
+    </ui:VisualElement>
+</ui:UXML>

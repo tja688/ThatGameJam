@@ -1,0 +1,7 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:VisualElement class="slider-row">
+        <ui:Label name="Title" text="Label" class="slider-row__label" />
+        <ui:Slider name="Slider" low-value="0" high-value="1" class="slider-row__slider" />
+        <ui:Label name="ValueLabel" text="0" class="slider-row__value" />
+    </ui:VisualElement>
+</ui:UXML>

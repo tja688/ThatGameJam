@@ -47,6 +47,10 @@ PrefabInstance:
       value: "\u94C3\u94DB\u82B1 2"
       objectReference: {fileID: 0}
     - target: {fileID: 4383698778723718310, guid: 4c6f04e4b124bc541b2225540e972af4, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 3951429010942005633, guid: 55582b75225abd042859a6fa98743a42, type: 3}
+    - target: {fileID: 4383698778723718310, guid: 4c6f04e4b124bc541b2225540e972af4, type: 3}
       propertyPath: m_SortingLayer
       value: 4
       objectReference: {fileID: 0}
@@ -266,6 +270,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: "\u94C3\u94DB\u82B1"
       objectReference: {fileID: 0}
+    - target: {fileID: 4383698778723718310, guid: 4c6f04e4b124bc541b2225540e972af4, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 3951429010942005633, guid: 55582b75225abd042859a6fa98743a42, type: 3}
     - target: {fileID: 4383698778723718310, guid: 4c6f04e4b124bc541b2225540e972af4, type: 3}
       propertyPath: m_SortingLayer
       value: 4

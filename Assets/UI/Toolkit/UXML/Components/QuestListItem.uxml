@@ -1,0 +1,6 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:Button name="QuestButton" class="quest-item">
+        <ui:Label name="QuestTitle" text="Quest" class="quest-item__title" />
+        <ui:Label name="QuestStatus" text="" class="quest-item__status" />
+    </ui:Button>
+</ui:UXML>

@@ -1,0 +1,9 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:VisualElement name="SaveRoot" class="settings-page">
+        <ui:VisualElement class="save-buttons">
+            <ui:Button name="SaveButton" text="Save" class="menu-button" />
+            <ui:Button name="LoadButton" text="Load" class="menu-button" />
+        </ui:VisualElement>
+        <ui:Label name="SaveInfoLabel" text="No save data." class="save-info" />
+    </ui:VisualElement>
+</ui:UXML>

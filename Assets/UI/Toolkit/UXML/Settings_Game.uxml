@@ -1,0 +1,14 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:VisualElement name="GameRoot" class="settings-page">
+        <ui:Label text="Bindings" class="section-title" />
+        <ui:VisualElement class="binding-buttons">
+            <ui:Button name="KeyboardBindingsButton" text="Keyboard Bindings" class="menu-button" />
+            <ui:Button name="GamepadBindingsButton" text="Gamepad Bindings" class="menu-button" />
+            <ui:Button name="MouseBindingsButton" text="Mouse Bindings" class="menu-button" />
+        </ui:VisualElement>
+        <ui:VisualElement class="game-actions">
+            <ui:Button name="ReturnToGameButton" text="Return To Game" class="primary-button" />
+            <ui:Button name="ExitGameButton" text="Exit Game" class="danger-button" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

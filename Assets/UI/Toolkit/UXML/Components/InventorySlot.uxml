@@ -1,0 +1,6 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:VisualElement class="inventory-slot" name="SlotRoot">
+        <ui:VisualElement name="Icon" class="inventory-slot__icon" />
+        <ui:Label name="CountLabel" text="" class="inventory-slot__count" />
+    </ui:VisualElement>
+</ui:UXML>
