@@ -1,4 +1,5 @@
 using QFramework;
+using ThatGameJam.Independents.Audio;
 using ThatGameJam.Features.DeathRespawn.Controllers;
 using ThatGameJam.Features.DeathRespawn.Systems;
 using ThatGameJam.Features.Shared;
@@ -29,6 +30,11 @@ namespace ThatGameJam.Features.Mechanisms.Controllers
 
             var system = this.GetSystem<IDeathRespawnSystem>();
             system.MarkDead(deathReason, other.transform.position);
+            AudioService.Play("SFX-ENV-0009", new AudioContext
+            {
+                Position = other.transform.position,
+                HasPosition = true
+            });
         }
     }
 }

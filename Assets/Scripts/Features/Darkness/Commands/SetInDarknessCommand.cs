@@ -1,4 +1,5 @@
 using QFramework;
+using ThatGameJam.Independents.Audio;
 using ThatGameJam.Features.Darkness.Models;
 using ThatGameJam.Features.Shared;
 
@@ -26,6 +27,15 @@ namespace ThatGameJam.Features.Darkness.Commands
             {
                 IsInDarkness = _isInDarkness
             });
+
+            if (_isInDarkness)
+            {
+                AudioService.Play("SFX-ENV-0001");
+            }
+            else
+            {
+                AudioService.Stop("SFX-ENV-0001");
+            }
         }
     }
 }

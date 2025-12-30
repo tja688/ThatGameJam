@@ -1,5 +1,6 @@
 using System.Collections;
 using QFramework;
+using ThatGameJam.Independents.Audio;
 using ThatGameJam.Features.DeathRespawn.Commands;
 using ThatGameJam.Features.Shared;
 using UnityEngine;
@@ -19,7 +20,6 @@ namespace ThatGameJam.Features.FallingRockFromTrashCan.Controllers
         [SerializeField] private float destroyDelaySeconds = 1f;
         [SerializeField] private GameObject visualRoot;
         [SerializeField] private ParticleSystem hitVfx;
-        [SerializeField] private AudioSource hitSfx;
 
         private Rigidbody2D _rigidbody2D;
         private Collider2D _collider2D;
@@ -219,10 +219,11 @@ namespace ThatGameJam.Features.FallingRockFromTrashCan.Controllers
                 hitVfx.Play(true);
             }
 
-            if (hitSfx != null)
+            AudioService.Play("SFX-ENV-0010", new AudioContext
             {
-                hitSfx.Play();
-            }
+                Position = transform.position,
+                HasPosition = true
+            });
         }
 
         private void ResetEffects()

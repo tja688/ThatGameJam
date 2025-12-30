@@ -1,5 +1,6 @@
 using System.Collections;
 using QFramework;
+using ThatGameJam.Independents.Audio;
 using ThatGameJam.Features.DeathRespawn.Commands; // 引入死亡命令
 using ThatGameJam.Features.LightVitality.Commands;
 using ThatGameJam.Features.LightVitality.Queries;
@@ -34,6 +35,7 @@ namespace ThatGameJam.Features.IceBlock.Controllers
         private float _currentProgress = 0f; // 当前已扣除的光亮值进度
         private float _idleTimer = 0f;       // 玩家离开后的计时器
         private int _playerInTriggerCount = 0;
+        private bool _meltLoopPlaying = false;
 
         public IArchitecture GetArchitecture() => GameRootApp.Interface;
 
@@ -71,6 +73,24 @@ namespace ThatGameJam.Features.IceBlock.Controllers
                 {
                     HandleRecovery();
                 }
+            }
+
+            var shouldLoop = isTouching && _currentProgress < meltLightAmount && !_isProcessing;
+            if (shouldLoop && !_meltLoopPlaying)
+            {
+                _meltLoopPlaying = true;
+                AudioService.Play("SFX-INT-0005", new AudioContext
+                {
+                    Owner = transform
+                });
+            }
+            else if (!shouldLoop && _meltLoopPlaying)
+            {
+                _meltLoopPlaying = false;
+                AudioService.Stop("SFX-INT-0005", new AudioContext
+                {
+                    Owner = transform
+                });
             }
         }
 
@@ -136,6 +156,20 @@ namespace ThatGameJam.Features.IceBlock.Controllers
         private IEnumerator CompleteMeltSequence()
         {
             _isProcessing = true;
+            if (_meltLoopPlaying)
+            {
+                _meltLoopPlaying = false;
+                AudioService.Stop("SFX-INT-0005", new AudioContext
+                {
+                    Owner = transform
+                });
+            }
+
+            AudioService.Play("SFX-INT-0006", new AudioContext
+            {
+                Position = transform.position,
+                HasPosition = true
+            });
 
             // 确保视觉达到熔化状态
 
@@ -159,6 +193,11 @@ namespace ThatGameJam.Features.IceBlock.Controllers
                 yield return null;
             }
             if (visualRenderer != null) visualRenderer.color = _originalColor;
+            AudioService.Play("SFX-INT-0006", new AudioContext
+            {
+                Position = transform.position,
+                HasPosition = true
+            });
 
             // 4. 物理恢复并检查死亡判定
             if (solidCollider != null)
@@ -197,6 +236,14 @@ namespace ThatGameJam.Features.IceBlock.Controllers
             _currentProgress = 0;
             _idleTimer = 0;
             _playerInTriggerCount = 0;
+            if (_meltLoopPlaying)
+            {
+                _meltLoopPlaying = false;
+                AudioService.Stop("SFX-INT-0005", new AudioContext
+                {
+                    Owner = transform
+                });
+            }
             if (solidCollider != null) solidCollider.enabled = true;
             if (visualRenderer != null) visualRenderer.color = _originalColor;
         }

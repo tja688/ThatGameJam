@@ -1,4 +1,5 @@
 using QFramework;
+using ThatGameJam.Independents.Audio;
 using ThatGameJam.Features.LightVitality.Models;
 using ThatGameJam.Features.Shared;
 using UnityEngine;
@@ -28,6 +29,7 @@ namespace ThatGameJam.Features.LightVitality.Commands
             if (previous > 0f && clamped <= 0f)
             {
                 sender.SendEvent(new LightDepletedEvent());
+                AudioService.Play("SFX-META-0002");
             }
         }
     }

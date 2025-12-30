@@ -1,4 +1,5 @@
 using QFramework;
+using ThatGameJam.Independents.Audio;
 using ThatGameJam.Features.PlayerCharacter2D.Models;
 using UnityEngine;
 
@@ -41,6 +42,11 @@ namespace ThatGameJam.Features.BugAI.Controllers
             {
                 movement?.NotifyPlayerReleased();
                 _isGrabbed = false;
+                AudioService.Stop("SFX-ENM-0003", new AudioContext
+                {
+                    Position = transform.position,
+                    HasPosition = true
+                });
             }
 
             _playerInside = false;
@@ -70,6 +76,11 @@ namespace ThatGameJam.Features.BugAI.Controllers
                 {
                     movement?.NotifyPlayerGrabbed();
                     _isGrabbed = true;
+                    AudioService.Play("SFX-ENM-0003", new AudioContext
+                    {
+                        Position = transform.position,
+                        HasPosition = true
+                    });
                 }
 
                 return;
@@ -80,11 +91,21 @@ namespace ThatGameJam.Features.BugAI.Controllers
             {
                 movement?.NotifyPlayerGrabbed();
                 _isGrabbed = true;
+                AudioService.Play("SFX-ENM-0003", new AudioContext
+                {
+                    Position = transform.position,
+                    HasPosition = true
+                });
             }
             else if (!wantsGrab && _isGrabbed)
             {
                 movement?.NotifyPlayerReleased();
                 _isGrabbed = false;
+                AudioService.Stop("SFX-ENM-0003", new AudioContext
+                {
+                    Position = transform.position,
+                    HasPosition = true
+                });
             }
         }
 
@@ -110,6 +131,11 @@ namespace ThatGameJam.Features.BugAI.Controllers
             {
                 movement?.NotifyPlayerReleased();
                 _isGrabbed = false;
+                AudioService.Stop("SFX-ENM-0003", new AudioContext
+                {
+                    Position = transform.position,
+                    HasPosition = true
+                });
             }
         }
 

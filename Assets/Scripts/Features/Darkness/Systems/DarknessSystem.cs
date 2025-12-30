@@ -1,4 +1,5 @@
 using QFramework;
+using ThatGameJam.Independents.Audio;
 using ThatGameJam.Features.Darkness.Models;
 using ThatGameJam.Features.LightVitality.Commands;
 using ThatGameJam.Features.Shared;
@@ -11,6 +12,7 @@ namespace ThatGameJam.Features.Darkness.Systems
 
         private bool _isSafeZone;
         private IUnRegister _safeZoneUnregister;
+        private bool _loopPlaying;
 
         protected override void OnInit()
         {
@@ -25,15 +27,27 @@ namespace ThatGameJam.Features.Darkness.Systems
 
         public void Tick(float deltaTime)
         {
-            if (deltaTime <= 0f || _isSafeZone)
+            if (deltaTime <= 0f)
             {
                 return;
             }
 
             var model = this.GetModel<IDarknessModel>();
-            if (!model.IsInDarkness.Value)
+            var shouldPlay = !_isSafeZone && model.IsInDarkness.Value;
+            if (!shouldPlay)
             {
+                if (_loopPlaying)
+                {
+                    _loopPlaying = false;
+                    AudioService.Stop("SFX-ENV-0002");
+                }
                 return;
+            }
+
+            if (!_loopPlaying)
+            {
+                _loopPlaying = true;
+                AudioService.Play("SFX-ENV-0002");
             }
 
             var amount = DefaultDrainPerSec * deltaTime;
@@ -48,6 +62,11 @@ namespace ThatGameJam.Features.Darkness.Systems
         private void OnSafeZoneStateChanged(SafeZoneStateChangedEvent e)
         {
             _isSafeZone = e.IsSafe;
+            if (_isSafeZone && _loopPlaying)
+            {
+                _loopPlaying = false;
+                AudioService.Stop("SFX-ENV-0002");
+            }
         }
     }
 }

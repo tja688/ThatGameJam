@@ -1,4 +1,5 @@
 using QFramework;
+using ThatGameJam.Independents.Audio;
 using ThatGameJam.Features.PlayerCharacter2D.Configs;
 using ThatGameJam.Features.PlayerCharacter2D.Events;
 using ThatGameJam.Features.PlayerCharacter2D.Models;
@@ -79,6 +80,13 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Commands
 
                 var impact = Mathf.Abs(velocity.y);
                 this.SendEvent(new PlayerGroundedChangedEvent { Grounded = true, ImpactSpeed = impact });
+                var landingScale = _stats != null ? Mathf.InverseLerp(0f, _stats.MaxFallSpeed, impact) : 1f;
+                AudioService.Play("SFX-PLR-0002", new AudioContext
+                {
+                    Position = model.Position.Value,
+                    HasPosition = true,
+                    VolumeScale = Mathf.Lerp(0.6f, 1f, landingScale)
+                });
             }
             else if (model.Grounded.Value && !_groundHit)
             {
@@ -209,6 +217,11 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Commands
                         }
 
                         this.SendEvent<PlayerJumpedEvent>();
+                        AudioService.Play("SFX-PLR-0001", new AudioContext
+                        {
+                            Position = model.Position.Value,
+                            HasPosition = true
+                        });
                         performedClimbJump = true;
                     }
                 }
@@ -291,6 +304,22 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Commands
                 if (climbStateChanged)
                 {
                     this.SendEvent(new PlayerClimbStateChangedEvent { IsClimbing = model.IsClimbing.Value });
+                    if (model.IsClimbing.Value)
+                    {
+                        AudioService.Play("SFX-PLR-0003", new AudioContext
+                        {
+                            Position = model.Position.Value,
+                            HasPosition = true
+                        });
+                    }
+                    else
+                    {
+                        AudioService.Stop("SFX-PLR-0003", new AudioContext
+                        {
+                            Position = model.Position.Value,
+                            HasPosition = true
+                        });
+                    }
                     if (_stats != null && _stats.EnableClimbDebugLogs)
                     {
                         var move = model.FrameInput.Move;
@@ -326,6 +355,11 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Commands
                     model.CoyoteUsable = false;
                     velocity.y = _stats.JumpPower;
                     this.SendEvent<PlayerJumpedEvent>();
+                    AudioService.Play("SFX-PLR-0001", new AudioContext
+                    {
+                        Position = model.Position.Value,
+                        HasPosition = true
+                    });
                 }
                 model.JumpToConsume = false;
             }
@@ -366,6 +400,22 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Commands
             if (climbStateChanged)
             {
                 this.SendEvent(new PlayerClimbStateChangedEvent { IsClimbing = model.IsClimbing.Value });
+                if (model.IsClimbing.Value)
+                {
+                    AudioService.Play("SFX-PLR-0003", new AudioContext
+                    {
+                        Position = model.Position.Value,
+                        HasPosition = true
+                    });
+                }
+                else
+                {
+                    AudioService.Stop("SFX-PLR-0003", new AudioContext
+                    {
+                        Position = model.Position.Value,
+                        HasPosition = true
+                    });
+                }
                 if (_stats != null && _stats.EnableClimbDebugLogs)
                 {
                     var move = model.FrameInput.Move;

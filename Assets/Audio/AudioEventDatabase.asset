@@ -1,0 +1,918 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e3fa4902cde5cd74a974edb01590f252, type: 3}
+  m_Name: AudioEventDatabase
+  m_EditorClassIdentifier: Assembly-CSharp::ThatGameJam.Independents.Audio.AudioEventDatabase
+  Events:
+  - EventId: SFX-PLR-0002
+    DisplayName: "\u843D\u5730"
+    Category: 0
+    Bus: 0
+    Clips:
+    - {fileID: 8300000, guid: 74aa4e304f62b934691bb2d83f094bed, type: 3}
+    PlayMode: 1
+    Loop: 0
+    UseVolumeRange: 0
+    Volume: 1
+    VolumeRange: {x: 0.9, y: 1}
+    UsePitchRange: 0
+    Pitch: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    Cooldown: 0.2
+    RandomIntervalMin: 0
+    RandomIntervalMax: 0
+    SpatialMode: 0
+    SpatialBlend: 0
+    MinDistance: 1
+    MaxDistance: 500
+    StopPolicy: 1
+    FadeOutDuration: 0
+  - EventId: SFX-ENM-0001
+    DisplayName: "\u866B\u5B50\u8FFD\u5149\u5F00\u59CB"
+    Category: 0
+    Bus: 0
+    Clips: []
+    PlayMode: 1
+    Loop: 0
+    UseVolumeRange: 0
+    Volume: 1
+    VolumeRange: {x: 0.9, y: 1}
+    UsePitchRange: 0
+    Pitch: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    Cooldown: 0.2
+    RandomIntervalMin: 0
+    RandomIntervalMax: 0
+    SpatialMode: 0
+    SpatialBlend: 0
+    MinDistance: 1
+    MaxDistance: 500
+    StopPolicy: 1
+    FadeOutDuration: 0
+  - EventId: SFX-ENM-0002
+    DisplayName: "\u866B\u5B50\u9000\u56DE\u5DE2\u7A74/\u51B7\u5374"
+    Category: 0
+    Bus: 0
+    Clips: []
+    PlayMode: 1
+    Loop: 0
+    UseVolumeRange: 0
+    Volume: 1
+    VolumeRange: {x: 0.9, y: 1}
+    UsePitchRange: 0
+    Pitch: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    Cooldown: 0.2
+    RandomIntervalMin: 0
+    RandomIntervalMax: 0
+    SpatialMode: 0
+    SpatialBlend: 0
+    MinDistance: 1
+    MaxDistance: 500
+    StopPolicy: 1
+    FadeOutDuration: 0
+  - EventId: SFX-ENM-0003
+    DisplayName: "\u866B\u5B50\u6293\u53D6/\u653E\u624B"
+    Category: 0
+    Bus: 0
+    Clips: []
+    PlayMode: 1
+    Loop: 0
+    UseVolumeRange: 0
+    Volume: 1
+    VolumeRange: {x: 0.9, y: 1}
+    UsePitchRange: 0
+    Pitch: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    Cooldown: 0.2
+    RandomIntervalMin: 0
+    RandomIntervalMax: 0
+    SpatialMode: 0
+    SpatialBlend: 0
+    MinDistance: 1
+    MaxDistance: 500
+    StopPolicy: 1
+    FadeOutDuration: 0
+  - EventId: SFX-ENM-0004
+    DisplayName: "\u866B\u5B50\u8E29\u8E0F\u53CD\u5F39"
+    Category: 0
+    Bus: 0
+    Clips: []
+    PlayMode: 1
+    Loop: 0
+    UseVolumeRange: 0
+    Volume: 1
+    VolumeRange: {x: 0.9, y: 1}
+    UsePitchRange: 0
+    Pitch: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    Cooldown: 0.2
+    RandomIntervalMin: 0
+    RandomIntervalMax: 0
+    SpatialMode: 0
+    SpatialBlend: 0
+    MinDistance: 1
+    MaxDistance: 500
+    StopPolicy: 1
+    FadeOutDuration: 0
+  - EventId: SFX-ENM-0005
+    DisplayName: "\u5E7D\u7075\u6F02\u6D6E\u5FAA\u73AF"
+    Category: 0
+    Bus: 0
+    Clips: []
+    PlayMode: 1
+    Loop: 0
+    UseVolumeRange: 0
+    Volume: 1
+    VolumeRange: {x: 0.9, y: 1}
+    UsePitchRange: 0
+    Pitch: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    Cooldown: 0.2
+    RandomIntervalMin: 0
+    RandomIntervalMax: 0
+    SpatialMode: 0
+    SpatialBlend: 0
+    MinDistance: 1
+    MaxDistance: 500
+    StopPolicy: 1
+    FadeOutDuration: 0
+  - EventId: SFX-ENM-0006
+    DisplayName: "\u5E7D\u7075\u63A5\u89E6\u5438\u5149"
+    Category: 0
+    Bus: 0
+    Clips: []
+    PlayMode: 1
+    Loop: 0
+    UseVolumeRange: 0
+    Volume: 1
+    VolumeRange: {x: 0.9, y: 1}
+    UsePitchRange: 0
+    Pitch: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    Cooldown: 0.2
+    RandomIntervalMin: 0
+    RandomIntervalMax: 0
+    SpatialMode: 0
+    SpatialBlend: 0
+    MinDistance: 1
+    MaxDistance: 500
+    StopPolicy: 1
+    FadeOutDuration: 0
+  - EventId: SFX-ENV-0001
+    DisplayName: "\u8FDB\u5165/\u79BB\u5F00\u9ED1\u6697"
+    Category: 0
+    Bus: 0
+    Clips: []
+    PlayMode: 1
+    Loop: 0
+    UseVolumeRange: 0
+    Volume: 1
+    VolumeRange: {x: 0.9, y: 1}
+    UsePitchRange: 0
+    Pitch: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    Cooldown: 0.2
+    RandomIntervalMin: 0
+    RandomIntervalMax: 0
+    SpatialMode: 0
+    SpatialBlend: 0
+    MinDistance: 1
+    MaxDistance: 500
+    StopPolicy: 1
+    FadeOutDuration: 0
+  - EventId: SFX-ENV-0002
+    DisplayName: "\u9ED1\u6697\u6263\u5149\u5FAA\u73AF"
+    Category: 0
+    Bus: 0
+    Clips: []
+    PlayMode: 1
+    Loop: 0
+    UseVolumeRange: 0
+    Volume: 1
+    VolumeRange: {x: 0.9, y: 1}
+    UsePitchRange: 0
+    Pitch: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    Cooldown: 0.2
+    RandomIntervalMin: 0
+    RandomIntervalMax: 0
+    SpatialMode: 0
+    SpatialBlend: 0
+    MinDistance: 1
+    MaxDistance: 500
+    StopPolicy: 1
+    FadeOutDuration: 0
+  - EventId: SFX-ENV-0003
+    DisplayName: "\u8FDB\u5165/\u79BB\u5F00\u5B89\u5168\u533A"
+    Category: 0
+    Bus: 0
+    Clips: []
+    PlayMode: 1
+    Loop: 0
+    UseVolumeRange: 0
+    Volume: 1
+    VolumeRange: {x: 0.9, y: 1}
+    UsePitchRange: 0
+    Pitch: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    Cooldown: 0.2
+    RandomIntervalMin: 0
+    RandomIntervalMax: 0
+    SpatialMode: 0
+    SpatialBlend: 0
+    MinDistance: 1
+    MaxDistance: 500
+    StopPolicy: 1
+    FadeOutDuration: 0
+  - EventId: SFX-ENV-0004
+    DisplayName: "\u5B89\u5168\u533A\u56DE\u5149\u5FAA\u73AF"
+    Category: 0
+    Bus: 0
+    Clips: []
+    PlayMode: 1
+    Loop: 0
+    UseVolumeRange: 0
+    Volume: 1
+    VolumeRange: {x: 0.9, y: 1}
+    UsePitchRange: 0
+    Pitch: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    Cooldown: 0.2
+    RandomIntervalMin: 0
+    RandomIntervalMax: 0
+    SpatialMode: 0
+    SpatialBlend: 0
+    MinDistance: 1
+    MaxDistance: 500
+    StopPolicy: 1
+    FadeOutDuration: 0
+  - EventId: SFX-ENV-0005
+    DisplayName: "\u533A\u57DF\u5207\u6362\u63D0\u793A"
+    Category: 0
+    Bus: 0
+    Clips: []
+    PlayMode: 1
+    Loop: 0
+    UseVolumeRange: 0
+    Volume: 1
+    VolumeRange: {x: 0.9, y: 1}
+    UsePitchRange: 0
+    Pitch: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    Cooldown: 0.2
+    RandomIntervalMin: 0
+    RandomIntervalMax: 0
+    SpatialMode: 0
+    SpatialBlend: 0
+    MinDistance: 1
+    MaxDistance: 500
+    StopPolicy: 1
+    FadeOutDuration: 0
+  - EventId: SFX-ENV-0006
+    DisplayName: "\u5371\u9669\u4F53\u79EF\u79D2\u6740"
+    Category: 0
+    Bus: 0
+    Clips: []
+    PlayMode: 1
+    Loop: 0
+    UseVolumeRange: 0
+    Volume: 1
+    VolumeRange: {x: 0.9, y: 1}
+    UsePitchRange: 0
+    Pitch: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    Cooldown: 0.2
+    RandomIntervalMin: 0
+    RandomIntervalMax: 0
+    SpatialMode: 0
+    SpatialBlend: 0
+    MinDistance: 1
+    MaxDistance: 500
+    StopPolicy: 1
+    FadeOutDuration: 0
+  - EventId: SFX-ENV-0007
+    DisplayName: "\u5371\u9669\u4F53\u79EF\u6301\u7EED\u6263\u5149"
+    Category: 0
+    Bus: 0
+    Clips: []
+    PlayMode: 1
+    Loop: 0
+    UseVolumeRange: 0
+    Volume: 1
+    VolumeRange: {x: 0.9, y: 1}
+    UsePitchRange: 0
+    Pitch: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    Cooldown: 0.2
+    RandomIntervalMin: 0
+    RandomIntervalMax: 0
+    SpatialMode: 0
+    SpatialBlend: 0
+    MinDistance: 1
+    MaxDistance: 500
+    StopPolicy: 1
+    FadeOutDuration: 0
+  - EventId: SFX-ENV-0008
+    DisplayName: "\u4F24\u5BB3\u4F53\u79EF\u5468\u671F\u6263\u5149"
+    Category: 0
+    Bus: 0
+    Clips: []
+    PlayMode: 1
+    Loop: 0
+    UseVolumeRange: 0
+    Volume: 1
+    VolumeRange: {x: 0.9, y: 1}
+    UsePitchRange: 0
+    Pitch: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    Cooldown: 0.2
+    RandomIntervalMin: 0
+    RandomIntervalMax: 0
+    SpatialMode: 0
+    SpatialBlend: 0
+    MinDistance: 1
+    MaxDistance: 500
+    StopPolicy: 1
+    FadeOutDuration: 0
+  - EventId: SFX-ENV-0009
+    DisplayName: "\u5C16\u523A\u51FB\u6740"
+    Category: 0
+    Bus: 0
+    Clips: []
+    PlayMode: 1
+    Loop: 0
+    UseVolumeRange: 0
+    Volume: 1
+    VolumeRange: {x: 0.9, y: 1}
+    UsePitchRange: 0
+    Pitch: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    Cooldown: 0.2
+    RandomIntervalMin: 0
+    RandomIntervalMax: 0
+    SpatialMode: 0
+    SpatialBlend: 0
+    MinDistance: 1
+    MaxDistance: 500
+    StopPolicy: 1
+    FadeOutDuration: 0
+  - EventId: SFX-ENV-0010
+    DisplayName: "\u843D\u77F3\u547D\u4E2D"
+    Category: 0
+    Bus: 0
+    Clips: []
+    PlayMode: 1
+    Loop: 0
+    UseVolumeRange: 0
+    Volume: 1
+    VolumeRange: {x: 0.9, y: 1}
+    UsePitchRange: 0
+    Pitch: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    Cooldown: 0.2
+    RandomIntervalMin: 0
+    RandomIntervalMax: 0
+    SpatialMode: 0
+    SpatialBlend: 0
+    MinDistance: 1
+    MaxDistance: 500
+    StopPolicy: 1
+    FadeOutDuration: 0
+  - EventId: SFX-ENV-0011
+    DisplayName: "\u6389\u843D\u6B7B\u4EA1\u4F53\u79EF"
+    Category: 0
+    Bus: 0
+    Clips: []
+    PlayMode: 1
+    Loop: 0
+    UseVolumeRange: 0
+    Volume: 1
+    VolumeRange: {x: 0.9, y: 1}
+    UsePitchRange: 0
+    Pitch: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    Cooldown: 0.2
+    RandomIntervalMin: 0
+    RandomIntervalMax: 0
+    SpatialMode: 0
+    SpatialBlend: 0
+    MinDistance: 1
+    MaxDistance: 500
+    StopPolicy: 1
+    FadeOutDuration: 0
+  - EventId: SFX-INT-0001
+    DisplayName: "\u98CE\u94C3\u82B1\u6FC0\u6D3B/\u7184\u706D"
+    Category: 0
+    Bus: 0
+    Clips: []
+    PlayMode: 1
+    Loop: 0
+    UseVolumeRange: 0
+    Volume: 1
+    VolumeRange: {x: 0.9, y: 1}
+    UsePitchRange: 0
+    Pitch: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    Cooldown: 0.2
+    RandomIntervalMin: 0
+    RandomIntervalMax: 0
+    SpatialMode: 0
+    SpatialBlend: 0
+    MinDistance: 1
+    MaxDistance: 500
+    StopPolicy: 1
+    FadeOutDuration: 0
+  - EventId: SFX-INT-0002
+    DisplayName: "\u95E8\u5F00\u5173\uFF08\u903B\u8F91\u95E8\uFF09"
+    Category: 0
+    Bus: 0
+    Clips: []
+    PlayMode: 1
+    Loop: 0
+    UseVolumeRange: 0
+    Volume: 1
+    VolumeRange: {x: 0.9, y: 1}
+    UsePitchRange: 0
+    Pitch: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    Cooldown: 0.2
+    RandomIntervalMin: 0
+    RandomIntervalMax: 0
+    SpatialMode: 0
+    SpatialBlend: 0
+    MinDistance: 1
+    MaxDistance: 500
+    StopPolicy: 1
+    FadeOutDuration: 0
+  - EventId: SFX-INT-0003
+    DisplayName: "\u95E8\u4F53\u8FD0\u52A8\u5FAA\u73AF\uFF08\u8868\u73B0\u5C42\uFF09"
+    Category: 0
+    Bus: 0
+    Clips: []
+    PlayMode: 1
+    Loop: 0
+    UseVolumeRange: 0
+    Volume: 1
+    VolumeRange: {x: 0.9, y: 1}
+    UsePitchRange: 0
+    Pitch: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    Cooldown: 0.2
+    RandomIntervalMin: 0
+    RandomIntervalMax: 0
+    SpatialMode: 0
+    SpatialBlend: 0
+    MinDistance: 1
+    MaxDistance: 500
+    StopPolicy: 1
+    FadeOutDuration: 0
+  - EventId: SFX-INT-0004
+    DisplayName: "\u85E4\u8513\u751F\u957F/\u56DE\u7F29"
+    Category: 0
+    Bus: 0
+    Clips: []
+    PlayMode: 1
+    Loop: 0
+    UseVolumeRange: 0
+    Volume: 1
+    VolumeRange: {x: 0.9, y: 1}
+    UsePitchRange: 0
+    Pitch: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    Cooldown: 0.2
+    RandomIntervalMin: 0
+    RandomIntervalMax: 0
+    SpatialMode: 0
+    SpatialBlend: 0
+    MinDistance: 1
+    MaxDistance: 500
+    StopPolicy: 1
+    FadeOutDuration: 0
+  - EventId: SFX-INT-0005
+    DisplayName: "\u51B0\u5757\u6D88\u878D\u5FAA\u73AF"
+    Category: 0
+    Bus: 0
+    Clips: []
+    PlayMode: 1
+    Loop: 0
+    UseVolumeRange: 0
+    Volume: 1
+    VolumeRange: {x: 0.9, y: 1}
+    UsePitchRange: 0
+    Pitch: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    Cooldown: 0.2
+    RandomIntervalMin: 0
+    RandomIntervalMax: 0
+    SpatialMode: 0
+    SpatialBlend: 0
+    MinDistance: 1
+    MaxDistance: 500
+    StopPolicy: 1
+    FadeOutDuration: 0
+  - EventId: SFX-INT-0006
+    DisplayName: "\u51B0\u5757\u6D88\u878D\u5B8C\u6210/\u51DD\u7ED3"
+    Category: 0
+    Bus: 0
+    Clips: []
+    PlayMode: 1
+    Loop: 0
+    UseVolumeRange: 0
+    Volume: 1
+    VolumeRange: {x: 0.9, y: 1}
+    UsePitchRange: 0
+    Pitch: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    Cooldown: 0.2
+    RandomIntervalMin: 0
+    RandomIntervalMax: 0
+    SpatialMode: 0
+    SpatialBlend: 0
+    MinDistance: 1
+    MaxDistance: 500
+    StopPolicy: 1
+    FadeOutDuration: 0
+  - EventId: SFX-INT-0007
+    DisplayName: "\u706F\u751F\u6210/\u70B9\u4EAE"
+    Category: 0
+    Bus: 0
+    Clips: []
+    PlayMode: 1
+    Loop: 0
+    UseVolumeRange: 0
+    Volume: 1
+    VolumeRange: {x: 0.9, y: 1}
+    UsePitchRange: 0
+    Pitch: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    Cooldown: 0.2
+    RandomIntervalMin: 0
+    RandomIntervalMax: 0
+    SpatialMode: 0
+    SpatialBlend: 0
+    MinDistance: 1
+    MaxDistance: 500
+    StopPolicy: 1
+    FadeOutDuration: 0
+  - EventId: SFX-INT-0008
+    DisplayName: "\u706F\u62FE\u8D77/\u653E\u4E0B"
+    Category: 0
+    Bus: 0
+    Clips: []
+    PlayMode: 1
+    Loop: 0
+    UseVolumeRange: 0
+    Volume: 1
+    VolumeRange: {x: 0.9, y: 1}
+    UsePitchRange: 0
+    Pitch: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    Cooldown: 0.2
+    RandomIntervalMin: 0
+    RandomIntervalMax: 0
+    SpatialMode: 0
+    SpatialBlend: 0
+    MinDistance: 1
+    MaxDistance: 500
+    StopPolicy: 1
+    FadeOutDuration: 0
+  - EventId: SFX-INT-0009
+    DisplayName: "\u706F\u73A9\u6CD5\u5931\u6548/\u7184\u706D"
+    Category: 0
+    Bus: 0
+    Clips: []
+    PlayMode: 1
+    Loop: 0
+    UseVolumeRange: 0
+    Volume: 1
+    VolumeRange: {x: 0.9, y: 1}
+    UsePitchRange: 0
+    Pitch: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    Cooldown: 0.2
+    RandomIntervalMin: 0
+    RandomIntervalMax: 0
+    SpatialMode: 0
+    SpatialBlend: 0
+    MinDistance: 1
+    MaxDistance: 500
+    StopPolicy: 1
+    FadeOutDuration: 0
+  - EventId: SFX-INT-0010
+    DisplayName: "\u706F\u89C6\u89C9\u663E\u9690\u5207\u6362"
+    Category: 0
+    Bus: 0
+    Clips: []
+    PlayMode: 1
+    Loop: 0
+    UseVolumeRange: 0
+    Volume: 1
+    VolumeRange: {x: 0.9, y: 1}
+    UsePitchRange: 0
+    Pitch: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    Cooldown: 0.2
+    RandomIntervalMin: 0
+    RandomIntervalMax: 0
+    SpatialMode: 0
+    SpatialBlend: 0
+    MinDistance: 1
+    MaxDistance: 500
+    StopPolicy: 1
+    FadeOutDuration: 0
+  - EventId: SFX-INT-0011
+    DisplayName: "\u5B58\u6863\u70B9\u89E6\u53D1"
+    Category: 0
+    Bus: 0
+    Clips: []
+    PlayMode: 1
+    Loop: 0
+    UseVolumeRange: 0
+    Volume: 1
+    VolumeRange: {x: 0.9, y: 1}
+    UsePitchRange: 0
+    Pitch: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    Cooldown: 0.2
+    RandomIntervalMin: 0
+    RandomIntervalMax: 0
+    SpatialMode: 0
+    SpatialBlend: 0
+    MinDistance: 1
+    MaxDistance: 500
+    StopPolicy: 1
+    FadeOutDuration: 0
+  - EventId: SFX-INT-0012
+    DisplayName: "\u5267\u60C5\u89E6\u53D1\u95E8\u5F00\u5173"
+    Category: 0
+    Bus: 0
+    Clips: []
+    PlayMode: 1
+    Loop: 0
+    UseVolumeRange: 0
+    Volume: 1
+    VolumeRange: {x: 0.9, y: 1}
+    UsePitchRange: 0
+    Pitch: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    Cooldown: 0.2
+    RandomIntervalMin: 0
+    RandomIntervalMax: 0
+    SpatialMode: 0
+    SpatialBlend: 0
+    MinDistance: 1
+    MaxDistance: 500
+    StopPolicy: 1
+    FadeOutDuration: 0
+  - EventId: SFX-INT-0013
+    DisplayName: "\u5267\u60C5\u89E6\u53D1\u751F\u6210\u706F"
+    Category: 0
+    Bus: 0
+    Clips: []
+    PlayMode: 1
+    Loop: 0
+    UseVolumeRange: 0
+    Volume: 1
+    VolumeRange: {x: 0.9, y: 1}
+    UsePitchRange: 0
+    Pitch: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    Cooldown: 0.2
+    RandomIntervalMin: 0
+    RandomIntervalMax: 0
+    SpatialMode: 0
+    SpatialBlend: 0
+    MinDistance: 1
+    MaxDistance: 500
+    StopPolicy: 1
+    FadeOutDuration: 0
+  - EventId: SFX-INT-0014
+    DisplayName: "\u5783\u573E\u6876\u843D\u77F3\u4E8B\u4EF6\u5F00\u59CB/\u7ED3\u675F"
+    Category: 0
+    Bus: 0
+    Clips: []
+    PlayMode: 1
+    Loop: 0
+    UseVolumeRange: 0
+    Volume: 1
+    VolumeRange: {x: 0.9, y: 1}
+    UsePitchRange: 0
+    Pitch: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    Cooldown: 0.2
+    RandomIntervalMin: 0
+    RandomIntervalMax: 0
+    SpatialMode: 0
+    SpatialBlend: 0
+    MinDistance: 1
+    MaxDistance: 500
+    StopPolicy: 1
+    FadeOutDuration: 0
+  - EventId: SFX-META-0001
+    DisplayName: "\u5BF9\u8BDD\u5F00\u59CB\u63D0\u793A"
+    Category: 0
+    Bus: 0
+    Clips: []
+    PlayMode: 1
+    Loop: 0
+    UseVolumeRange: 0
+    Volume: 1
+    VolumeRange: {x: 0.9, y: 1}
+    UsePitchRange: 0
+    Pitch: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    Cooldown: 0.2
+    RandomIntervalMin: 0
+    RandomIntervalMax: 0
+    SpatialMode: 0
+    SpatialBlend: 0
+    MinDistance: 1
+    MaxDistance: 500
+    StopPolicy: 1
+    FadeOutDuration: 0
+  - EventId: SFX-META-0002
+    DisplayName: "\u5149\u91CF\u8017\u5C3D"
+    Category: 0
+    Bus: 0
+    Clips: []
+    PlayMode: 1
+    Loop: 0
+    UseVolumeRange: 0
+    Volume: 1
+    VolumeRange: {x: 0.9, y: 1}
+    UsePitchRange: 0
+    Pitch: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    Cooldown: 0.2
+    RandomIntervalMin: 0
+    RandomIntervalMax: 0
+    SpatialMode: 0
+    SpatialBlend: 0
+    MinDistance: 1
+    MaxDistance: 500
+    StopPolicy: 1
+    FadeOutDuration: 0
+  - EventId: SFX-PLR-0001
+    DisplayName: "\u8D77\u8DF3"
+    Category: 0
+    Bus: 0
+    Clips: []
+    PlayMode: 1
+    Loop: 0
+    UseVolumeRange: 0
+    Volume: 1
+    VolumeRange: {x: 0.9, y: 1}
+    UsePitchRange: 0
+    Pitch: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    Cooldown: 0.2
+    RandomIntervalMin: 0
+    RandomIntervalMax: 0
+    SpatialMode: 0
+    SpatialBlend: 0
+    MinDistance: 1
+    MaxDistance: 500
+    StopPolicy: 1
+    FadeOutDuration: 0
+  - EventId: SFX-PLR-0003
+    DisplayName: "\u6500\u722C\u5F00\u59CB/\u7ED3\u675F"
+    Category: 0
+    Bus: 0
+    Clips: []
+    PlayMode: 1
+    Loop: 0
+    UseVolumeRange: 0
+    Volume: 1
+    VolumeRange: {x: 0.9, y: 1}
+    UsePitchRange: 0
+    Pitch: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    Cooldown: 0.2
+    RandomIntervalMin: 0
+    RandomIntervalMax: 0
+    SpatialMode: 0
+    SpatialBlend: 0
+    MinDistance: 1
+    MaxDistance: 500
+    StopPolicy: 1
+    FadeOutDuration: 0
+  - EventId: SFX-PLR-0004
+    DisplayName: "\u6B7B\u4EA1"
+    Category: 0
+    Bus: 0
+    Clips: []
+    PlayMode: 1
+    Loop: 0
+    UseVolumeRange: 0
+    Volume: 1
+    VolumeRange: {x: 0.9, y: 1}
+    UsePitchRange: 0
+    Pitch: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    Cooldown: 0.2
+    RandomIntervalMin: 0
+    RandomIntervalMax: 0
+    SpatialMode: 0
+    SpatialBlend: 0
+    MinDistance: 1
+    MaxDistance: 500
+    StopPolicy: 1
+    FadeOutDuration: 0
+  - EventId: SFX-PLR-0005
+    DisplayName: "\u590D\u6D3B"
+    Category: 0
+    Bus: 0
+    Clips: []
+    PlayMode: 1
+    Loop: 0
+    UseVolumeRange: 0
+    Volume: 1
+    VolumeRange: {x: 0.9, y: 1}
+    UsePitchRange: 0
+    Pitch: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    Cooldown: 0.2
+    RandomIntervalMin: 0
+    RandomIntervalMax: 0
+    SpatialMode: 0
+    SpatialBlend: 0
+    MinDistance: 1
+    MaxDistance: 500
+    StopPolicy: 1
+    FadeOutDuration: 0
+  - EventId: SFX-UI-0001
+    DisplayName: "\u4FDD\u5B58\u6309\u94AE\u70B9\u51FB"
+    Category: 0
+    Bus: 0
+    Clips: []
+    PlayMode: 1
+    Loop: 0
+    UseVolumeRange: 0
+    Volume: 1
+    VolumeRange: {x: 0.9, y: 1}
+    UsePitchRange: 0
+    Pitch: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    Cooldown: 0.2
+    RandomIntervalMin: 0
+    RandomIntervalMax: 0
+    SpatialMode: 0
+    SpatialBlend: 0
+    MinDistance: 1
+    MaxDistance: 500
+    StopPolicy: 1
+    FadeOutDuration: 0
+  - EventId: SFX-UI-0002
+    DisplayName: "\u8BFB\u53D6\u6309\u94AE\u70B9\u51FB"
+    Category: 0
+    Bus: 0
+    Clips: []
+    PlayMode: 1
+    Loop: 0
+    UseVolumeRange: 0
+    Volume: 1
+    VolumeRange: {x: 0.9, y: 1}
+    UsePitchRange: 0
+    Pitch: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    Cooldown: 0.2
+    RandomIntervalMin: 0
+    RandomIntervalMax: 0
+    SpatialMode: 0
+    SpatialBlend: 0
+    MinDistance: 1
+    MaxDistance: 500
+    StopPolicy: 1
+    FadeOutDuration: 0
+  - EventId: SFX-UI-0003
+    DisplayName: "\u5220\u9664\u6309\u94AE\u70B9\u51FB"
+    Category: 0
+    Bus: 0
+    Clips: []
+    PlayMode: 1
+    Loop: 0
+    UseVolumeRange: 0
+    Volume: 1
+    VolumeRange: {x: 0.9, y: 1}
+    UsePitchRange: 0
+    Pitch: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    Cooldown: 0.2
+    RandomIntervalMin: 0
+    RandomIntervalMax: 0
+    SpatialMode: 0
+    SpatialBlend: 0
+    MinDistance: 1
+    MaxDistance: 500
+    StopPolicy: 1
+    FadeOutDuration: 0

@@ -1,4 +1,5 @@
 using QFramework;
+using ThatGameJam.Independents.Audio;
 using ThatGameJam.Features.SafeZone.Models;
 using ThatGameJam.Features.Shared;
 using UnityEngine;
@@ -35,6 +36,15 @@ namespace ThatGameJam.Features.SafeZone.Commands
                 SafeZoneCount = clamped,
                 IsSafe = isSafe
             });
+
+            if (isSafe)
+            {
+                AudioService.Play("SFX-ENV-0003");
+            }
+            else
+            {
+                AudioService.Stop("SFX-ENV-0003");
+            }
         }
     }
 }

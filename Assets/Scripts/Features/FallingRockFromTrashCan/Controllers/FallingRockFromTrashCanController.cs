@@ -1,5 +1,6 @@
 using System.Collections;
 using QFramework;
+using ThatGameJam.Independents.Audio;
 using ThatGameJam.Features.FallingRockFromTrashCan.Events;
 using UnityEngine;
 
@@ -95,6 +96,10 @@ namespace ThatGameJam.Features.FallingRockFromTrashCan.Controllers
             {
                 AreaTransform = transform
             });
+            AudioService.Play("SFX-INT-0014", new AudioContext
+            {
+                Owner = transform
+            });
 
             if (_stopRoutine != null)
             {
@@ -119,6 +124,10 @@ namespace ThatGameJam.Features.FallingRockFromTrashCan.Controllers
             this.SendEvent(new FallingRockFromTrashCanEndedEvent
             {
                 AreaTransform = transform
+            });
+            AudioService.Stop("SFX-INT-0014", new AudioContext
+            {
+                Owner = transform
             });
 
             if (_stopRoutine == null)

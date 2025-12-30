@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using QFramework;
+using ThatGameJam.Independents.Audio;
 using ThatGameJam.Features.DeathRespawn.Controllers;
 using UnityEngine;
 
@@ -136,6 +137,26 @@ namespace ThatGameJam.Features.Mechanisms.Controllers
 
             // Start at left edge heading right by default.
             BeginHalfCycle(forceResetToEdge: true);
+        }
+
+        private void OnEnable()
+        {
+            AudioService.Play("SFX-ENM-0005", new AudioContext
+            {
+                Owner = transform
+            });
+        }
+
+        private void OnDisable()
+        {
+            AudioService.Stop("SFX-ENM-0005", new AudioContext
+            {
+                Owner = transform
+            });
+            AudioService.Stop("SFX-ENM-0006", new AudioContext
+            {
+                Owner = transform
+            });
         }
 
         private void Update()
@@ -395,7 +416,15 @@ namespace ThatGameJam.Features.Mechanisms.Controllers
                 return;
             }
 
+            var wasOverlapping = _playerOverlapCount > 0;
             _playerOverlapCount++;
+            if (!wasOverlapping)
+            {
+                AudioService.Play("SFX-ENM-0006", new AudioContext
+                {
+                    Owner = transform
+                });
+            }
         }
 
         private void OnTriggerExit2D(Collider2D other)
@@ -406,6 +435,13 @@ namespace ThatGameJam.Features.Mechanisms.Controllers
             }
 
             _playerOverlapCount = Mathf.Max(0, _playerOverlapCount - 1);
+            if (_playerOverlapCount == 0)
+            {
+                AudioService.Stop("SFX-ENM-0006", new AudioContext
+                {
+                    Owner = transform
+                });
+            }
         }
 
         private bool IsPlayerCollider(Collider2D other)

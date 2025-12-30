@@ -1,4 +1,5 @@
 using QFramework;
+using ThatGameJam.Independents.Audio;
 using ThatGameJam.Features.DoorGate.Events;
 using ThatGameJam.Features.DoorGate.Models;
 using UnityEngine;
@@ -52,6 +53,8 @@ namespace ThatGameJam.Features.DoorGate.Commands
                     DoorId = _doorId,
                     IsOpen = state.IsOpen
                 });
+
+                AudioService.Play("SFX-INT-0002");
 
                 if (state.IsOpen)
                 {

@@ -1,4 +1,5 @@
 using QFramework;
+using ThatGameJam.Independents.Audio;
 using ThatGameJam.Features.Hazard.Systems;
 using ThatGameJam.Features.Shared;
 using UnityEngine;
@@ -50,6 +51,11 @@ namespace ThatGameJam.Features.Hazard.Controllers
 
             _nextApplyTime = Time.time + Mathf.Max(0f, cooldownSeconds);
             this.GetSystem<IHazardSystem>().ApplyLightCostRatio(costRatio, reason);
+            AudioService.Play("SFX-ENV-0008", new AudioContext
+            {
+                Position = other.transform.position,
+                HasPosition = true
+            });
         }
 
         private bool IsPlayer(Collider2D other)

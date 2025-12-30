@@ -1,4 +1,5 @@
 using QFramework;
+using ThatGameJam.Independents.Audio;
 using ThatGameJam.Features.DoorGate.Events;
 using UnityEngine;
 
@@ -29,6 +30,7 @@ namespace ThatGameJam.Features.Mechanisms.Controllers
         private float _lowerInitialHeight;
         private bool _isOpen;
         private bool _isInitialized;
+        private bool _moveLoopPlaying;
 
         protected override void OnEnable()
         {
@@ -74,6 +76,8 @@ namespace ThatGameJam.Features.Mechanisms.Controllers
         {
             if (!_isInitialized) return;
 
+            var isMoving = false;
+
             // 计算上门高度
             if (upperDoorRenderer != null)
             {
@@ -81,6 +85,10 @@ namespace ThatGameJam.Features.Mechanisms.Controllers
                 Vector2 size = upperDoorRenderer.size;
                 size.y = Mathf.MoveTowards(size.y, targetHeight, moveSpeed * Time.deltaTime);
                 upperDoorRenderer.size = size;
+                if (Mathf.Abs(size.y - targetHeight) > 0.001f)
+                {
+                    isMoving = true;
+                }
             }
 
             // 计算下门高度
@@ -90,6 +98,27 @@ namespace ThatGameJam.Features.Mechanisms.Controllers
                 Vector2 size = lowerDoorRenderer.size;
                 size.y = Mathf.MoveTowards(size.y, targetHeight, moveSpeed * Time.deltaTime);
                 lowerDoorRenderer.size = size;
+                if (Mathf.Abs(size.y - targetHeight) > 0.001f)
+                {
+                    isMoving = true;
+                }
+            }
+
+            if (isMoving && !_moveLoopPlaying)
+            {
+                _moveLoopPlaying = true;
+                AudioService.Play("SFX-INT-0003", new AudioContext
+                {
+                    Owner = transform
+                });
+            }
+            else if (!isMoving && _moveLoopPlaying)
+            {
+                _moveLoopPlaying = false;
+                AudioService.Stop("SFX-INT-0003", new AudioContext
+                {
+                    Owner = transform
+                });
             }
         }
 
@@ -99,6 +128,14 @@ namespace ThatGameJam.Features.Mechanisms.Controllers
         protected override void OnHardReset()
         {
             _isOpen = false;
+            if (_moveLoopPlaying)
+            {
+                _moveLoopPlaying = false;
+                AudioService.Stop("SFX-INT-0003", new AudioContext
+                {
+                    Owner = transform
+                });
+            }
             // 重置时立即回归初始高度
             if (upperDoorRenderer != null)
             {

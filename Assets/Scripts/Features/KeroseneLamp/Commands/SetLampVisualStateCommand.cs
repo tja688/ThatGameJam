@@ -1,4 +1,5 @@
 using QFramework;
+using ThatGameJam.Independents.Audio;
 using ThatGameJam.Features.KeroseneLamp.Events;
 using ThatGameJam.Features.KeroseneLamp.Models;
 
@@ -33,6 +34,11 @@ namespace ThatGameJam.Features.KeroseneLamp.Commands
             {
                 LampId = _lampId,
                 VisualEnabled = _visualEnabled
+            });
+            AudioService.Play("SFX-INT-0010", new AudioContext
+            {
+                Position = record.Info.WorldPos,
+                HasPosition = true
             });
         }
     }

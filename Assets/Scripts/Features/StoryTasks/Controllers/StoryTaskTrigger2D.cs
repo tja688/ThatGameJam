@@ -1,5 +1,6 @@
 using System;
 using QFramework;
+using ThatGameJam.Independents.Audio;
 using ThatGameJam.Features.DoorGate.Commands;
 using ThatGameJam.Features.KeroseneLamp.Events;
 using ThatGameJam.Features.StoryTasks.Commands;
@@ -100,6 +101,11 @@ namespace ThatGameJam.Features.StoryTasks.Controllers
                     if (!string.IsNullOrEmpty(action.DoorId))
                     {
                         this.SendCommand(new SetDoorStateCommand(action.DoorId, action.GateOpen));
+                        AudioService.Play("SFX-INT-0012", new AudioContext
+                        {
+                            Position = transform.position,
+                            HasPosition = true
+                        });
                     }
                     return true;
                 default:
@@ -134,6 +140,12 @@ namespace ThatGameJam.Features.StoryTasks.Controllers
                 Priority = action.DialoguePriority
             });
 
+            AudioService.Play("SFX-META-0001", new AudioContext
+            {
+                Position = transform.position,
+                HasPosition = true
+            });
+
             return true;
         }
 
@@ -151,6 +163,12 @@ namespace ThatGameJam.Features.StoryTasks.Controllers
                 WorldPos = position,
                 PrefabOverride = action.LampPreset,
                 PresetId = presetId
+            });
+
+            AudioService.Play("SFX-INT-0013", new AudioContext
+            {
+                Position = position,
+                HasPosition = true
             });
         }
 

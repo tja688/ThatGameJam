@@ -1,4 +1,5 @@
 using QFramework;
+using ThatGameJam.Independents.Audio;
 using ThatGameJam.Features.KeroseneLamp.Models;
 using ThatGameJam.Features.KeroseneLamp.Queries;
 using UnityEngine;
@@ -441,17 +442,43 @@ namespace ThatGameJam.Features.BugAI.Controllers
                 return;
             }
 
+            var previous = _state;
             _state = next;
-            OnEnterState(next);
+            OnEnterState(next, previous);
         }
 
-        private void OnEnterState(BugState next)
+        private void OnEnterState(BugState next, BugState previous)
         {
             switch (next)
             {
                 case BugState.Loiter:
                     _loiterTargetTimer = 0f;
                     _scanTimer = 0f;
+                    if (previous == BugState.ChaseLight)
+                    {
+                        AudioService.Play("SFX-ENM-0002", new AudioContext
+                        {
+                            Position = transform.position,
+                            HasPosition = true
+                        });
+                    }
+                    break;
+                case BugState.ChaseLight:
+                    AudioService.Play("SFX-ENM-0001", new AudioContext
+                    {
+                        Position = transform.position,
+                        HasPosition = true
+                    });
+                    break;
+                case BugState.ReturnHome:
+                    if (previous == BugState.ChaseLight)
+                    {
+                        AudioService.Play("SFX-ENM-0002", new AudioContext
+                        {
+                            Position = transform.position,
+                            HasPosition = true
+                        });
+                    }
                     break;
             }
         }

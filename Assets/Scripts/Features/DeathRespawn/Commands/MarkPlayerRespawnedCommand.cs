@@ -1,4 +1,5 @@
 using QFramework;
+using ThatGameJam.Independents.Audio;
 using ThatGameJam.Features.DeathRespawn.Models;
 using ThatGameJam.Features.Shared;
 using UnityEngine;
@@ -27,6 +28,11 @@ namespace ThatGameJam.Features.DeathRespawn.Commands
             this.SendEvent(new PlayerRespawnedEvent
             {
                 WorldPos = _worldPos
+            });
+            AudioService.Play("SFX-PLR-0005", new AudioContext
+            {
+                Position = _worldPos,
+                HasPosition = true
             });
         }
     }

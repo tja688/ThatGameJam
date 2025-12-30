@@ -1,3 +1,4 @@
+using ThatGameJam.Independents.Audio;
 using UnityEngine;
 
 namespace ThatGameJam.Features.BugAI.Controllers
@@ -46,6 +47,12 @@ namespace ThatGameJam.Features.BugAI.Controllers
             {
                 movement.ResetToHome();
             }
+
+            AudioService.Play("SFX-ENM-0004", new AudioContext
+            {
+                Position = transform.position,
+                HasPosition = true
+            });
         }
 
         private bool IsPlayer(Collider2D other)

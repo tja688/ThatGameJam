@@ -1,4 +1,5 @@
 using QFramework;
+using ThatGameJam.Independents.Audio;
 using ThatGameJam.Features.BellFlower.Events;
 using ThatGameJam.Features.KeroseneLamp.Queries;
 using UnityEngine;
@@ -91,6 +92,21 @@ namespace ThatGameJam.Features.BellFlower.Controllers
                 FlowerId = flowerId,
                 IsActive = active
             });
+
+            if (active)
+            {
+                AudioService.Play("SFX-INT-0001", new AudioContext
+                {
+                    Owner = transform
+                });
+            }
+            else
+            {
+                AudioService.Stop("SFX-INT-0001", new AudioContext
+                {
+                    Owner = transform
+                });
+            }
         }
 
         private void OnDrawGizmosSelected()

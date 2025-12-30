@@ -1,5 +1,6 @@
 using DG.Tweening;
 using QFramework;
+using ThatGameJam.Independents.Audio;
 using ThatGameJam.Features.KeroseneLamp.Queries;
 using UnityEngine;
 
@@ -94,6 +95,20 @@ namespace ThatGameJam.Features.Mechanisms.Controllers
             if (shouldActivate != _isActivated)
             {
                 _isActivated = shouldActivate;
+                if (_isActivated)
+                {
+                    AudioService.Play("SFX-INT-0004", new AudioContext
+                    {
+                        Owner = transform
+                    });
+                }
+                else
+                {
+                    AudioService.Stop("SFX-INT-0004", new AudioContext
+                    {
+                        Owner = transform
+                    });
+                }
                 PlayGrowthAnimation(_isActivated ? 1f : 0f);
             }
         }

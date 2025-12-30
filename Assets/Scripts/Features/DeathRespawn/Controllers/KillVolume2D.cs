@@ -1,4 +1,5 @@
 using ThatGameJam.Features.Shared;
+using ThatGameJam.Independents.Audio;
 using UnityEngine;
 
 namespace ThatGameJam.Features.DeathRespawn.Controllers
@@ -14,6 +15,11 @@ namespace ThatGameJam.Features.DeathRespawn.Controllers
             }
 
             deathController.KillAt(EDeathReason.Fall, other.transform.position);
+            AudioService.Play("SFX-ENV-0011", new AudioContext
+            {
+                Position = other.transform.position,
+                HasPosition = true
+            });
         }
     }
 }

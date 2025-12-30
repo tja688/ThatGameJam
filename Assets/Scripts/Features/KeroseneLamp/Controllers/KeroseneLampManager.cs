@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using QFramework;
+using ThatGameJam.Independents.Audio;
 using ThatGameJam.Features.AreaSystem.Events;
 using ThatGameJam.Features.AreaSystem.Queries;
 using ThatGameJam.Features.KeroseneLamp.Commands;
@@ -120,6 +121,12 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
                 _lampInstances[lampId] = lampInstance;
             }
 
+            AudioService.Play("SFX-INT-0007", new AudioContext
+            {
+                Position = worldPos,
+                HasPosition = true
+            });
+
             this.SendCommand(new RecordLampSpawnedCommand(
                 lampId,
                 worldPos,
@@ -232,6 +239,12 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
             lampInstance.SetGameplayEnabled(true);
             AttachHeldLamp(lampInstance, holdPoint);
 
+            AudioService.Play("SFX-INT-0007", new AudioContext
+            {
+                Position = holdPoint.position,
+                HasPosition = true
+            });
+
             this.SendCommand(new RecordLampSpawnedCommand(
                 lampId,
                 lampInstance.transform.position,
@@ -255,6 +268,11 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
             lampTransform.SetParent(lampParent, true);
             lampTransform.position = worldPos;
             _heldLampInstance.SetHeld(false);
+            AudioService.Play("SFX-INT-0008", new AudioContext
+            {
+                Position = worldPos,
+                HasPosition = true
+            });
 
             var currentAreaId = this.SendQuery(new GetCurrentAreaIdQuery());
             var areaId = string.IsNullOrEmpty(currentAreaId) ? fallbackAreaId : currentAreaId;
@@ -282,6 +300,11 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
             lampTransform.localPosition = heldLampLocalOffset;
             lampTransform.localEulerAngles = heldLampLocalEulerAngles;
             lampInstance.SetHeld(true);
+            AudioService.Play("SFX-INT-0008", new AudioContext
+            {
+                Position = lampInstance.transform.position,
+                HasPosition = true
+            });
         }
 
         private Transform ResolveHoldPoint()

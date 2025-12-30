@@ -1,3 +1,4 @@
+using ThatGameJam.Independents.Audio;
 using UnityEngine;
 
 namespace ThatGameJam.Features.KeroseneLamp.Controllers
@@ -9,7 +10,6 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
         [SerializeField] private Renderer[] visualRenderers;
         [SerializeField] private GameObject gameplayEnabledRoot;
         [SerializeField] private GameObject gameplayDisabledRoot;
-        [SerializeField] private AudioSource gameplayDisabledSfx;
 
         private bool _visualEnabled = true;
         private bool _gameplayEnabled = true;
@@ -127,9 +127,13 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
                 gameplayDisabledRoot.SetActive(!_gameplayEnabled);
             }
 
-            if (!_gameplayEnabled && gameplayDisabledSfx != null)
+            if (!_gameplayEnabled)
             {
-                gameplayDisabledSfx.Play();
+                AudioService.Play("SFX-INT-0009", new AudioContext
+                {
+                    Position = transform.position,
+                    HasPosition = true
+                });
             }
         }
 

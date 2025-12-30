@@ -1,4 +1,5 @@
 using QFramework;
+using ThatGameJam.Independents.Audio;
 using ThatGameJam.Features.AreaSystem.Events;
 using ThatGameJam.Features.AreaSystem.Models;
 
@@ -29,6 +30,8 @@ namespace ThatGameJam.Features.AreaSystem.Commands
                 PreviousAreaId = previous,
                 CurrentAreaId = _areaId
             });
+
+            AudioService.Play("SFX-ENV-0005");
         }
     }
 }
