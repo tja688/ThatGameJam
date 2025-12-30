@@ -1,13 +1,16 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements">
-    <ui:VisualElement class="screen main-menu">
-        <ui:VisualElement class="menu-card">
-            <ui:Label name="TitleLabel" text="That Game Jam" class="title" />
-            <ui:VisualElement class="menu-buttons">
-                <ui:Button name="StartButton" text="Start New Game" class="menu-button" />
-                <ui:Button name="ContinueButton" text="Continue" class="menu-button" />
-                <ui:Button name="SettingsButton" text="Settings" class="menu-button" />
-                <ui:Button name="QuitButton" text="Quit" class="danger-button" />
-            </ui:VisualElement>
-        </ui:VisualElement>
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+  <ui:Style src="project://database/Assets/UI/Toolkit/USS/theme.uss" />
+  <ui:Style src="project://database/Assets/UI/Toolkit/USS/menus.uss" />
+  <ui:Style src="project://database/Assets/UI/Toolkit/USS/components.uss" />
+  <ui:VisualElement class="screen main-menu">
+    <ui:VisualElement class="menu-card">
+      <ui:Label name="TitleLabel" text="That Game Jam" class="title" />
+      <ui:VisualElement class="menu-buttons">
+        <ui:Button name="StartButton" text="Start New Game" class="menu-button" />
+        <ui:Button name="ContinueButton" text="Continue" class="menu-button" />
+        <ui:Button name="SettingsButton" text="Settings" class="menu-button" />
+        <ui:Button name="QuitButton" text="Quit" class="danger-button" />
+      </ui:VisualElement>
     </ui:VisualElement>
+  </ui:VisualElement>
 </ui:UXML>

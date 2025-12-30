@@ -1,7 +1,7 @@
 .ui-root {
     width: 100%;
     height: 100%;
-    background-color: var(--color-bg);
+    background-color: #14181f;
 }
 
 .ui-panel {
@@ -10,7 +10,7 @@
     right: 0;
     top: 0;
     bottom: 0;
-    padding: var(--space-4);
+    padding: 24px;
 }
 
 .screen {
@@ -22,24 +22,24 @@
 
 .title {
     font-size: 34px;
-    color: var(--color-text);
+    color: #f5f7fa;
     unity-font-style: bold;
 }
 
 .title-small {
     font-size: 22px;
-    color: var(--color-text);
+    color: #f5f7fa;
     unity-font-style: bold;
 }
 
 .section-title {
     font-size: 16px;
-    color: var(--color-text);
+    color: #f5f7fa;
     unity-font-style: bold;
 }
 
 .subtle {
-    color: var(--color-muted);
+    color: #a4aebb;
 }
 
 .menu-button,
@@ -49,13 +49,13 @@
 .dev-button,
 .sidebar-item {
     height: 40px;
-    border-radius: var(--radius-md);
+    border-radius: 10px;
     border-width: 1px;
-    border-color: var(--color-outline);
-    background-color: var(--color-panel-alt);
-    color: var(--color-text);
-    padding-left: var(--space-2);
-    padding-right: var(--space-2);
+    border-color: rgba(255, 255, 255, 0.12);
+    background-color: #273141;
+    color: #f5f7fa;
+    padding-left: 10px;
+    padding-right: 10px;
 }
 
 .menu-button:hover,
@@ -74,17 +74,17 @@
 .danger-button:focus,
 .sidebar-item:focus,
 .dev-button:focus {
-    border-color: var(--color-accent-strong);
+    border-color: #69b8ff;
 }
 
 .primary-button {
-    background-color: var(--color-accent);
+    background-color: #4aa3ff;
     color: #0c1117;
     border-color: transparent;
 }
 
 .primary-button:hover {
-    background-color: var(--color-accent-strong);
+    background-color: #69b8ff;
 }
 
 .ghost-button {
@@ -92,7 +92,7 @@
 }
 
 .danger-button {
-    background-color: var(--color-danger);
+    background-color: #f05d5e;
     color: #0c1117;
     border-color: transparent;
 }
@@ -104,7 +104,7 @@
 }
 
 .sidebar-item.selected {
-    background-color: var(--color-accent);
+    background-color: #4aa3ff;
     color: #0c1117;
     border-color: transparent;
 }
@@ -112,15 +112,15 @@
 .slider-row {
     flex-direction: row;
     align-items: center;
-    gap: var(--space-2);
-    padding: var(--space-2);
-    background-color: var(--color-panel-alt);
-    border-radius: var(--radius-md);
+    column-gap: 10px;
+    padding: 10px;
+    background-color: #273141;
+    border-radius: 10px;
 }
 
 .slider-row__label {
     width: 120px;
-    color: var(--color-text);
+    color: #f5f7fa;
 }
 
 .slider-row__slider {
@@ -130,36 +130,36 @@
 .slider-row__value {
     width: 40px;
     text-align: right;
-    color: var(--color-muted);
+    color: #a4aebb;
 }
 
 .quest-item {
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    padding: var(--space-2);
-    background-color: var(--color-panel-alt);
-    border-radius: var(--radius-md);
+    padding: 10px;
+    background-color: #273141;
+    border-radius: 10px;
     border-width: 1px;
-    border-color: var(--color-outline);
+    border-color: rgba(255, 255, 255, 0.12);
 }
 
 .quest-item.selected {
     background-color: #2f3a4a;
-    border-color: var(--color-accent);
+    border-color: #4aa3ff;
 }
 
 .quest-item__status {
-    color: var(--color-muted);
+    color: #a4aebb;
 }
 
 .inventory-slot {
     width: 72px;
     height: 72px;
-    border-radius: var(--radius-md);
+    border-radius: 10px;
     border-width: 1px;
-    border-color: var(--color-outline);
-    background-color: var(--color-panel-alt);
+    border-color: rgba(255, 255, 255, 0.12);
+    background-color: #273141;
     justify-content: center;
     align-items: center;
     position: relative;
@@ -173,7 +173,7 @@
     width: 42px;
     height: 42px;
     border-radius: 8px;
-    background-color: var(--color-panel);
+    background-color: #1f2631;
 }
 
 .inventory-slot__count {
@@ -181,33 +181,33 @@
     bottom: 6px;
     right: 8px;
     font-size: 12px;
-    color: var(--color-text);
+    color: #f5f7fa;
 }
 
 .rebind-row {
     flex-direction: row;
     align-items: center;
-    gap: var(--space-2);
-    padding: var(--space-2);
-    border-radius: var(--radius-md);
-    background-color: var(--color-panel-alt);
+    column-gap: 10px;
+    padding: 10px;
+    border-radius: 10px;
+    background-color: #273141;
 }
 
 .rebind-row__name {
     flex-grow: 1;
-    color: var(--color-text);
+    color: #f5f7fa;
 }
 
 .rebind-row__binding {
     width: 140px;
-    color: var(--color-muted);
+    color: #a4aebb;
 }
 
 .prompt {
-    color: var(--color-accent-strong);
-    margin-bottom: var(--space-2);
+    color: #69b8ff;
+    margin-bottom: 10px;
 }
 
 .stat {
-    color: var(--color-text);
+    color: #f5f7fa;
 }

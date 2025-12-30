@@ -1,35 +1,38 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
-    <ui:VisualElement class="screen player-panel">
-        <ui:VisualElement class="player-header">
-            <ui:Label text="Player Panel" class="title-small" />
-            <ui:Button name="CloseButton" text="Close" class="ghost-button" />
-        </ui:VisualElement>
-        <ui:VisualElement class="player-body">
-            <ui:VisualElement class="player-left">
-                <ui:VisualElement name="PortraitImage" class="portrait" />
-                <ui:Label name="LightValueLabel" text="Light: 0" class="stat" />
-                <ui:Label name="AreaLabel" text="Area: -" class="stat" />
-                <ui:Label name="DeathsInAreaLabel" text="Deaths (Area): 0" class="stat" />
-                <ui:Label name="TotalDeathsLabel" text="Deaths (Total): 0" class="stat" />
-            </ui:VisualElement>
-            <ui:VisualElement class="player-right">
-                <ui:VisualElement class="quest-section">
-                    <ui:Label text="Quest Log" class="section-title" />
-                    <ui:VisualElement class="quest-content">
-                        <ui:ScrollView name="QuestList" class="quest-list" />
-                        <ui:VisualElement class="quest-detail">
-                            <ui:Label name="QuestTitle" text="Select a quest" class="quest-detail__title" />
-                            <ui:Label name="QuestDescription" text="" class="quest-detail__desc" />
-                            <ui:Label name="QuestRequirements" text="" class="quest-detail__req" />
-                            <ui:Label name="QuestStatus" text="" class="quest-detail__status" />
-                        </ui:VisualElement>
-                    </ui:VisualElement>
-                </ui:VisualElement>
-                <ui:VisualElement class="inventory-section">
-                    <ui:Label text="Inventory" class="section-title" />
-                    <ui:VisualElement name="InventoryGrid" class="inventory-grid" />
-                </ui:VisualElement>
-            </ui:VisualElement>
-        </ui:VisualElement>
+  <ui:Style src="project://database/Assets/UI/Toolkit/USS/theme.uss" />
+  <ui:Style src="project://database/Assets/UI/Toolkit/USS/menus.uss" />
+  <ui:Style src="project://database/Assets/UI/Toolkit/USS/components.uss" />
+  <ui:VisualElement class="screen player-panel">
+    <ui:VisualElement class="player-header">
+      <ui:Label text="Player Panel" class="title-small" />
+      <ui:Button name="CloseButton" text="Close" class="ghost-button" />
     </ui:VisualElement>
+    <ui:VisualElement class="player-body">
+      <ui:VisualElement class="player-left">
+        <ui:VisualElement name="PortraitImage" class="portrait" />
+        <ui:Label name="LightValueLabel" text="Light: 0" class="stat" />
+        <ui:Label name="AreaLabel" text="Area: -" class="stat" />
+        <ui:Label name="DeathsInAreaLabel" text="Deaths (Area): 0" class="stat" />
+        <ui:Label name="TotalDeathsLabel" text="Deaths (Total): 0" class="stat" />
+      </ui:VisualElement>
+      <ui:VisualElement class="player-right">
+        <ui:VisualElement class="quest-section">
+          <ui:Label text="Quest Log" class="section-title" />
+          <ui:VisualElement class="quest-content">
+            <ui:ScrollView name="QuestList" class="quest-list" />
+            <ui:VisualElement class="quest-detail">
+              <ui:Label name="QuestTitle" text="Select a quest" class="quest-detail__title" />
+              <ui:Label name="QuestDescription" text="" class="quest-detail__desc" />
+              <ui:Label name="QuestRequirements" text="" class="quest-detail__req" />
+              <ui:Label name="QuestStatus" text="" class="quest-detail__status" />
+            </ui:VisualElement>
+          </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement class="inventory-section">
+          <ui:Label text="Inventory" class="section-title" />
+          <ui:VisualElement name="InventoryGrid" class="inventory-grid" />
+        </ui:VisualElement>
+      </ui:VisualElement>
+    </ui:VisualElement>
+  </ui:VisualElement>
 </ui:UXML>

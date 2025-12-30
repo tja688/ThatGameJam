@@ -1,3 +1,6 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
-    <ui:Button name="SidebarButton" class="sidebar-item" text="Tab" />
+  <ui:Style src="project://database/Assets/UI/Toolkit/USS/theme.uss" />
+  <ui:Style src="project://database/Assets/UI/Toolkit/USS/menus.uss" />
+  <ui:Style src="project://database/Assets/UI/Toolkit/USS/components.uss" />
+  <ui:Button name="SidebarButton" class="sidebar-item" text="Tab" />
 </ui:UXML>

@@ -5,17 +5,18 @@
 
 .menu-card {
     width: 420px;
-    padding: var(--space-4);
-    border-radius: var(--radius-lg);
-    background-color: var(--color-panel);
-    box-shadow: var(--shadow-lg);
-    gap: var(--space-3);
+    flex-direction: column;
+    padding: 24px;
+    border-radius: 16px;
+    background-color: #1f2631;
+    box-shadow: 0 16px 30px rgba(0, 0, 0, 0.35);
+    row-gap: 16px;
 }
 
 .menu-buttons {
     flex-direction: column;
-    gap: var(--space-2);
-    margin-top: var(--space-2);
+    row-gap: 10px;
+    margin-top: 10px;
 }
 
 .settings-menu {
@@ -32,57 +33,58 @@
 
 .settings-header__actions {
     flex-direction: row;
-    gap: var(--space-2);
+    column-gap: 10px;
 }
 
 .settings-body {
     flex-direction: row;
-    gap: var(--space-3);
+    column-gap: 16px;
     flex-grow: 1;
-    margin-top: var(--space-3);
+    margin-top: 16px;
 }
 
 .sidebar {
     width: 200px;
-    gap: var(--space-2);
+    flex-direction: column;
+    row-gap: 10px;
 }
 
 .settings-content {
     flex-grow: 1;
-    padding: var(--space-3);
-    border-radius: var(--radius-lg);
-    background-color: var(--color-panel);
+    padding: 16px;
+    border-radius: 16px;
+    background-color: #1f2631;
 }
 
 .settings-page {
     flex-direction: column;
-    gap: var(--space-2);
+    row-gap: 10px;
 }
 
 .save-buttons {
     flex-direction: row;
-    gap: var(--space-2);
+    column-gap: 10px;
 }
 
 .save-info {
     white-space: normal;
-    color: var(--color-muted);
+    color: #a4aebb;
 }
 
 .binding-buttons {
     flex-direction: column;
-    gap: var(--space-2);
+    row-gap: 10px;
 }
 
 .game-actions {
     flex-direction: row;
-    gap: var(--space-2);
-    margin-top: var(--space-3);
+    column-gap: 10px;
+    margin-top: 16px;
 }
 
 .settings-footer {
     justify-content: flex-end;
-    margin-top: var(--space-2);
+    margin-top: 10px;
 }
 
 .modal-overlay {
@@ -99,16 +101,16 @@
 .modal-window {
     width: 640px;
     max-height: 80%;
-    padding: var(--space-3);
-    border-radius: var(--radius-lg);
-    background-color: var(--color-panel);
-    box-shadow: var(--shadow-lg);
+    padding: 16px;
+    border-radius: 16px;
+    background-color: #1f2631;
+    box-shadow: 0 16px 30px rgba(0, 0, 0, 0.35);
 }
 
 .rebind-list {
     flex-grow: 1;
-    margin-top: var(--space-2);
-    margin-bottom: var(--space-2);
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
 .modal-actions {
@@ -129,43 +131,46 @@
 
 .player-body {
     flex-direction: row;
-    gap: var(--space-3);
+    column-gap: 16px;
     flex-grow: 1;
-    margin-top: var(--space-3);
+    margin-top: 16px;
 }
 
 .player-left {
     width: 220px;
-    gap: var(--space-2);
-    padding: var(--space-2);
-    background-color: var(--color-panel);
-    border-radius: var(--radius-lg);
+    flex-direction: column;
+    row-gap: 10px;
+    padding: 10px;
+    background-color: #1f2631;
+    border-radius: 16px;
 }
 
 .portrait {
     width: 180px;
     height: 200px;
-    border-radius: var(--radius-md);
-    background-color: var(--color-panel-alt);
-    margin-bottom: var(--space-2);
+    border-radius: 10px;
+    background-color: #273141;
+    margin-bottom: 10px;
 }
 
 .player-right {
     flex-grow: 1;
-    gap: var(--space-3);
+    flex-direction: column;
+    row-gap: 16px;
 }
 
 .quest-section {
     flex-grow: 1;
-    gap: var(--space-2);
-    padding: var(--space-2);
-    background-color: var(--color-panel);
-    border-radius: var(--radius-lg);
+    flex-direction: column;
+    row-gap: 10px;
+    padding: 10px;
+    background-color: #1f2631;
+    border-radius: 16px;
 }
 
 .quest-content {
     flex-direction: row;
-    gap: var(--space-3);
+    column-gap: 16px;
     flex-grow: 1;
 }
 
@@ -176,21 +181,24 @@
 
 .quest-detail {
     flex-grow: 1;
-    padding: var(--space-2);
-    border-radius: var(--radius-md);
-    background-color: var(--color-panel-alt);
-    gap: var(--space-1);
+    flex-direction: column;
+    padding: 10px;
+    border-radius: 10px;
+    background-color: #273141;
+    row-gap: 6px;
 }
 
 .inventory-section {
-    gap: var(--space-2);
-    padding: var(--space-2);
-    background-color: var(--color-panel);
-    border-radius: var(--radius-lg);
+    flex-direction: column;
+    row-gap: 10px;
+    padding: 10px;
+    background-color: #1f2631;
+    border-radius: 16px;
 }
 
 .inventory-grid {
     flex-direction: row;
     flex-wrap: wrap;
-    gap: var(--space-2);
+    column-gap: 10px;
+    row-gap: 10px;
 }

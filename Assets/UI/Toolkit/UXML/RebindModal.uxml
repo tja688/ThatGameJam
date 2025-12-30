@@ -1,13 +1,16 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
-    <ui:VisualElement class="modal-overlay">
-        <ui:VisualElement class="modal-window">
-            <ui:Label name="TitleLabel" text="Rebind Controls" class="title-small" />
-            <ui:Label name="DeviceLabel" text="Device" class="subtle" />
-            <ui:Label name="PromptLabel" text="Press any key..." class="prompt" />
-            <ui:ScrollView name="RebindList" class="rebind-list" />
-            <ui:VisualElement class="modal-actions">
-                <ui:Button name="CloseButton" text="Close" class="ghost-button" />
-            </ui:VisualElement>
-        </ui:VisualElement>
+  <ui:Style src="project://database/Assets/UI/Toolkit/USS/theme.uss" />
+  <ui:Style src="project://database/Assets/UI/Toolkit/USS/menus.uss" />
+  <ui:Style src="project://database/Assets/UI/Toolkit/USS/components.uss" />
+  <ui:VisualElement class="modal-overlay">
+    <ui:VisualElement class="modal-window">
+      <ui:Label name="TitleLabel" text="Rebind Controls" class="title-small" />
+      <ui:Label name="DeviceLabel" text="Device" class="subtle" />
+      <ui:Label name="PromptLabel" text="Press any key..." class="prompt" />
+      <ui:ScrollView name="RebindList" class="rebind-list" />
+      <ui:VisualElement class="modal-actions">
+        <ui:Button name="CloseButton" text="Close" class="ghost-button" />
+      </ui:VisualElement>
     </ui:VisualElement>
+  </ui:VisualElement>
 </ui:UXML>
