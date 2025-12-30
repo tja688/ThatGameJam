@@ -1,6 +1,7 @@
-.main-menu {
+.screen.main-menu {
     justify-content: center;
     align-items: center;
+    flex-grow: 1;
 }
 
 .menu-card {

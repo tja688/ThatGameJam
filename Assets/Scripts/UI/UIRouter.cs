@@ -50,6 +50,7 @@ namespace ThatGameJam.UI
             _root.tabIndex = 0;
             _root.RegisterCallback<KeyDownEvent>(OnKeyDown);
 
+            UpdateRootVisibility();
             _initialized = true;
         }
 
@@ -150,13 +151,23 @@ namespace ThatGameJam.UI
 
         private void RefreshPauseState()
         {
-            if (_pauseService == null)
+            var shouldPause = _stack.Any(panel => panel.PausesGame);
+            if (_pauseService != null)
+            {
+                _pauseService.ApplyPauseState(shouldPause);
+            }
+
+            UpdateRootVisibility();
+        }
+
+        private void UpdateRootVisibility()
+        {
+            if (_root == null)
             {
                 return;
             }
 
-            var shouldPause = _stack.Any(panel => panel.PausesGame);
-            _pauseService.ApplyPauseState(shouldPause);
+            _root.style.display = _stack.Count > 0 ? DisplayStyle.Flex : DisplayStyle.None;
         }
 
         private void OnKeyDown(KeyDownEvent evt)
