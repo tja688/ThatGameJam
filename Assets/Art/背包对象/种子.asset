@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bf5dcdf3012ccba46808fde7feb6ddf8, type: 3}
+  m_Name: "\u79CD\u5B50"
+  m_EditorClassIdentifier: Assembly-CSharp::ThatGameJam.Features.BackpackFeature.Models.ItemDefinition
+  id: 4
+  displayName: Seed
+  icon: {fileID: 2800000, guid: 835e7c9f7e2773943ba322ce56ac0aa0, type: 3}
+  dropPrefab: {fileID: 8345130576673642427, guid: cd136d690fcd211409fccd919a76dee6, type: 3}
+  stackable: 1
+  maxStack: 1
+  tags: []
