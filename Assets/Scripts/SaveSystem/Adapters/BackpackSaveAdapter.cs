@@ -14,12 +14,26 @@ namespace ThatGameJam.SaveSystem.Adapters
         [SerializeField] private BackpackItemDatabase itemDatabase;
         [SerializeField] private KeroseneLampManager lampManager;
 
+        private BackpackSaveState _pendingRestore;
+        private bool _restoreQueued;
+
         public override string SaveKey => saveKey;
         public IArchitecture GetArchitecture() => GameRootApp.Interface;
 
         private void Reset()
         {
             saveKey = "feature.backpack.items";
+        }
+
+        protected override void OnDisable()
+        {
+            base.OnDisable();
+            if (_restoreQueued && SaveManager.Instance != null)
+            {
+                SaveManager.Instance.RestoreFinished -= OnRestoreFinished;
+            }
+            _restoreQueued = false;
+            _pendingRestore = null;
         }
 
         protected override BackpackSaveState Capture()
@@ -54,6 +68,34 @@ namespace ThatGameJam.SaveSystem.Adapters
         }
 
         protected override void Restore(BackpackSaveState data)
+        {
+            if (SaveManager.Instance != null && SaveManager.Instance.IsRestoring)
+            {
+                _pendingRestore = data;
+                if (!_restoreQueued)
+                {
+                    _restoreQueued = true;
+                    SaveManager.Instance.RestoreFinished += OnRestoreFinished;
+                }
+                return;
+            }
+
+            RestoreInternal(data);
+        }
+
+        private void OnRestoreFinished()
+        {
+            if (SaveManager.Instance != null)
+            {
+                SaveManager.Instance.RestoreFinished -= OnRestoreFinished;
+            }
+            _restoreQueued = false;
+            var data = _pendingRestore;
+            _pendingRestore = null;
+            RestoreInternal(data);
+        }
+
+        private void RestoreInternal(BackpackSaveState data)
         {
             ResolveReferences();
             this.SendCommand(new ResetBackpackCommand());

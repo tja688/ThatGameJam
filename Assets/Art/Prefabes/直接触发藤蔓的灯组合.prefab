@@ -121,12 +121,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e79e267d238e3945878b5eb648a7bc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ThatGameJam.Features.KeroseneLamp.Controllers.KeroseneLampInstance
+  itemDefinition: {fileID: 0}
   visualRoot: {fileID: 8241852990123783114}
   visualBehaviours: []
   visualRenderers: []
   gameplayEnabledRoot: {fileID: 2231870461611301434}
   gameplayDisabledRoot: {fileID: 0}
-  gameplayDisabledSfx: {fileID: 0}
+  heldLocalOffset: {x: 0, y: 0, z: 0}
+  heldLocalEulerAngles: {x: 0, y: 0, z: 0}
+  onEnterInBackpack:
+    m_PersistentCalls:
+      m_Calls: []
+  onEnterHeld:
+    m_PersistentCalls:
+      m_Calls: []
+  onEnterDropped:
+    m_PersistentCalls:
+      m_Calls: []
+  onEnterDisabled:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!61 &8413910755318265902
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -268,7 +282,7 @@ SpriteRenderer:
   m_SortingLayer: 4
   m_SortingOrder: -1
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: b09f2d9411920804fb0cec76c8edd432, type: 3}
+  m_Sprite: {fileID: -8876942954627580512, guid: 10c0506140615004f8eacb2b7dbc48de, type: 3}
   m_Color: {r: 0, g: 0.6301887, b: 0.0027280655, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -314,9 +328,9 @@ BoxCollider2D:
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
   m_SpriteTilingProperty:
-    border: {x: 0.17999999, y: 0.02, z: 0.14, w: 0.02}
-    pivot: {x: 0.5, y: 0}
-    oldSize: {x: 1.42, y: 1.42}
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 3.18, y: 15.36}
     newSize: {x: 3.64, y: 2}
     adaptiveTilingThreshold: 0.5
     drawMode: 2
