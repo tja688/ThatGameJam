@@ -216,14 +216,15 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
 
         private void SyncGameplayState()
         {
+            var showGameplay = !_backpackHidden;
             if (gameplayEnabledRoot != null)
             {
-                gameplayEnabledRoot.SetActive(_gameplayEnabled);
+                gameplayEnabledRoot.SetActive(showGameplay && _gameplayEnabled);
             }
 
             if (gameplayDisabledRoot != null)
             {
-                gameplayDisabledRoot.SetActive(!_gameplayEnabled);
+                gameplayDisabledRoot.SetActive(showGameplay && !_gameplayEnabled);
             }
 
             if (!_gameplayEnabled && !_backpackHidden)

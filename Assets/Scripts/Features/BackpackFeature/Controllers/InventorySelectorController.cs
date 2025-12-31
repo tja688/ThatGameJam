@@ -99,6 +99,16 @@ namespace ThatGameJam.Features.BackpackFeature.Controllers
                 return;
             }
 
+            if (currentIndex < 0)
+            {
+                this.SendCommand(new SetSelectedIndexCommand(0));
+                if (selectUpdatesHeld)
+                {
+                    this.SendCommand(new SetHeldItemCommand(0, holdPoint));
+                }
+                return;
+            }
+
             if (currentIndex >= count)
             {
                 this.SendCommand(new SetSelectedIndexCommand(count - 1));

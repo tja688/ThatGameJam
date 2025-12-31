@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using QFramework;
 using ThatGameJam.Features.AreaSystem.Queries;
 using ThatGameJam.Features.BackpackFeature.Commands;
+using ThatGameJam.Features.BackpackFeature.Models;
 using ThatGameJam.Features.KeroseneLamp.Commands;
 using ThatGameJam.Features.KeroseneLamp.Events;
 using ThatGameJam.Features.KeroseneLamp.Models;
@@ -76,10 +77,7 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
             if (heldLamp != null)
             {
                 this.SendCommand(new DropHeldItemCommand(e.WorldPos, true));
-                return;
             }
-
-            SpawnLamp(e.WorldPos, null, string.Empty);
         }
 
         private void OnPlayerRespawned(PlayerRespawnedEvent e)
@@ -189,7 +187,7 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
 
         private void SpawnHeldLampIfNeeded()
         {
-            if (!spawnHeldLampOnStart || HasLampInInventory())
+            if (!spawnHeldLampOnStart)
             {
                 return;
             }
@@ -198,6 +196,14 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
             if (holdPoint == null)
             {
                 LogKit.W("KeroseneLampManager missing player hold point. Held lamp will not be spawned.");
+                return;
+            }
+
+            var lampIndex = FindLampIndexInBackpack();
+            if (lampIndex >= 0)
+            {
+                this.SendCommand(new SetHeldItemCommand(lampIndex, holdPoint));
+                EnforceHeldLampAreaLimit();
                 return;
             }
 
@@ -258,25 +264,58 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
             if (addedIndex >= 0)
             {
                 this.SendCommand(new SetHeldItemCommand(addedIndex, holdPoint));
+                EnforceHeldLampAreaLimit();
             }
         }
 
-        private bool HasLampInInventory()
+        private void EnforceHeldLampAreaLimit()
         {
-            foreach (var entry in _lampInstances.Values)
+            var model = (KeroseneLampModel)this.GetModel<IKeroseneLampModel>();
+            if (model == null)
             {
-                if (entry == null)
+                return;
+            }
+
+            var currentAreaId = this.SendQuery(new GetCurrentAreaIdQuery());
+            var areaId = string.IsNullOrEmpty(currentAreaId) ? fallbackAreaId : currentAreaId;
+            var limit = Mathf.Max(1, maxActivePerArea);
+            if (model.GetActiveCountForArea(areaId) < limit)
+            {
+                return;
+            }
+
+            var oldestLampId = model.FindOldestActiveLampId(areaId);
+            if (oldestLampId >= 0)
+            {
+                this.SendCommand(new SetLampGameplayStateCommand(oldestLampId, false));
+            }
+        }
+
+        private int FindLampIndexInBackpack()
+        {
+            var model = (BackpackModel)this.GetModel<IBackpackModel>();
+            if (model == null)
+            {
+                return -1;
+            }
+
+            for (var i = 0; i < model.Items.Count; i++)
+            {
+                var entry = model.Items[i];
+                if (entry.Instance is KeroseneLampInstance)
                 {
-                    continue;
+                    return i;
                 }
 
-                if (entry.State == KeroseneLampState.InBackpack || entry.State == KeroseneLampState.Held)
+                var definition = entry.Definition;
+                if (definition != null && definition.DropPrefab != null
+                    && definition.DropPrefab.GetComponent<KeroseneLampInstance>() != null)
                 {
-                    return true;
+                    return i;
                 }
             }
 
-            return false;
+            return -1;
         }
 
         private KeroseneLampInstance FindHeldLampInstance()
