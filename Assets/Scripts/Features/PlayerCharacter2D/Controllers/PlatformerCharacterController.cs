@@ -207,33 +207,43 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
                 _rb.gravityScale = isClimbing ? 0f : _defaultGravityScale;
 
                 UpdateActiveMovableGrab(isClimbing, wallDetected, movableGrabCandidate);
+                var lockToAnchor = isClimbing && _activeMovableGrab != null && _activeMovableGrab.LockToAnchorWhileClimbing;
                 if (isClimbing && _activeMovableGrab != null)
                 {
                     ApplyMovableGrabDelta();
 
                     // Boundary Clamping: prevent player from moving out of range
 
-                    Vector2 vel = model.Velocity.Value;
-                    if (vel.sqrMagnitude > 0.0001f)
+                    if (!lockToAnchor)
                     {
-                        float dt = Time.fixedDeltaTime;
-                        if (!_activeMovableGrab.IsPointWithinRange(climbProbe + vel * dt))
+                        Vector2 vel = model.Velocity.Value;
+                        if (vel.sqrMagnitude > 0.0001f)
                         {
-                            // Axis-wise clamping allows sliding along borders
-                            if (!_activeMovableGrab.IsPointWithinRange(climbProbe + new Vector2(vel.x, 0) * dt))
-                                vel.x = 0;
-                            if (!_activeMovableGrab.IsPointWithinRange(climbProbe + new Vector2(0, vel.y) * dt))
-                                vel.y = 0;
-
-                            // Final safety check
-
+                            float dt = Time.fixedDeltaTime;
                             if (!_activeMovableGrab.IsPointWithinRange(climbProbe + vel * dt))
-                                vel = Vector2.zero;
+                            {
+                                // Axis-wise clamping allows sliding along borders
+                                if (!_activeMovableGrab.IsPointWithinRange(climbProbe + new Vector2(vel.x, 0) * dt))
+                                    vel.x = 0;
+                                if (!_activeMovableGrab.IsPointWithinRange(climbProbe + new Vector2(0, vel.y) * dt))
+                                    vel.y = 0;
+
+                                // Final safety check
+
+                                if (!_activeMovableGrab.IsPointWithinRange(climbProbe + vel * dt))
+                                    vel = Vector2.zero;
 
 
-                            model.Velocity.Value = vel;
+                                model.Velocity.Value = vel;
+                            }
                         }
                     }
+                }
+
+                if (lockToAnchor)
+                {
+                    ApplyMovableGrabAnchorLock();
+                    model.Velocity.Value = Vector2.zero;
                 }
 
                 if (isClimbing && wallDetected)
@@ -245,7 +255,7 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
                         climbSide = modelSide;
                     }
 
-                    if (!model.ClimbJumpProtected && !isForcedByGrab)
+                    if (!model.ClimbJumpProtected && !isForcedByGrab && !lockToAnchor)
                     {
                         ApplyClimbStick(wallPoint, climbSide, wallHorizontal);
                     }
@@ -489,6 +499,25 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
             }
 
             _activeMovableGrabAnchor = anchor;
+        }
+
+        private void ApplyMovableGrabAnchorLock()
+        {
+            if (_activeMovableGrab == null)
+            {
+                return;
+            }
+
+            var anchor = _activeMovableGrab.AnchorPosition + _activeMovableGrab.AnchorOffset;
+            if (_climbSensor != null)
+            {
+                var center = (Vector2)_climbSensor.bounds.center;
+                var offsetToTransform = (Vector2)transform.position - center;
+                _rb.position = anchor + offsetToTransform;
+                return;
+            }
+
+            _rb.position = anchor;
         }
 
         private void ClearActiveMovableGrab()

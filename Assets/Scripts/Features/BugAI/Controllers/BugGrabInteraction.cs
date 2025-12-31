@@ -16,6 +16,8 @@ namespace ThatGameJam.Features.BugAI.Controllers
         private bool requireGrabHeld = true;
         [SerializeField, Tooltip("进入触发器就自动抓取（会导致触碰即回巢，默认关闭）。")]
         private bool autoGrabOnTouch = false;
+        [SerializeField, Tooltip("是否要求玩家处于攀爬状态才算抓住。")]
+        private bool requirePlayerClimbing = true;
 
         private bool _playerInside;
         private bool _isGrabbed;
@@ -38,16 +40,7 @@ namespace ThatGameJam.Features.BugAI.Controllers
 
         private void OnDisable()
         {
-            if (_isGrabbed)
-            {
-                movement?.NotifyPlayerReleased();
-                _isGrabbed = false;
-                AudioService.Stop("SFX-ENM-0003", new AudioContext
-                {
-                    Position = transform.position,
-                    HasPosition = true
-                });
-            }
+            EndGrab();
 
             _playerInside = false;
         }
@@ -56,6 +49,13 @@ namespace ThatGameJam.Features.BugAI.Controllers
         {
             if (!_playerInside)
             {
+                EndGrab();
+                return;
+            }
+
+            if (requirePlayerClimbing && !GetIsClimbing())
+            {
+                EndGrab();
                 return;
             }
 
@@ -63,25 +63,12 @@ namespace ThatGameJam.Features.BugAI.Controllers
             {
                 if (!autoGrabOnTouch)
                 {
-                    if (_isGrabbed)
-                    {
-                        movement?.NotifyPlayerReleased();
-                        _isGrabbed = false;
-                    }
+                    EndGrab();
 
                     return;
                 }
 
-                if (!_isGrabbed)
-                {
-                    movement?.NotifyPlayerGrabbed();
-                    _isGrabbed = true;
-                    AudioService.Play("SFX-ENM-0003", new AudioContext
-                    {
-                        Position = transform.position,
-                        HasPosition = true
-                    });
-                }
+                StartGrab();
 
                 return;
             }
@@ -89,23 +76,11 @@ namespace ThatGameJam.Features.BugAI.Controllers
             var wantsGrab = GetGrabHeld();
             if (wantsGrab && !_isGrabbed)
             {
-                movement?.NotifyPlayerGrabbed();
-                _isGrabbed = true;
-                AudioService.Play("SFX-ENM-0003", new AudioContext
-                {
-                    Position = transform.position,
-                    HasPosition = true
-                });
+                StartGrab();
             }
             else if (!wantsGrab && _isGrabbed)
             {
-                movement?.NotifyPlayerReleased();
-                _isGrabbed = false;
-                AudioService.Stop("SFX-ENM-0003", new AudioContext
-                {
-                    Position = transform.position,
-                    HasPosition = true
-                });
+                EndGrab();
             }
         }
 
@@ -127,16 +102,7 @@ namespace ThatGameJam.Features.BugAI.Controllers
             }
 
             _playerInside = false;
-            if (_isGrabbed)
-            {
-                movement?.NotifyPlayerReleased();
-                _isGrabbed = false;
-                AudioService.Stop("SFX-ENM-0003", new AudioContext
-                {
-                    Position = transform.position,
-                    HasPosition = true
-                });
-            }
+            EndGrab();
         }
 
         private bool IsPlayer(Collider2D other)
@@ -158,6 +124,49 @@ namespace ThatGameJam.Features.BugAI.Controllers
             }
 
             return model.FrameInput.GrabHeld;
+        }
+
+        private bool GetIsClimbing()
+        {
+            var model = this.GetModel<IPlayerCharacter2DModel>();
+            if (model == null)
+            {
+                return false;
+            }
+
+            return model.IsClimbing.Value;
+        }
+
+        private void StartGrab()
+        {
+            if (_isGrabbed)
+            {
+                return;
+            }
+
+            movement?.NotifyPlayerGrabbed();
+            _isGrabbed = true;
+            AudioService.Play("SFX-ENM-0003", new AudioContext
+            {
+                Position = transform.position,
+                HasPosition = true
+            });
+        }
+
+        private void EndGrab()
+        {
+            if (!_isGrabbed)
+            {
+                return;
+            }
+
+            movement?.NotifyPlayerReleased();
+            _isGrabbed = false;
+            AudioService.Stop("SFX-ENM-0003", new AudioContext
+            {
+                Position = transform.position,
+                HasPosition = true
+            });
         }
     }
 }

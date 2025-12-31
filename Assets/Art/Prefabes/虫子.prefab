@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 4410488159656562688}
   - component: {fileID: 3925916631422863329}
   - component: {fileID: 3314493880362783344}
+  - component: {fileID: 8349275517123416221}
   - component: {fileID: 7415549655380765996}
   m_Layer: 0
   m_Name: "\u866B\u5B50"
@@ -163,7 +164,7 @@ MonoBehaviour:
   loiterJitterRadius: 0.4
   scanTrigger: {fileID: 0}
   attentionRadius: 4
-  scanInterval: 3
+  scanInterval: 0.5
   releaseScanCooldown: 5
   turnSpeed: 360
   chaseSpeed: 3
@@ -221,6 +222,7 @@ MonoBehaviour:
   playerTag: Player
   requireGrabHeld: 1
   autoGrabOnTouch: 0
+  requirePlayerClimbing: 1
 --- !u!114 &3314493880362783344
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -237,6 +239,24 @@ MonoBehaviour:
   enableStompResponse: 0
   bounceVelocity: 8
   playerTag: Player
+--- !u!114 &8349275517123416221
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8788048871714658262}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9bd14cfda0ab81048b52ef514a38937d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThatGameJam.Features.PlayerCharacter2D.Utilities.MovableGrabObjectBase
+  _movementRoot: {fileID: 0}
+  _grabRange: {fileID: 0}
+  _fallbackRangeSize: {x: 1.5, y: 1.5}
+  _fallbackRangeOffset: {x: 0, y: 0}
+  _lockToAnchorWhileClimbing: 1
+  _anchorOffset: {x: 0, y: 0}
 --- !u!50 &7415549655380765996
 Rigidbody2D:
   serializedVersion: 5

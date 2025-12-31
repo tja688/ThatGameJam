@@ -88,7 +88,13 @@ namespace ThatGameJam.Features.BugAI.Controllers
         [SerializeField, Tooltip("扫描半径（scanTrigger 为空时使用）。")]
         private float attentionRadius = 4f;
         [SerializeField, Tooltip("扫描光源的时间间隔（秒）。")]
-        private float scanInterval = 3f;
+        private float scanInterval = 0.5f;
+        [SerializeField, Tooltip("进入 Loiter 时是否立即扫描一次。")]
+        private bool scanOnLoiterEnter = true;
+        [SerializeField, Tooltip("追光目标丢失后继续搜索的时长（秒）。")]
+        private float lostLightGraceTime = 0.8f;
+        [SerializeField, Tooltip("追光目标丢失时的重新扫描间隔（秒）。<=0 则每帧扫描。")]
+        private float lostLightScanInterval = 0.2f;
         [SerializeField, Tooltip("放手后重新扫描光源的冷却时间（秒）。")]
         private float releaseScanCooldown = 5f;
 
@@ -99,6 +105,8 @@ namespace ThatGameJam.Features.BugAI.Controllers
         private float chaseSpeed = 3f;
         [SerializeField, Tooltip("正常归巢速度。")]
         private float returnSpeed = 1.4f;
+        [SerializeField, Tooltip("方向向量过小时不更新朝向（用于减少抖动）。")]
+        private float directionDeadZone = 0.05f;
 
         [Header("Light Interaction")]
         [SerializeField, Tooltip("追光停留距离（距离光源中心多少距离时停下）。")]
@@ -120,6 +128,8 @@ namespace ThatGameJam.Features.BugAI.Controllers
         private Vector2 _forwardDirection;
         private float _baseRotation;
         private bool _initialized;
+        private float _lostLightTimer;
+        private float _lostLightScanTimer;
 
         // NEW: 用于视觉朝向平滑
         private float _currentFacingRotation;
@@ -247,7 +257,7 @@ namespace ThatGameJam.Features.BugAI.Controllers
                     UpdateLoiter(deltaTime);
                     break;
                 case BugState.ChaseLight:
-                    UpdateChaseLight();
+                    UpdateChaseLight(deltaTime);
                     break;
                 case BugState.ReturnHome:
                     UpdateReturnHome();
@@ -299,44 +309,17 @@ namespace ThatGameJam.Features.BugAI.Controllers
             TransitionTo(BugState.ChaseLight, true);
         }
 
-        private void UpdateChaseLight()
+        private void UpdateChaseLight(float deltaTime)
         {
-            if (!TryGetTrackedLampInfo(out var info))
+            if (TryGetTrackedLampInfo(out var info) && IsWithinActivityBounds(info.WorldPos))
             {
-                ClearTrackedLight();
-                TransitionTo(BugState.ReturnHome);
+                _trackedLampPosition = info.WorldPos;
+                ResetLostLightTracking();
+                UpdateChaseMovement(_trackedLampPosition);
                 return;
             }
 
-            if (!IsWithinActivityBounds(info.WorldPos))
-            {
-                ClearTrackedLight();
-                TransitionTo(BugState.ReturnHome);
-                return;
-            }
-
-            _trackedLampPosition = info.WorldPos;
-
-
-            var toTarget = _trackedLampPosition - GetPosition();
-            var distance = toTarget.magnitude;
-
-            // 根据距离计算目标速度：进圈减速，入圈停住
-            if (distance <= chaseStopDistance)
-            {
-                _currentSpeed = 0f;
-            }
-            else if (distance <= chaseStopDistance + chaseSlowDistance && chaseSlowDistance > 0f)
-            {
-                float t = (distance - chaseStopDistance) / chaseSlowDistance;
-                _currentSpeed = chaseSpeed * t;
-            }
-            else
-            {
-                _currentSpeed = chaseSpeed;
-            }
-
-            SetDesiredMovement(toTarget);
+            HandleLostLight(deltaTime);
         }
 
         private void UpdateReturnHome()
@@ -412,11 +395,6 @@ namespace ThatGameJam.Features.BugAI.Controllers
                     continue;
                 }
 
-                if (!IsWithinActivityBounds(lamp.WorldPos))
-                {
-                    return false;
-                }
-
                 lampInfo = lamp;
                 return true;
             }
@@ -453,7 +431,7 @@ namespace ThatGameJam.Features.BugAI.Controllers
             {
                 case BugState.Loiter:
                     _loiterTargetTimer = 0f;
-                    _scanTimer = 0f;
+                    _scanTimer = scanOnLoiterEnter && scanInterval > 0f ? scanInterval : 0f;
                     if (previous == BugState.ChaseLight)
                     {
                         AudioService.Play("SFX-ENM-0002", new AudioContext
@@ -464,6 +442,7 @@ namespace ThatGameJam.Features.BugAI.Controllers
                     }
                     break;
                 case BugState.ChaseLight:
+                    ResetLostLightTracking();
                     AudioService.Play("SFX-ENM-0001", new AudioContext
                     {
                         Position = transform.position,
@@ -471,6 +450,7 @@ namespace ThatGameJam.Features.BugAI.Controllers
                     });
                     break;
                 case BugState.ReturnHome:
+                    ResetLostLightTracking();
                     if (previous == BugState.ChaseLight)
                     {
                         AudioService.Play("SFX-ENM-0002", new AudioContext
@@ -485,13 +465,98 @@ namespace ThatGameJam.Features.BugAI.Controllers
 
         private void SetDesiredMovement(Vector2 direction)
         {
-            if (direction.sqrMagnitude <= Mathf.Epsilon)
+            var deadZone = Mathf.Max(0f, directionDeadZone);
+            if (direction.sqrMagnitude <= deadZone * deadZone)
             {
                 _desiredDirection = _forwardDirection;
                 return;
             }
 
             _desiredDirection = direction.normalized;
+        }
+
+        private void UpdateChaseMovement(Vector2 target)
+        {
+            var toTarget = target - GetPosition();
+            var distance = toTarget.magnitude;
+
+            // 根据距离计算目标速度：进圈减速，入圈停住
+            if (distance <= chaseStopDistance)
+            {
+                _currentSpeed = 0f;
+            }
+            else if (distance <= chaseStopDistance + chaseSlowDistance && chaseSlowDistance > 0f)
+            {
+                float t = (distance - chaseStopDistance) / chaseSlowDistance;
+                _currentSpeed = chaseSpeed * t;
+            }
+            else
+            {
+                _currentSpeed = chaseSpeed;
+            }
+
+            SetDesiredMovement(toTarget);
+        }
+
+        private void HandleLostLight(float deltaTime)
+        {
+            if (lostLightGraceTime <= 0f)
+            {
+                ClearTrackedLight();
+                TransitionTo(BugState.ReturnHome);
+                return;
+            }
+
+            if (_lostLightTimer <= 0f)
+            {
+                _lostLightTimer = lostLightGraceTime;
+                _lostLightScanTimer = 0f;
+            }
+
+            _lostLightTimer = Mathf.Max(0f, _lostLightTimer - deltaTime);
+
+            if (lostLightScanInterval <= 0f)
+            {
+                if (TryFindClosestValidLamp(out var lampInfo))
+                {
+                    SetTrackedLamp(lampInfo);
+                    _trackedLampPosition = lampInfo.WorldPos;
+                    ResetLostLightTracking();
+                    UpdateChaseMovement(_trackedLampPosition);
+                    return;
+                }
+            }
+            else
+            {
+                _lostLightScanTimer = Mathf.Max(0f, _lostLightScanTimer - deltaTime);
+                if (_lostLightScanTimer <= 0f)
+                {
+                    _lostLightScanTimer = Mathf.Max(0.05f, lostLightScanInterval);
+                    if (TryFindClosestValidLamp(out var lampInfo))
+                    {
+                        SetTrackedLamp(lampInfo);
+                        _trackedLampPosition = lampInfo.WorldPos;
+                        ResetLostLightTracking();
+                        UpdateChaseMovement(_trackedLampPosition);
+                        return;
+                    }
+                }
+            }
+
+            if (_lostLightTimer <= 0f)
+            {
+                ClearTrackedLight();
+                TransitionTo(BugState.ReturnHome);
+                return;
+            }
+
+            UpdateChaseMovement(_trackedLampPosition);
+        }
+
+        private void ResetLostLightTracking()
+        {
+            _lostLightTimer = 0f;
+            _lostLightScanTimer = 0f;
         }
 
         private void ApplyMovement(float deltaTime)
@@ -838,12 +903,15 @@ namespace ThatGameJam.Features.BugAI.Controllers
             loiterJitterRadius = Mathf.Max(0f, loiterJitterRadius);
             turnSpeed = Mathf.Max(0f, turnSpeed);
             releaseScanCooldown = Mathf.Max(0f, releaseScanCooldown);
+            lostLightGraceTime = Mathf.Max(0f, lostLightGraceTime);
+            lostLightScanInterval = Mathf.Max(0f, lostLightScanInterval);
 
             // Facing 参数也做下保护
             facingSmoothSpeed = Mathf.Max(0f, facingSmoothSpeed);
 
             chaseStopDistance = Mathf.Max(0f, chaseStopDistance);
             chaseSlowDistance = Mathf.Max(0f, chaseSlowDistance);
+            directionDeadZone = Mathf.Max(0f, directionDeadZone);
         }
     }
 }

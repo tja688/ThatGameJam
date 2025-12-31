@@ -8,6 +8,8 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Utilities
         [SerializeField] private Collider2D _grabRange;
         [SerializeField] private Vector2 _fallbackRangeSize = new Vector2(1.5f, 1.5f);
         [SerializeField] private Vector2 _fallbackRangeOffset;
+        [SerializeField] private bool _lockToAnchorWhileClimbing;
+        [SerializeField] private Vector2 _anchorOffset;
 
         private Collider2D _cachedCollider;
 
@@ -19,6 +21,9 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Utilities
                 return root.position;
             }
         }
+
+        public bool LockToAnchorWhileClimbing => _lockToAnchorWhileClimbing;
+        public Vector2 AnchorOffset => _anchorOffset;
 
         public bool IsPointWithinRange(Vector2 worldPoint)
         {
