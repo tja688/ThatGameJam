@@ -1,7 +1,9 @@
+using System.Collections.Generic;
 using QFramework;
 using ThatGameJam.Features.BackpackFeature.Models;
 using ThatGameJam.Features.KeroseneLamp.Commands;
 using ThatGameJam.Features.KeroseneLamp.Models;
+using ThatGameJam.Features.SafeZone.Controllers;
 using ThatGameJam.Independents.Audio;
 using UnityEngine;
 using UnityEngine.Events;
@@ -42,6 +44,8 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
         private Rigidbody2D _rigidbody2D;
         private bool _defaultSimulated;
         private Collider2D[] _colliders;
+        private Collider2D[] _safeZoneColliders;
+        private HashSet<Collider2D> _safeZoneColliderSet;
         private bool[] _colliderDefaults;
         private bool[] _behaviourDefaults;
         private bool[] _rendererDefaults;
@@ -68,6 +72,7 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
         {
             ApplyVisualState();
             SyncGameplayState();
+            SetSafeZoneCollidersActive(_state == KeroseneLampState.Held || _state == KeroseneLampState.Dropped);
         }
 
         public void SetLampId(int lampId)
@@ -154,6 +159,8 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
                     onEnterDisabled?.Invoke();
                     break;
             }
+
+            SetSafeZoneCollidersActive(state == KeroseneLampState.Held || state == KeroseneLampState.Dropped);
 
             if (_lampId >= 0 && (state == KeroseneLampState.InBackpack || state == KeroseneLampState.Held))
             {
@@ -253,6 +260,47 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
             {
                 _colliderDefaults[i] = _colliders[i] != null && _colliders[i].enabled;
             }
+
+            CacheSafeZoneColliders();
+        }
+
+        private void CacheSafeZoneColliders()
+        {
+            var zones = GetComponentsInChildren<SafeZone2D>(true);
+            if (zones == null || zones.Length == 0)
+            {
+                _safeZoneColliders = null;
+                _safeZoneColliderSet = null;
+                return;
+            }
+
+            var list = new List<Collider2D>();
+            for (var i = 0; i < zones.Length; i++)
+            {
+                if (zones[i] == null)
+                {
+                    continue;
+                }
+
+                var zoneColliders = zones[i].GetComponentsInChildren<Collider2D>(true);
+                if (zoneColliders == null)
+                {
+                    continue;
+                }
+
+                for (var j = 0; j < zoneColliders.Length; j++)
+                {
+                    if (zoneColliders[j] != null)
+                    {
+                        list.Add(zoneColliders[j]);
+                    }
+                }
+            }
+
+            _safeZoneColliders = list.Count > 0 ? list.ToArray() : null;
+            _safeZoneColliderSet = _safeZoneColliders != null
+                ? new HashSet<Collider2D>(_safeZoneColliders)
+                : null;
         }
 
         private void CacheVisualState()
@@ -352,11 +400,40 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
                     continue;
                 }
 
+                if (IsSafeZoneCollider(_colliders[i]))
+                {
+                    continue;
+                }
+
                 var defaultEnabled = _colliderDefaults != null && i < _colliderDefaults.Length
                     ? _colliderDefaults[i]
                     : true;
                 _colliders[i].enabled = enabled && defaultEnabled;
             }
+        }
+
+        private void SetSafeZoneCollidersActive(bool enabled)
+        {
+            if (_safeZoneColliders == null || _safeZoneColliders.Length == 0)
+            {
+                return;
+            }
+
+            for (var i = 0; i < _safeZoneColliders.Length; i++)
+            {
+                var collider2D = _safeZoneColliders[i];
+                if (collider2D == null)
+                {
+                    continue;
+                }
+
+                collider2D.enabled = enabled;
+            }
+        }
+
+        private bool IsSafeZoneCollider(Collider2D collider2D)
+        {
+            return collider2D != null && _safeZoneColliderSet != null && _safeZoneColliderSet.Contains(collider2D);
         }
 
         private void UpdateGameplayState()
