@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 1255485680313295818}
   - component: {fileID: 4585009597878193535}
   - component: {fileID: 2872116495891615294}
+  - component: {fileID: 7627414412880431857}
   m_Layer: 0
   m_Name: "\u79CD\u5B50"
   m_TagString: Seed
@@ -166,3 +167,21 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
+--- !u!114 &7627414412880431857
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8345130576673642427}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a02bc9c348036647a39add21a12253b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThatGameJam.Features.InteractableFeature.Controllers.Interactable
+  type: 1
+  priority: 0
+  displayName: Seed
+  dialogueTrigger: {fileID: 0}
+  pickupItem: {fileID: 11400000, guid: f4d0dec9781ccbe468b23b9fee366e9a, type: 2}
+  disableOnPickup: 1
