@@ -50,6 +50,11 @@ namespace ThatGameJam.Features.InteractableFeature.Controllers
 
         private void OnTriggerEnter2D(Collider2D other)
         {
+            if (IsOwnedByPlayer(other))
+            {
+                return;
+            }
+
             var interactable = other.GetComponentInParent<Interactable>();
             if (interactable == null || _enterOrder.ContainsKey(interactable))
             {
@@ -62,6 +67,11 @@ namespace ThatGameJam.Features.InteractableFeature.Controllers
 
         private void OnTriggerExit2D(Collider2D other)
         {
+            if (IsOwnedByPlayer(other))
+            {
+                return;
+            }
+
             var interactable = other.GetComponentInParent<Interactable>();
             if (interactable == null)
             {
@@ -97,6 +107,12 @@ namespace ThatGameJam.Features.InteractableFeature.Controllers
                     continue;
                 }
 
+                if (candidate.transform.IsChildOf(transform))
+                {
+                    toRemove.Add(candidate);
+                    continue;
+                }
+
                 var priority = candidate.Priority;
                 var distance = (candidate.transform.position - transform.position).sqrMagnitude;
                 var order = pair.Value;
@@ -123,6 +139,11 @@ namespace ThatGameJam.Features.InteractableFeature.Controllers
             toRemove.Clear();
 
             SetCandidate(best);
+        }
+
+        private bool IsOwnedByPlayer(Collider2D collider2D)
+        {
+            return collider2D != null && collider2D.transform.IsChildOf(transform);
         }
 
         private void SetCandidate(Interactable candidate)
