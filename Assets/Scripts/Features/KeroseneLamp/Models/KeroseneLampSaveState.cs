@@ -26,5 +26,7 @@ namespace ThatGameJam.Features.KeroseneLamp.Models
         public string presetId;
         public bool isHeld;
         public bool isPreplaced;
+        public KeroseneLampState state;
+        public bool hasState;
     }
 }

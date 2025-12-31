@@ -110,6 +110,7 @@
 5. While climbing, press jump; expect a vertical jump without noticeable horizontal push.
 6. After the climb jump, confirm you do not immediately re-grab the wall.
 7. Trigger `PlayerDiedEvent`; expect input to stop until `PlayerRespawnedEvent` fires.
+8. Press `KillMe` input; expect held item to drop and held slot to clear.
 
 ## 7. Climb Bugfix Notes (2025-12-24)
 ### 7.1 Root Cause Summary
@@ -137,6 +138,20 @@
 - None.
 
 ## 9. Change Log
+- **Date**: 2025-12-30
+- **Change**: `KillMe` input now drops the held item instead of triggering death.
+- **Reason**: New backpack/held-slot flow uses the same input name to drop.
+- **Behavior Now**:
+  - Given a held item
+  - When `KillMe` is pressed
+  - Then the held item is dropped and the player remains alive
+- **Config**:
+  - None.
+- **Risk & Regression**:
+  - 影响范围：`KillMe` debug flow
+  - 回归用例：`KillMe` no longer fires `MarkPlayerDeadCommand`.
+- **Files Touched**:
+  - `Assets/Scripts/Features/PlayerCharacter2D/Commands/TickFixedStepCommand.cs`
 - **Date**: 2025-12-28
 - **Change**: 支持横向攀爬与次轴微调；攀爬表面方向自动判断。
 - **Reason**: 新策划要求横向植物可攀爬，左右为主要移动，并允许微调。

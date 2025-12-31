@@ -32,16 +32,22 @@ namespace ThatGameJam.Features.KeroseneLamp.Commands
             var info = record.Info;
             var wasIgnored = info.IgnoreAreaLimit;
             var wasCounted = info.CountInLampCount;
+            var wasGameplayEnabled = info.GameplayEnabled;
 
             info.WorldPos = _worldPos;
             info.AreaId = _areaId;
             info.IgnoreAreaLimit = false;
             info.CountInLampCount = true;
+            info.GameplayEnabled = true;
 
             if (wasIgnored)
             {
                 info.SpawnOrderInArea = model.GetNextSpawnOrder(_areaId);
                 model.AddAreaOrder(_areaId, _lampId);
+                model.IncrementActiveCount(_areaId);
+            }
+            else if (!wasGameplayEnabled)
+            {
                 model.IncrementActiveCount(_areaId);
             }
 
@@ -68,7 +74,7 @@ namespace ThatGameJam.Features.KeroseneLamp.Commands
                 });
             }
 
-            if (wasIgnored)
+            if (wasIgnored || !wasGameplayEnabled)
             {
                 var activeCount = model.GetActiveCountForArea(_areaId);
                 if (activeCount > _maxActivePerArea)

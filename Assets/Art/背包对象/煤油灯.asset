@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bf5dcdf3012ccba46808fde7feb6ddf8, type: 3}
+  m_Name: "\u7164\u6CB9\u706F"
+  m_EditorClassIdentifier: Assembly-CSharp::ThatGameJam.Features.BackpackFeature.Models.ItemDefinition
+  id: 1
+  displayName: 'kerosene Lamp '
+  icon: {fileID: 2800000, guid: 6262a04eebe942343a6bd0d227993366, type: 3}
+  dropPrefab: {fileID: 356797205242928593, guid: 5e607bc3d6cfef34a8a9ee37661a52b9, type: 3}
+  stackable: 0
+  maxStack: 0
+  tags: []

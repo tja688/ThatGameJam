@@ -1,5 +1,6 @@
 using QFramework;
 using ThatGameJam.Independents.Audio;
+using ThatGameJam.Features.BackpackFeature.Commands;
 using ThatGameJam.Features.PlayerCharacter2D.Configs;
 using ThatGameJam.Features.PlayerCharacter2D.Events;
 using ThatGameJam.Features.PlayerCharacter2D.Models;
@@ -62,11 +63,7 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Commands
             if (model.KillMeToConsume)
             {
                 model.KillMeToConsume = false;
-                this.SendCommand(new ThatGameJam.Features.DeathRespawn.Commands.MarkPlayerDeadCommand(
-                    ThatGameJam.Features.Shared.EDeathReason.Debug,
-
-                    model.Position.Value
-                ));
+                this.SendCommand(new DropHeldItemCommand(model.Position.Value));
             }
 
             if (_ceilingHit) velocity.y = Mathf.Min(0, velocity.y);

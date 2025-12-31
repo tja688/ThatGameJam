@@ -1,13 +1,10 @@
 using System.Collections.Generic;
 using QFramework;
-using ThatGameJam.Independents.Audio;
-using ThatGameJam.Features.AreaSystem.Events;
 using ThatGameJam.Features.AreaSystem.Queries;
+using ThatGameJam.Features.BackpackFeature.Commands;
 using ThatGameJam.Features.KeroseneLamp.Commands;
 using ThatGameJam.Features.KeroseneLamp.Events;
 using ThatGameJam.Features.KeroseneLamp.Models;
-using ThatGameJam.Features.KeroseneLamp.Queries;
-using ThatGameJam.Features.PlayerCharacter2D.Controllers;
 using ThatGameJam.Features.Shared;
 using UnityEngine;
 
@@ -27,8 +24,6 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
         private readonly Dictionary<int, KeroseneLampInstance> _lampInstances = new Dictionary<int, KeroseneLampInstance>();
         private readonly HashSet<KeroseneLampPreplaced> _registeredPreplaced = new HashSet<KeroseneLampPreplaced>();
         private int _nextLampId;
-        private int _heldLampId = -1;
-        private KeroseneLampInstance _heldLampInstance;
         private Transform _resolvedHoldPoint;
 
         public IArchitecture GetArchitecture() => GameRootApp.Interface;
@@ -45,10 +40,6 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
                 .UnRegisterWhenDisabled(gameObject);
             this.RegisterEvent<LampGameplayStateChangedEvent>(OnLampGameplayStateChanged)
                 .UnRegisterWhenDisabled(gameObject);
-            this.RegisterEvent<LampVisualStateChangedEvent>(OnLampVisualStateChanged)
-                .UnRegisterWhenDisabled(gameObject);
-            this.RegisterEvent<AreaChangedEvent>(OnAreaChanged)
-                .UnRegisterWhenDisabled(gameObject);
         }
 
         private void Start()
@@ -57,12 +48,38 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
             SpawnHeldLampIfNeeded();
         }
 
+        public bool TryGetLampInstance(int lampId, out KeroseneLampInstance instance)
+        {
+            return _lampInstances.TryGetValue(lampId, out instance);
+        }
+
+        public void NotifyLampDropped(KeroseneLampInstance instance, Vector3 worldPos)
+        {
+            if (instance == null || instance.InstanceId < 0)
+            {
+                return;
+            }
+
+            var currentAreaId = this.SendQuery(new GetCurrentAreaIdQuery());
+            var areaId = string.IsNullOrEmpty(currentAreaId) ? fallbackAreaId : currentAreaId;
+
+            this.SendCommand(new ConvertHeldLampToDroppedCommand(
+                instance.InstanceId,
+                areaId,
+                worldPos,
+                maxActivePerArea));
+        }
+
         private void OnPlayerDied(PlayerDiedEvent e)
         {
-            if (!DropHeldLamp(e.WorldPos))
+            var heldLamp = FindHeldLampInstance();
+            if (heldLamp != null)
             {
-                SpawnLamp(e.WorldPos, null, string.Empty);
+                this.SendCommand(new DropHeldItemCommand(e.WorldPos, true));
+                return;
             }
+
+            SpawnLamp(e.WorldPos, null, string.Empty);
         }
 
         private void OnPlayerRespawned(PlayerRespawnedEvent e)
@@ -72,7 +89,6 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
 
         private void OnRunReset(RunResetEvent e)
         {
-            ClearHeldLampState();
             ClearLamps();
             _nextLampId = 0;
             _registeredPreplaced.Clear();
@@ -89,7 +105,6 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
         private void SpawnLamp(Vector3 worldPos, GameObject prefabOverride, string presetId)
         {
             var lampId = _nextLampId++;
-
             var prefab = prefabOverride != null ? prefabOverride : lampPrefab;
             GameObject instance = null;
             if (prefab != null)
@@ -111,21 +126,23 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
                 lampInstance = instance.GetComponent<KeroseneLampInstance>();
                 if (lampInstance != null)
                 {
-                    lampInstance.SetVisualEnabled(visualEnabled);
-                    lampInstance.SetGameplayEnabled(true);
+                    lampInstance.SetManager(this);
+                    lampInstance.SetLampId(lampId);
+                    lampInstance.SetHeldOffsets(heldLampLocalOffset, heldLampLocalEulerAngles);
+                    lampInstance.SetState(KeroseneLampState.Dropped, null, worldPos);
                 }
+            }
+
+            var lightController = lampInstance != null ? lampInstance.GetComponent<LampRegionLightController>() : null;
+            if (lightController != null)
+            {
+                lightController.SetAreaId(areaId);
             }
 
             if (lampInstance != null)
             {
                 _lampInstances[lampId] = lampInstance;
             }
-
-            AudioService.Play("SFX-INT-0007", new AudioContext
-            {
-                Position = worldPos,
-                HasPosition = true
-            });
 
             this.SendCommand(new RecordLampSpawnedCommand(
                 lampId,
@@ -158,44 +175,21 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
 
         private void OnLampGameplayStateChanged(LampGameplayStateChangedEvent e)
         {
-            if (_lampInstances.TryGetValue(e.LampId, out var instance) && instance != null)
+            if (!_lampInstances.TryGetValue(e.LampId, out var instance) || instance == null)
             {
-                instance.SetGameplayEnabled(e.GameplayEnabled);
+                return;
             }
-        }
 
-        private void OnLampVisualStateChanged(LampVisualStateChangedEvent e)
-        {
-            if (_lampInstances.TryGetValue(e.LampId, out var instance) && instance != null)
+            instance.SetGameplayEnabled(e.GameplayEnabled);
+            if (!e.GameplayEnabled && instance.State == KeroseneLampState.Dropped)
             {
-                instance.SetVisualEnabled(e.VisualEnabled);
-            }
-        }
-
-        private void OnAreaChanged(AreaChangedEvent e)
-        {
-            var lamps = this.SendQuery(new GetAllLampInfosQuery());
-            for (var i = 0; i < lamps.Count; i++)
-            {
-                var lamp = lamps[i];
-                if (lamp.LampId == _heldLampId)
-                {
-                    continue;
-                }
-
-                var shouldEnable = string.IsNullOrEmpty(e.CurrentAreaId) || lamp.AreaId == e.CurrentAreaId;
-                if (lamp.VisualEnabled == shouldEnable)
-                {
-                    continue;
-                }
-
-                this.SendCommand(new SetLampVisualStateCommand(lamp.LampId, shouldEnable));
+                instance.SetState(KeroseneLampState.Disabled, null, instance.transform.position);
             }
         }
 
         private void SpawnHeldLampIfNeeded()
         {
-            if (!spawnHeldLampOnStart || _heldLampInstance != null)
+            if (!spawnHeldLampOnStart || HasLampInInventory())
             {
                 return;
             }
@@ -228,22 +222,20 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
                 return;
             }
 
-            _heldLampId = lampId;
-            _heldLampInstance = lampInstance;
-            _lampInstances[lampId] = lampInstance;
-
             var currentAreaId = this.SendQuery(new GetCurrentAreaIdQuery());
             var areaId = string.IsNullOrEmpty(currentAreaId) ? fallbackAreaId : currentAreaId;
 
-            lampInstance.SetVisualEnabled(true);
-            lampInstance.SetGameplayEnabled(true);
-            AttachHeldLamp(lampInstance, holdPoint);
+            lampInstance.SetManager(this);
+            lampInstance.SetLampId(lampId);
+            lampInstance.SetHeldOffsets(heldLampLocalOffset, heldLampLocalEulerAngles);
 
-            AudioService.Play("SFX-INT-0007", new AudioContext
+            var lightController = lampInstance.GetComponent<LampRegionLightController>();
+            if (lightController != null)
             {
-                Position = holdPoint.position,
-                HasPosition = true
-            });
+                lightController.SetAreaId(areaId);
+            }
+
+            _lampInstances[lampId] = lampInstance;
 
             this.SendCommand(new RecordLampSpawnedCommand(
                 lampId,
@@ -255,56 +247,49 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
                 maxActivePerArea,
                 true,
                 false));
-        }
 
-        private bool DropHeldLamp(Vector3 worldPos)
-        {
-            if (_heldLampInstance == null || _heldLampId < 0)
+            if (lampInstance.Definition == null)
             {
-                return false;
-            }
-
-            var lampTransform = _heldLampInstance.transform;
-            lampTransform.SetParent(lampParent, true);
-            lampTransform.position = worldPos;
-            _heldLampInstance.SetHeld(false);
-            AudioService.Play("SFX-INT-0008", new AudioContext
-            {
-                Position = worldPos,
-                HasPosition = true
-            });
-
-            var currentAreaId = this.SendQuery(new GetCurrentAreaIdQuery());
-            var areaId = string.IsNullOrEmpty(currentAreaId) ? fallbackAreaId : currentAreaId;
-
-            this.SendCommand(new ConvertHeldLampToDroppedCommand(
-                _heldLampId,
-                areaId,
-                worldPos,
-                maxActivePerArea));
-
-            _heldLampId = -1;
-            _heldLampInstance = null;
-            return true;
-        }
-
-        private void AttachHeldLamp(KeroseneLampInstance lampInstance, Transform holdPoint)
-        {
-            if (lampInstance == null || holdPoint == null)
-            {
+                LogKit.W("KeroseneLampInstance missing ItemDefinition; cannot add to backpack.");
                 return;
             }
 
-            var lampTransform = lampInstance.transform;
-            lampTransform.SetParent(holdPoint, false);
-            lampTransform.localPosition = heldLampLocalOffset;
-            lampTransform.localEulerAngles = heldLampLocalEulerAngles;
-            lampInstance.SetHeld(true);
-            AudioService.Play("SFX-INT-0008", new AudioContext
+            var addedIndex = this.SendCommand(new AddItemCommand(lampInstance.Definition, lampInstance, 1));
+            if (addedIndex >= 0)
             {
-                Position = lampInstance.transform.position,
-                HasPosition = true
-            });
+                this.SendCommand(new SetHeldItemCommand(addedIndex, holdPoint));
+            }
+        }
+
+        private bool HasLampInInventory()
+        {
+            foreach (var entry in _lampInstances.Values)
+            {
+                if (entry == null)
+                {
+                    continue;
+                }
+
+                if (entry.State == KeroseneLampState.InBackpack || entry.State == KeroseneLampState.Held)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private KeroseneLampInstance FindHeldLampInstance()
+        {
+            foreach (var entry in _lampInstances.Values)
+            {
+                if (entry != null && entry.State == KeroseneLampState.Held)
+                {
+                    return entry;
+                }
+            }
+
+            return null;
         }
 
         private Transform ResolveHoldPoint()
@@ -319,19 +304,13 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
                 return _resolvedHoldPoint;
             }
 
-            var controller = FindObjectOfType<PlatformerCharacterController>();
+            var controller = FindObjectOfType<ThatGameJam.Features.PlayerCharacter2D.Controllers.PlatformerCharacterController>();
             if (controller != null)
             {
                 _resolvedHoldPoint = controller.transform;
             }
 
             return _resolvedHoldPoint;
-        }
-
-        private void ClearHeldLampState()
-        {
-            _heldLampId = -1;
-            _heldLampInstance = null;
         }
 
         private void RegisterPreplacedLamps()
@@ -372,8 +351,16 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
                 var areaId = string.IsNullOrEmpty(item.AreaId) ? fallbackAreaId : item.AreaId;
                 var visualEnabled = string.IsNullOrEmpty(currentAreaId) || areaId == currentAreaId;
 
-                instance.SetVisualEnabled(visualEnabled);
-                instance.SetGameplayEnabled(true);
+                instance.SetManager(this);
+                instance.SetLampId(lampId);
+                instance.SetHeldOffsets(heldLampLocalOffset, heldLampLocalEulerAngles);
+                instance.SetState(KeroseneLampState.Dropped, null, instance.transform.position);
+
+                var lightController = instance.GetComponent<LampRegionLightController>();
+                if (lightController != null)
+                {
+                    lightController.SetAreaId(areaId);
+                }
 
                 _lampInstances[lampId] = instance;
                 _registeredPreplaced.Add(item);
@@ -398,18 +385,34 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
             var state = new KeroseneLampSaveState
             {
                 nextLampId = _nextLampId,
-                heldLampId = _heldLampId
+                heldLampId = -1
             };
 
             for (var i = 0; i < infos.Count; i++)
             {
                 var info = infos[i];
-                var isHeld = info.LampId == _heldLampId;
                 var isPreplaced = false;
+                var lampState = KeroseneLampState.Dropped;
+                var visualEnabled = info.VisualEnabled;
 
                 if (model.TryGetLamp(info.LampId, out var record) && record.Instance != null)
                 {
                     isPreplaced = record.Instance.GetComponent<KeroseneLampPreplaced>() != null;
+                }
+
+                if (_lampInstances.TryGetValue(info.LampId, out var instance) && instance != null)
+                {
+                    lampState = instance.State;
+                    var lightController = instance.GetComponent<LampRegionLightController>();
+                    if (lightController != null)
+                    {
+                        visualEnabled = lightController.IsVisualEnabled;
+                    }
+                }
+
+                if (lampState == KeroseneLampState.Held)
+                {
+                    state.heldLampId = info.LampId;
                 }
 
                 state.lamps.Add(new KeroseneLampSaveEntry
@@ -418,13 +421,15 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
                     worldPos = info.WorldPos,
                     areaId = info.AreaId ?? string.Empty,
                     spawnOrderInArea = info.SpawnOrderInArea,
-                    visualEnabled = info.VisualEnabled,
+                    visualEnabled = visualEnabled,
                     gameplayEnabled = info.GameplayEnabled,
                     ignoreAreaLimit = info.IgnoreAreaLimit,
                     countInLampCount = info.CountInLampCount,
                     presetId = info.PresetId ?? string.Empty,
-                    isHeld = isHeld,
-                    isPreplaced = isPreplaced
+                    isHeld = lampState == KeroseneLampState.Held,
+                    isPreplaced = isPreplaced,
+                    state = lampState,
+                    hasState = true
                 });
             }
 
@@ -451,7 +456,6 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
                 state.lamps = new List<KeroseneLampSaveEntry>();
             }
 
-            ClearHeldLampState();
             ClearLamps();
             _registeredPreplaced.Clear();
             this.SendCommand(new ResetLampsCommand());
@@ -525,19 +529,15 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
                     continue;
                 }
 
-                if (!entry.isHeld)
-                {
-                    var lampTransform = instance.transform;
-                    if (lampParent != null && !usedSceneInstance)
-                    {
-                        lampTransform.SetParent(lampParent, true);
-                    }
-                    lampTransform.position = entry.worldPos;
-                    instance.SetHeld(false);
-                }
+                instance.SetManager(this);
+                instance.SetLampId(entry.lampId);
+                instance.SetHeldOffsets(heldLampLocalOffset, heldLampLocalEulerAngles);
 
-                instance.SetVisualEnabled(entry.visualEnabled);
-                instance.SetGameplayEnabled(entry.gameplayEnabled);
+                var lightController = instance.GetComponent<LampRegionLightController>();
+                if (lightController != null)
+                {
+                    lightController.SetAreaId(entry.areaId ?? string.Empty);
+                }
 
                 _lampInstances[entry.lampId] = instance;
 
@@ -552,27 +552,33 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
                     entry.ignoreAreaLimit,
                     entry.countInLampCount));
 
-                if (!entry.gameplayEnabled)
+                var restoreState = entry.hasState ? entry.state : KeroseneLampState.Dropped;
+                if (!entry.hasState)
                 {
-                    this.SendCommand(new SetLampGameplayStateCommand(entry.lampId, false));
-                }
-                if (!entry.visualEnabled)
-                {
-                    this.SendCommand(new SetLampVisualStateCommand(entry.lampId, false));
+                    if (entry.isHeld)
+                    {
+                        restoreState = KeroseneLampState.Held;
+                    }
+                    else if (!entry.gameplayEnabled)
+                    {
+                        restoreState = KeroseneLampState.Disabled;
+                    }
                 }
 
-                if (entry.isHeld)
+                switch (restoreState)
                 {
-                    _heldLampId = entry.lampId;
-                    _heldLampInstance = instance;
-                    if (holdPoint != null)
-                    {
-                        AttachHeldLamp(instance, holdPoint);
-                    }
-                    else
-                    {
-                        instance.SetHeld(true);
-                    }
+                    case KeroseneLampState.Held:
+                        instance.SetState(KeroseneLampState.Held, holdPoint, entry.worldPos);
+                        break;
+                    case KeroseneLampState.InBackpack:
+                        instance.SetState(KeroseneLampState.InBackpack, null, entry.worldPos);
+                        break;
+                    case KeroseneLampState.Disabled:
+                        instance.SetState(KeroseneLampState.Disabled, null, entry.worldPos);
+                        break;
+                    default:
+                        instance.SetState(KeroseneLampState.Dropped, null, entry.worldPos);
+                        break;
                 }
             }
 
@@ -630,6 +636,5 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
 
             return null;
         }
-
     }
 }

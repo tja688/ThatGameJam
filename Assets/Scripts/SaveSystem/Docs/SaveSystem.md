@@ -68,6 +68,8 @@ Add new keys with readable, grep-friendly names: `feature.<FeatureName>.<Subsyst
   - All flag ids.
 - Area System (`area.current`)
   - Current area id.
+- Backpack (`feature.backpack.items`)
+  - Item list, selected index, held index.
 
 ## Not Yet Saved (Pending)
 - Mechanisms: `VineMechanism2D`, `GhostMechanism2D`, `SpikeHazard2D`.
@@ -128,4 +130,3 @@ For fixed scene objects that need stable identity:
 3. Spawn/move lamps -> Save -> change lamp state -> Load -> lamp states restore.
 4. Change light vitality -> Save -> drain -> Load -> restored.
 5. Trigger multiple changes (player + door + lamp + light + checkpoint) -> Save -> change -> Load -> all restore.
-

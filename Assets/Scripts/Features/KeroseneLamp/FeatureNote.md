@@ -1,29 +1,29 @@
 # Feature: KeroseneLamp
 
 ## 1. Purpose
-- 记录灯的注册表（lampId → 位置/区域/状态/实例）。
-- 每次死亡或外部请求生成灯。
-- 每区域最多 3 盏“有效灯”（GameplayEnabled），超出则淘汰最早灯。
-- 跨区域仅关闭视觉光（VisualEnabled），玩法仍有效。
+- Maintain a registry of lamp instances (id → area/position/state).
+- Provide a 4-state lamp state machine with UnityEvents on state entry.
+- Toggle lamp light visuals by player area via a dedicated controller.
 
 ## 2. Folder & Key Files
 - Root: `Assets/Scripts/Features/KeroseneLamp/`
 - Controllers:
-  - `KeroseneLampManager.cs` 〞 生成/清理灯并响应区域切换
-  - `KeroseneLampInstance.cs` 〞 控制灯的视觉/玩法状态表现
-  - `KeroseneLampPreplaced.cs` 〞 场景预摆路灯标记
+  - `KeroseneLampManager.cs` 〞 spawn/restore registry + save integration
+  - `KeroseneLampInstance.cs` 〞 4-state machine + physics/collider handling
+  - `LampRegionLightController.cs` 〞 area-based light visibility (independent of state)
+  - `KeroseneLampPreplaced.cs` 〞 preplaced lamp marker
 - Models:
-  - `IKeroseneLampModel`, `KeroseneLampModel` 〞 注册表与计数
-  - `LampInfo.cs` 〞 查询用灯快照
+  - `IKeroseneLampModel`, `KeroseneLampModel`
+  - `LampInfo`, `KeroseneLampSaveState`, `KeroseneLampState`
 - Commands:
   - `RecordLampSpawnedCommand`
   - `SetLampGameplayStateCommand`
-  - `SetLampVisualStateCommand`
+  - `SetLampInventoryFlagsCommand`
+  - `ConvertHeldLampToDroppedCommand`
   - `ResetLampsCommand`
 - Events:
-  - `LampSpawnedEvent` / `LampCountChangedEvent`（`_Shared`）
+  - `LampSpawnedEvent`, `LampCountChangedEvent`
   - `LampGameplayStateChangedEvent`
-  - `LampVisualStateChangedEvent`
   - `RequestSpawnLampEvent`
 - Queries:
   - `GetGameplayEnabledLampsQuery`
@@ -36,96 +36,57 @@
 
 ### 3.2 Scene setup (Unity)
 - Required MonoBehaviours:
-  - `KeroseneLampManager` 〞 负责生成/回收
-  - `KeroseneLampPreplaced` 〞 预摆路灯标记（需搭配 `KeroseneLampInstance`）
-- Inspector fields (if any):
-  - `lampPrefab` 〞 灯预制体（推荐挂 `KeroseneLampInstance`）
-  - `lampParent` 〞 生成父节点（可选）
-  - `maxActivePerArea` 〞 每区域最多有效灯数（默认 3）
+  - `KeroseneLampManager` 〞 registry + spawn/restore
+  - Lamp prefab must include:
+    - `KeroseneLampInstance`
+    - `LampRegionLightController`
+- Preplaced lamps:
+  - Add `KeroseneLampPreplaced` + `KeroseneLampInstance` + `LampRegionLightController`
+- Inspector fields:
+  - `KeroseneLampManager.lampPrefab`
+  - `KeroseneLampManager.playerHoldPoint` (for held state)
+  - `KeroseneLampInstance` UnityEvents for each state
 
 ## 4. Public API Surface (How other Features integrate)
 ### 4.1 Events (Outbound)
-> Other Features listen to these
 - `struct LampSpawnedEvent`
   - When fired: `RecordLampSpawnedCommand`
   - Payload: `LampId`, `WorldPos`
-- `struct LampCountChangedEvent`
-  - When fired: lamp count changes
 - `struct LampGameplayStateChangedEvent`
-  - When fired: 有效灯淘汰或手动切换
-  - Payload: `LampId`, `GameplayEnabled`
-- `struct LampVisualStateChangedEvent`
-  - When fired: 区域切换导致视觉开关变化
-  - Payload: `LampId`, `VisualEnabled`
+  - When fired: gameplay enabled toggles
 
 ### 4.2 Request Events (Inbound write requests, optional)
-> 外部请求生成灯
 - `struct RequestSpawnLampEvent`
-  - Who sends it: StoryTasks 等
+  - Who sends it: story tasks, triggers
   - Who handles it: `KeroseneLampManager`
 
 ### 4.3 Commands (Write Path)
 - `RecordLampSpawnedCommand`
-  - What state it mutates: 注册表、LampCount、区域有效灯计数
+  - Mutates: registry entry + area counts
 - `SetLampGameplayStateCommand`
-  - What state it mutates: `GameplayEnabled`
-- `SetLampVisualStateCommand`
-  - What state it mutates: `VisualEnabled`
-- `ResetLampsCommand`
-  - What state it mutates: 注册表与计数清空
+  - Mutates: gameplay enabled flag
+- `SetLampInventoryFlagsCommand`
+  - Mutates: inventory flags + lamp count
+- `ConvertHeldLampToDroppedCommand`
+  - Mutates: area/position + count when dropped
 
 ### 4.4 Queries (Read Path, optional)
 - `GetGameplayEnabledLampsQuery`
-  - What it returns: GameplayEnabled 灯列表（用于花/藤蔓/虫子）
-- `GetAllLampInfosQuery`
-  - What it returns: 全部灯快照（区域切换处理）
+  - Returns: gameplay-enabled lamps for light checks
 
 ### 4.5 Model Read Surface
-- Bindables / readonly properties:
-  - `IReadonlyBindableProperty<int> LampCount`
+- `IReadonlyBindableProperty<int> LampCount`
 
 ## 5. Typical Integrations
-- 示例：藤蔓/花通过 `GetGameplayEnabledLampsQuery` 判断是否被光照。
+- Bugs/vines query `GetGameplayEnabledLampsQuery` to detect light sources.
+- UI listens to `LampCount` for HUD updates.
 
 ## 6. Verify Checklist
-1. 场景中添加 `PlayerAreaSensor` + `AreaVolume2D` + `KeroseneLampManager`，灯预制体挂 `KeroseneLampInstance`。
-2. 玩家在区域 A 死亡，生成灯并可见；切换到区域 B 后，区域 A 的灯视觉关闭但玩法仍有效。
-3. 在同一区域生成第 4 盏灯，最早灯 `GameplayEnabled=false` 且出现明显反馈。
-4. 触发 `RunResetEvent`（HardReset），灯全部清理，`LampCount` 归零。
+1. Pickup lamp → state enters `InBackpack` and UnityEvent fires.
+2. Hold lamp → state enters `Held`, lamp attaches to hold point.
+3. Drop lamp → state enters `Dropped`, physics re-enabled.
+4. Disable lamp (area limit) → state enters `Disabled`.
+5. Area change toggles lamp light via `LampRegionLightController` only.
 
 ## 7. UNVERIFIED (only if needed)
 - None.
-
-## 8. Change Log
-- **Date**: 2025-12-28
-- **Change**: 增加预摆路灯注册，支持不占用上限且不计入 HUD。
-- **Reason**: 新策划要求“路灯”始终有效、随区域切换仅关视觉，且不影响掉落灯上限/计数。
-- **Behavior Now**:
-  - Given 场景内放置带 `KeroseneLampPreplaced` + `KeroseneLampInstance` 的路灯
-  - When 进入与路灯 AreaId 不同的区域
-  - Then 路灯视觉关闭但仍参与灯光判定，且不占用上限/不计入 HUD
-- **Config**:
-  - `KeroseneLampPreplaced.areaId`：路灯所属区域 Id；空则使用 `fallbackAreaId`
-- **Risk & Regression**:
-  - 影响范围：区域切换视觉开关、灯上限淘汰逻辑
-  - 回归用例：预摆路灯不计数、掉落灯仍按上限淘汰、区域切换时路灯光源开关
-- **Files Touched**:
-  - `Assets/Scripts/Features/KeroseneLamp/Controllers/KeroseneLampManager.cs`
-  - `Assets/Scripts/Features/KeroseneLamp/Controllers/KeroseneLampPreplaced.cs`
-  - `Assets/Scripts/Features/KeroseneLamp/Models/KeroseneLampModel.cs`
-  - `Assets/Scripts/Features/KeroseneLamp/Models/LampInfo.cs`
-  - `Assets/Scripts/Features/KeroseneLamp/Commands/RecordLampSpawnedCommand.cs`
-- **Date**: 2025-12-28
-- **Change**: 生成时强制同步 gameplay 子对象状态，避免可用/熄灭同时激活。
-- **Reason**: 运行时生成煤油灯出现可用与熄灭子对象同时激活。
-- **Behavior Now**:
-  - Given 运行时生成煤油灯
-  - When 初始化完成
-  - Then 仅与 `GameplayEnabled` 对应的子对象激活，另一个保持失活
-- **Config**:
-  - None.
-- **Risk & Regression**:
-  - 影响范围：煤油灯初始外观与熄灭切换表现
-  - 回归用例：新生成灯默认可用；超上限淘汰时熄灭视觉正确
-- **Files Touched**:
-  - `Assets/Scripts/Features/KeroseneLamp/Controllers/KeroseneLampInstance.cs`

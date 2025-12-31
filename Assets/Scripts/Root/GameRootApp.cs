@@ -20,6 +20,7 @@ public class GameRootApp : Architecture<GameRootApp>
         this.RegisterModel<ThatGameJam.Features.DeathRespawn.Models.IDeathRespawnModel>(new ThatGameJam.Features.DeathRespawn.Models.DeathRespawnModel());
         this.RegisterSystem<ThatGameJam.Features.DeathRespawn.Systems.IDeathRespawnSystem>(new ThatGameJam.Features.DeathRespawn.Systems.DeathRespawnSystem());
         this.RegisterModel<ThatGameJam.Features.KeroseneLamp.Models.IKeroseneLampModel>(new ThatGameJam.Features.KeroseneLamp.Models.KeroseneLampModel());
+        this.RegisterModel<ThatGameJam.Features.BackpackFeature.Models.IBackpackModel>(new ThatGameJam.Features.BackpackFeature.Models.BackpackModel());
         this.RegisterSystem<ThatGameJam.Features.RunFailReset.Systems.IRunFailResetSystem>(new ThatGameJam.Features.RunFailReset.Systems.RunFailResetSystem());
         this.RegisterModel<ThatGameJam.Features.DoorGate.Models.IDoorGateModel>(new ThatGameJam.Features.DoorGate.Models.DoorGateModel());
         this.RegisterSystem<ThatGameJam.Features.DoorGate.Systems.IDoorGateSystem>(new ThatGameJam.Features.DoorGate.Systems.DoorGateSystem());
