@@ -354,6 +354,17 @@ namespace ThatGameJam.Independents
             ApplyValue(VariableSlot.B, data.variableB, true);
         }
 
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            if (Application.isPlaying)
+            {
+                ApplyValue(VariableSlot.A, variableAValue, true);
+                ApplyValue(VariableSlot.B, variableBValue, true);
+            }
+        }
+#endif
+
         private enum VariableSlot
         {
             A,
