@@ -1,0 +1,5 @@
+1) Add a Full Screen Pass Renderer Feature
+2) Assign material B01_PaperWashPastel
+3) Injection point: After Rendering/After Post-Processing
+4) Lift/Contrast/Saturation control softness
+5) PaperTint/TintStrength warm the base

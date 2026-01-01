@@ -1,0 +1,5 @@
+1) Add a Full Screen Pass Renderer Feature
+2) Assign material B02_SoftGradientMap
+3) Injection point: After Rendering/After Post-Processing
+4) Strength/PreserveSaturation tune the look
+5) Set UseGradientTex=1 to use GradientTex
