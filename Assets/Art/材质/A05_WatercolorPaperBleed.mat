@@ -12,7 +12,8 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
-  m_InvalidKeywords: []
+  m_InvalidKeywords:
+  - _PAPERWORLDLOCK_ON
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -32,17 +33,17 @@ Material:
     - _BleedRadius: 2
     - _BleedStrength: 1
     - _Blend: 1
-    - _HLEnd: 1.2
-    - _HLProtect: 0.6
-    - _HLStart: 0.8
-    - _PaperOrthoSize: 5
+    - _HLEnd: 2
+    - _HLProtect: 1
+    - _HLStart: 2
+    - _PaperOrthoSize: 15
     - _PaperStrength: 0.3
     - _PaperTexTiling: 8
     - _PaperUseTex: 0
     - _PaperWorldLock: 1
     - _PaperWorldTiling: 0.5
     m_Colors:
-    - _PaperCamPos: {r: 0, g: 0, b: 0, a: 0}
+    - _PaperCamPos: {r: -17.401634, g: 2.2, b: 0, a: 0}
     - _PaperWorldOffset: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
