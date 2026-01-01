@@ -589,6 +589,9 @@ PlayerSettings:
   scriptingDefineSymbols:
     Android: UNITY_VISUAL_SCRIPTING
     EmbeddedLinux: UNITY_VISUAL_SCRIPTING
+    GameCoreScarlett: 
+    GameCoreXboxOne: 
+    Kepler: 
     LinuxHeadlessSimulation: UNITY_VISUAL_SCRIPTING
     Nintendo Switch: UNITY_VISUAL_SCRIPTING
     Nintendo Switch 2: UNITY_VISUAL_SCRIPTING
