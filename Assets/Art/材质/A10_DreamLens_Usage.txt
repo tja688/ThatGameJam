@@ -1,0 +1,5 @@
+1) 新建 Full Screen Pass Renderer Feature
+2) 指定材质 A10_DreamLens
+3) 注入点选 After Rendering/After Post-Processing
+4) CA_Strength 控色散强度
+5) DistortStrength/Speed 控轻扭曲

@@ -1,0 +1,5 @@
+1) 新建 Full Screen Pass Renderer Feature
+2) 指定材质 A06_GradientMap
+3) 注入点选 After Rendering/After Post-Processing
+4) Strength/PreserveSaturation 调强度
+5) 用渐变贴图则设 UseGradientTex=1

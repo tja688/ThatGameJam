@@ -1,0 +1,5 @@
+1) 新建 Full Screen Pass Renderer Feature
+2) 指定材质 A07_PosterizeDither
+3) 注入点选 After Rendering/After Post-Processing
+4) Levels 控色阶，DitherStrength 控抖动
+5) HighlightProtect 保留高亮干净

@@ -1,0 +1,5 @@
+1) 新建 Full Screen Pass Renderer Feature
+2) 指定材质 A11_FilmGrainDust
+3) 注入点选 After Rendering/After Post-Processing
+4) GrainStrength/Size 控制颗粒
+5) DustStrength 保持很低
