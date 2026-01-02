@@ -145,13 +145,19 @@
     border-color: rgba(255, 255, 255, 0.12);
 }
 
+.quest-item__title {
+    color: #f5f7fa;
+    font-size: 16px;
+}
+
 .quest-item.selected {
     background-color: #2f3a4a;
     border-color: #4aa3ff;
 }
 
 .quest-item__status {
-    color: #a4aebb;
+    color: #f5f7fa;
+    font-size: 14px;
 }
 
 .inventory-slot {

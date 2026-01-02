@@ -1,7 +1,11 @@
 using System;
+using System.Collections.Generic;
 using Language.Lua;
 using PixelCrushers.DialogueSystem;
 using ThatGameJam.SaveSystem;
+using ThatGameJam.UI.Models;
+using ThatGameJam.UI.Services;
+using ThatGameJam.UI.Services.Interfaces;
 using UnityEngine;
 
 namespace ThatGameJam.Independents
@@ -13,8 +17,16 @@ namespace ThatGameJam.Independents
         public float variableB;
     }
 
+    [Serializable]
+    public class DialogueQuestStageContent
+    {
+        public string Title;
+        [TextArea(2, 4)] public string Description;
+        [TextArea(1, 3)] public string Requirements;
+    }
+
     [DisallowMultipleComponent]
-    public class DialogueVariableBridge : SaveParticipant<DialogueVariableBridgeSaveData>
+    public class DialogueVariableBridge : SaveParticipant<DialogueVariableBridgeSaveData>, IQuestLogProvider
     {
         public static DialogueVariableBridge Instance { get; private set; }
 
@@ -33,18 +45,67 @@ namespace ThatGameJam.Independents
         [Header("Save")]
         [SerializeField] private string saveKey = "dialogue.variables";
 
+        [Header("UI Quest Log")]
+        [SerializeField] private bool registerQuestLogProvider = true;
+
+        [Header("Ella Quest Text (Stages 1-3)")]
+        [SerializeField] private string ellaQuestId = "quest_ella_letter";
+        [SerializeField] private DialogueQuestStageContent ellaStage1 = new DialogueQuestStageContent
+        {
+            Title = "Ella's Letter",
+            Description = "Ella asked you to find her missing letter.",
+            Requirements = "Progress 1/3: Find the letter."
+        };
+        [SerializeField] private DialogueQuestStageContent ellaStage2 = new DialogueQuestStageContent
+        {
+            Title = "Ella's Letter",
+            Description = "You found the letter. Bring it back to Ella.",
+            Requirements = "Progress 2/3: Return the letter to Ella."
+        };
+        [SerializeField] private DialogueQuestStageContent ellaStage3 = new DialogueQuestStageContent
+        {
+            Title = "Ella's Letter",
+            Description = "You returned the letter to Ella.",
+            Requirements = "Progress 3/3: Completed."
+        };
+
+        [Header("Benjamin Quest Text (Stages 1-3)")]
+        [SerializeField] private string benjaminQuestId = "quest_benjamin_newspaper";
+        [SerializeField] private DialogueQuestStageContent benjaminStage1 = new DialogueQuestStageContent
+        {
+            Title = "Benjamin's Newspaper",
+            Description = "Benjamin wants the latest newspaper.",
+            Requirements = "Progress 1/3: Find a newspaper."
+        };
+        [SerializeField] private DialogueQuestStageContent benjaminStage2 = new DialogueQuestStageContent
+        {
+            Title = "Benjamin's Newspaper",
+            Description = "You have the newspaper. Bring it to Benjamin.",
+            Requirements = "Progress 2/3: Deliver the newspaper to Benjamin."
+        };
+        [SerializeField] private DialogueQuestStageContent benjaminStage3 = new DialogueQuestStageContent
+        {
+            Title = "Benjamin's Newspaper",
+            Description = "You delivered the newspaper to Benjamin.",
+            Requirements = "Progress 3/3: Completed."
+        };
+
         public override string SaveKey => saveKey;
 
         public event Action<string, float> ValueChanged;
+        public event Action OnQuestChanged;
 
         private string _variableAIndex;
         private string _variableBIndex;
+        private readonly List<QuestData> _quests = new List<QuestData>();
 
         public float VariableAValue => variableAValue;
         public float VariableBValue => variableBValue;
 
         public string VariableAName => variableAName;
         public string VariableBName => variableBName;
+
+        public IReadOnlyList<QuestData> GetQuests() => _quests;
 
         public static bool TryGet(string variableName, out float value)
         {
@@ -141,11 +202,21 @@ namespace ThatGameJam.Independents
             {
                 PushToDialogue();
             }
+
+            if (registerQuestLogProvider)
+            {
+                UIServiceRegistry.SetQuestLog(this);
+                RefreshQuestLog();
+            }
         }
 
         protected override void OnDisable()
         {
             UnregisterMonitoring();
+            if (registerQuestLogProvider && UIServiceRegistry.QuestLog == this)
+            {
+                UIServiceRegistry.SetQuestLog(null);
+            }
             base.OnDisable();
         }
 
@@ -268,6 +339,7 @@ namespace ThatGameJam.Independents
                 }
 
                 ValueChanged?.Invoke(variableAName, value);
+                RefreshQuestLog();
                 return;
             }
 
@@ -283,6 +355,7 @@ namespace ThatGameJam.Independents
             }
 
             ValueChanged?.Invoke(variableBName, value);
+            RefreshQuestLog();
         }
 
         private static bool TryConvertNumber(object value, out float number)
@@ -352,6 +425,84 @@ namespace ThatGameJam.Independents
 
             ApplyValue(VariableSlot.A, data.variableA, true);
             ApplyValue(VariableSlot.B, data.variableB, true);
+        }
+
+        private void RefreshQuestLog()
+        {
+            if (!registerQuestLogProvider)
+            {
+                return;
+            }
+
+            _quests.Clear();
+
+            var ellaQuest = BuildEllaQuest(ClampStage(variableAValue));
+            if (ellaQuest != null)
+            {
+                _quests.Add(ellaQuest);
+            }
+
+            var benjaminQuest = BuildBenjaminQuest(ClampStage(variableBValue));
+            if (benjaminQuest != null)
+            {
+                _quests.Add(benjaminQuest);
+            }
+
+            OnQuestChanged?.Invoke();
+        }
+
+        private static int ClampStage(float value)
+        {
+            int stage = Mathf.RoundToInt(value);
+            if (stage <= 0)
+            {
+                return 0;
+            }
+
+            return stage > 3 ? 3 : stage;
+        }
+
+        private QuestData BuildEllaQuest(int stage)
+        {
+            switch (stage)
+            {
+                case 1:
+                    return BuildQuest(ellaQuestId, ellaStage1, false);
+                case 2:
+                    return BuildQuest(ellaQuestId, ellaStage2, false);
+                case 3:
+                    return BuildQuest(ellaQuestId, ellaStage3, true);
+            }
+
+            return null;
+        }
+
+        private QuestData BuildBenjaminQuest(int stage)
+        {
+            switch (stage)
+            {
+                case 1:
+                    return BuildQuest(benjaminQuestId, benjaminStage1, false);
+                case 2:
+                    return BuildQuest(benjaminQuestId, benjaminStage2, false);
+                case 3:
+                    return BuildQuest(benjaminQuestId, benjaminStage3, true);
+            }
+
+            return null;
+        }
+
+        private static QuestData BuildQuest(string questId, DialogueQuestStageContent stage, bool completed)
+        {
+            DialogueQuestStageContent content = stage ?? new DialogueQuestStageContent();
+            return new QuestData
+            {
+                Id = questId,
+                Title = content.Title ?? string.Empty,
+                Description = content.Description ?? string.Empty,
+                Requirements = content.Requirements ?? string.Empty,
+                IsCompleted = completed
+            };
         }
 
 #if UNITY_EDITOR

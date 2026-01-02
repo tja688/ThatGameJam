@@ -115,30 +115,39 @@ namespace ThatGameJam.Independents
                 return;
             }
 
+            float currentEllaState = DialogueVariableBridge.Instance.VariableAValue;
+            float currentBenjaminState = DialogueVariableBridge.Instance.VariableBValue;
+
             // Check items in backpack (Supports matching by ID or Display Name)
             bool hasLetter = HasItem(LetterItemName);
             bool hasNewspaper = HasItem(NewspaperItemName);
 
             // Determine Ella's State (Variable A)
-            float ellaState = 0;
-            if (hasLetter)
+            float ellaState = currentEllaState >= 3f ? currentEllaState : 0f;
+            if (ellaState < 3f)
             {
-                ellaState = 2;
-            }
-            else if (_hasInteractedWithElla)
-            {
-                ellaState = 1;
+                if (hasLetter)
+                {
+                    ellaState = 2f;
+                }
+                else if (_hasInteractedWithElla)
+                {
+                    ellaState = 1f;
+                }
             }
 
             // Determine Benjamin's State (Variable B)
-            float benjaminState = 0;
-            if (hasNewspaper)
+            float benjaminState = currentBenjaminState >= 3f ? currentBenjaminState : 0f;
+            if (benjaminState < 3f)
             {
-                benjaminState = 2;
-            }
-            else if (_hasInteractedWithBenjamin)
-            {
-                benjaminState = 1;
+                if (hasNewspaper)
+                {
+                    benjaminState = 2f;
+                }
+                else if (_hasInteractedWithBenjamin)
+                {
+                    benjaminState = 1f;
+                }
             }
 
             // Update Bridge

@@ -155,7 +155,9 @@ namespace ThatGameJam.UI.Panels
             var quests = _questLog?.GetQuests();
             if (quests == null || quests.Count == 0)
             {
-                _questList.Add(new Label("No quests."));
+                var emptyLabel = new Label("No quests.");
+                emptyLabel.AddToClassList("quest-empty");
+                _questList.Add(emptyLabel);
                 ApplyQuestDetails(null);
                 return;
             }

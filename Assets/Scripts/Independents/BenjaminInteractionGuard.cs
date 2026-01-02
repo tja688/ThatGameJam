@@ -47,7 +47,7 @@ namespace ThatGameJam.Independents
             if (TargetObject == null) return;
 
             // Activate when state == 2, otherwise deactivate
-            bool shouldBeActive = Mathf.Approximately(state, 2f);
+            bool shouldBeActive = Mathf.Approximately(state, 3f);
             TargetObject.SetActive(shouldBeActive);
         }
     }

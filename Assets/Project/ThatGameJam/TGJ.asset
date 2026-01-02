@@ -787,8 +787,8 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 656.15344
-        y: 121.53845
+        x: 656.88074
+        y: 119.35663
         width: 160
         height: 30
     - id: 9
@@ -1365,7 +1365,7 @@ MonoBehaviour:
         type: 0
         typeString: 
       - title: Sequence
-        value: GiveItem(Seed,1)
+        value: "GiveItem(Seed,1);HideInteractionAndSprite(\u7B2C\u4E8C\u5173 \u5A46\u5A46)"
         type: 0
         typeString: 
       conversationID: 1
@@ -1377,7 +1377,7 @@ MonoBehaviour:
       conditionPriority: 2
       outgoingLinks: []
       conditionsString: 
-      userScript: 
+      userScript: Variable["EllaState"] = 3
       onExecute:
         m_PersistentCalls:
           m_Calls: []
@@ -1388,8 +1388,8 @@ MonoBehaviour:
         width: 160
         height: 30
     entryGroups: []
-    canvasScrollPosition: {x: 536.5808, y: 350.1032}
-    canvasZoom: 0.43000045
+    canvasScrollPosition: {x: 139.92416, y: 1.4545288}
+    canvasZoom: 0.5500004
   - id: 2
     fields:
     - title: Title
@@ -2296,7 +2296,7 @@ MonoBehaviour:
         type: 0
         typeString: 
       - title: Sequence
-        value: GiveItem(Key,1)
+        value: "GiveItem(Key,1);HideInteractionAndSprite(\u672C\u6770\u660E)"
         type: 0
         typeString: 
       - title: Response Menu Sequence
@@ -2312,7 +2312,7 @@ MonoBehaviour:
       conditionPriority: 2
       outgoingLinks: []
       conditionsString: 
-      userScript: 
+      userScript: Variable["BenjaminState"] = 3
       onExecute:
         m_PersistentCalls:
           m_Calls: []
@@ -2323,8 +2323,8 @@ MonoBehaviour:
         width: 160
         height: 30
     entryGroups: []
-    canvasScrollPosition: {x: 0, y: 405.58746}
-    canvasZoom: 0.43000045
+    canvasScrollPosition: {x: 0, y: 26.539124}
+    canvasZoom: 0.49000046
   - id: 3
     fields:
     - title: Title
@@ -3799,7 +3799,7 @@ MonoBehaviour:
       type: 5
       typeString: CustomFieldType_Actor
     - title: Conversant
-      value: 2
+      value: 7
       type: 5
       typeString: CustomFieldType_Actor
     overrideSettings:
@@ -3881,8 +3881,8 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 157.20001
-        y: 27.599998
+        x: 156.46606
+        y: 28.70092
         width: 160
         height: 30
     - id: 1
@@ -3935,8 +3935,8 @@ MonoBehaviour:
         width: 160
         height: 30
     entryGroups: []
-    canvasScrollPosition: {x: 0, y: 0}
-    canvasZoom: 1
+    canvasScrollPosition: {x: 27.115587, y: 10.568795}
+    canvasZoom: 1.0899999
   syncInfo:
     syncActors: 0
     syncItems: 0

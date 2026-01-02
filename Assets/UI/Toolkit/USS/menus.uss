@@ -189,6 +189,20 @@
     row-gap: 6px;
 }
 
+.quest-detail__title {
+    color: #f5f7fa;
+    font-size: 18px;
+    unity-font-style: bold;
+}
+
+.quest-detail__desc,
+.quest-detail__req,
+.quest-detail__status,
+.quest-empty {
+    color: #f5f7fa;
+    font-size: 14px;
+}
+
 .inventory-section {
     flex-direction: column;
     row-gap: 10px;
