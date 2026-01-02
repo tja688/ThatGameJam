@@ -35,6 +35,15 @@ namespace ThatGameJam.Independents
         [SerializeField] private bool _hasInteractedWithElla;
         [SerializeField] private bool _hasInteractedWithBenjamin;
 
+        public bool HasInteractedWithElla => _hasInteractedWithElla;
+        public bool HasInteractedWithBenjamin => _hasInteractedWithBenjamin;
+
+        public void ApplyInteractionState(bool hasInteractedWithElla, bool hasInteractedWithBenjamin)
+        {
+            _hasInteractedWithElla = hasInteractedWithElla;
+            _hasInteractedWithBenjamin = hasInteractedWithBenjamin;
+        }
+
         private void Start()
         {
             // Listen for backpack changes

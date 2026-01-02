@@ -28,6 +28,21 @@ namespace ThatGameJam.Independents
         private float _currentGrowthNormalized = 0f;
         private Tween _growthTween;
 
+        public float GrowthNormalized => _currentGrowthNormalized;
+        public bool IsGrowthActive => _growthTween != null && _growthTween.IsActive() && _growthTween.IsPlaying();
+
+        public void ApplyGrowthState(float normalized, bool resumeGrowth)
+        {
+            _currentGrowthNormalized = Mathf.Clamp01(normalized);
+            _growthTween?.Kill();
+            ApplyGrowth(_currentGrowthNormalized);
+
+            if (resumeGrowth && _currentGrowthNormalized < 1f && isActiveAndEnabled)
+            {
+                StartGrowth();
+            }
+        }
+
         private enum GrowthAxis { X, Y }
 
         private void Awake()

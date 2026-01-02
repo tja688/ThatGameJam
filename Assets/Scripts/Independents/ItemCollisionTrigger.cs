@@ -22,8 +22,36 @@ namespace ThatGameJam.Independents
         public string TargetTag = "Soil";
         [Tooltip("If true, use Trigger events; if false, use Collision events.")]
         public bool UseTrigger = true;
+        [Tooltip("If true, destroy this item after it triggers; disable for save persistence.")]
+        public bool DestroyOnTrigger = true;
 
         private bool _triggered = false;
+
+        public bool IsTriggered => _triggered;
+
+        public void ApplyTriggeredState(bool triggered)
+        {
+            _triggered = triggered;
+            if (!_triggered)
+            {
+                return;
+            }
+
+            if (TargetToActivate != null)
+            {
+                TargetToActivate.SetActive(true);
+            }
+
+            if (InteractableToDeactivate != null)
+            {
+                InteractableToDeactivate.enabled = false;
+            }
+
+            if (DestroyOnTrigger && gameObject.activeSelf)
+            {
+                gameObject.SetActive(false);
+            }
+        }
 
         private void OnTriggerEnter2D(Collider2D collision)
         {
@@ -57,7 +85,14 @@ namespace ThatGameJam.Independents
 
                 // Debug.Log($"[ItemCollisionTrigger] Hit {TargetTag}, activating {TargetToActivate?.name} and deactivating interactable.");
 
-                Destroy(gameObject);
+                if (DestroyOnTrigger)
+                {
+                    Destroy(gameObject);
+                }
+                else
+                {
+                    gameObject.SetActive(false);
+                }
             }
         }
     }

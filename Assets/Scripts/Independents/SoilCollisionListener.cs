@@ -25,6 +25,27 @@ namespace ThatGameJam.Independents
 
         private bool _triggered = false;
 
+        public bool IsTriggered => _triggered;
+
+        public void ApplyTriggeredState(bool triggered)
+        {
+            _triggered = triggered;
+            if (!_triggered)
+            {
+                return;
+            }
+
+            if (TargetToActivate != null)
+            {
+                TargetToActivate.SetActive(true);
+            }
+
+            if (InteractableToDeactivate != null)
+            {
+                InteractableToDeactivate.enabled = false;
+            }
+        }
+
         private void OnTriggerEnter2D(Collider2D collision)
         {
             if (UseTrigger) HandleCollision(collision.gameObject);
