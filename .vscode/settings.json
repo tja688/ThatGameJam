@@ -1,5 +1,7 @@
 {
     "dotrush.roslyn.projectOrSolutionFiles": [
         "c:\\Users\\jinji\\Documents\\GitHub\\ThatGameJam\\ThatGameJam.sln"
-    ]
+    ],
+    "dotnet.preferCSharpExtension": true,
+    "dotnet.defaultSolution": "ThatGameJam.sln"
 }
