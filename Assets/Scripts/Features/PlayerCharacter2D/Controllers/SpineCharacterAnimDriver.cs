@@ -81,6 +81,9 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
         [SerializeField] private float climbMoveThreshold = 0.05f;
         [SerializeField] private float climbIdleTimeScale = 0.2f;
 
+        [Header("Turning")]
+        [SerializeField] private bool enableTurnTransition = false;
+
         [Header("Mixing")]
         [SerializeField] private float baseMixDuration = 0.08f;
         [SerializeField] private float overlayFadeIn = 0.1f;
@@ -92,6 +95,11 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
 
         [Header("Climb Landing")]
         [SerializeField] private float landingFrameDuration = 0.06f;
+
+        [Header("Auto Expressions")]
+        [SerializeField] private bool enableAutoExpressions = true;
+        [SerializeField] private Vector2 blinkIntervalRange = new Vector2(2.2f, 4.5f);
+        [SerializeField] private Vector2 scratchIntervalRange = new Vector2(12f, 22f);
 
         [Header("Facing")]
         [SerializeField] private bool enableFacing = true;
@@ -117,6 +125,8 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
         private string _currentBase;
         private string _currentOverlay;
         private string _currentExpression;
+        private float _nextBlinkTime;
+        private float _nextScratchTime;
 
         public IArchitecture GetArchitecture() => GameRootApp.Interface;
 
@@ -155,6 +165,8 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
             _model = this.GetModel<IPlayerCharacter2DModel>();
             CacheSkeletonData();
             _hasDirectionalWalk = HasAnimation(Animations.WalkLeft) && HasAnimation(Animations.WalkRight);
+            ScheduleNextBlink();
+            ScheduleNextScratch();
         }
 
         private void Update()
@@ -173,6 +185,7 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
             UpdateFacing(moveInput, velocity, isClimbing);
             UpdateBaseAnimation(isGrounded, isClimbing, climbHorizontal, velocity, moveInput);
             HandleExpressionInput(isClimbing);
+            UpdateAutoExpressions(isGrounded, isClimbing);
         }
 
         private void ReadState(out bool isGrounded, out bool isClimbing, out bool climbHorizontal, out Vector2 velocity, out Vector2 moveInput)
@@ -217,15 +230,18 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
                 return;
             }
 
-            if (_hasDirectionalWalk && preferDirectionalWalk && !isClimbing)
-            {
-                return;
-            }
-
+            bool movingHorizontally = Mathf.Abs(moveInput.x) > facingDeadZone || Mathf.Abs(velocity.x) > facingDeadZone;
             float facingX = faceByMoveInput ? moveInput.x : velocity.x;
+
+
             if (Mathf.Abs(facingX) < facingDeadZone)
             {
-                return;
+                if (_lastMoveSign == 0)
+                {
+                    return;
+                }
+
+                facingX = _lastMoveSign;
             }
 
             float sign = Mathf.Sign(facingX);
@@ -291,13 +307,12 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
             {
                 SetBaseAnimation(Animations.Idle, true);
                 SetWalkOverlay(false);
-                _lastMoveSign = 0;
                 return;
             }
 
             int moveSign = GetMoveSign(moveInput.x, velocity.x);
             string walkAnim = GetWalkAnimation(moveSign);
-            if (_lastMoveSign != 0 && moveSign != 0 && moveSign != _lastMoveSign && Mathf.Abs(velocity.x) > turnMinSpeed)
+            if (enableTurnTransition && _lastMoveSign != 0 && moveSign != 0 && moveSign != _lastMoveSign && Mathf.Abs(velocity.x) > turnMinSpeed)
             {
                 if (HasAnimation(Animations.WalkTurn))
                 {
@@ -470,6 +485,75 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
             }
         }
 
+        private void UpdateAutoExpressions(bool isGrounded, bool isClimbing)
+        {
+            if (!enableAutoExpressions || isClimbing || !isGrounded || _landingCoroutine != null)
+            {
+                return;
+            }
+
+            if (!IsIdleOrWalking())
+            {
+                return;
+            }
+
+            if (IsExpressionTrackBusy())
+            {
+                return;
+            }
+
+            float now = Time.time;
+            bool canBlink = HasAnimation(Animations.Blink) && _currentExpression != Animations.FaceEyesShut;
+            bool blinkDue = canBlink && now >= _nextBlinkTime;
+            bool scratchDue = HasAnimation(Animations.Puzzled) && now >= _nextScratchTime;
+
+            if (scratchDue)
+            {
+                PlayExpressionOnce(Animations.Puzzled);
+                ScheduleNextScratch();
+                if (blinkDue)
+                {
+                    ScheduleNextBlink();
+                }
+                return;
+            }
+
+            if (blinkDue)
+            {
+                PlayExpressionOnce(Animations.Blink);
+                ScheduleNextBlink();
+            }
+        }
+
+        private bool IsExpressionTrackBusy()
+        {
+            var current = skeletonAnimation.AnimationState.GetCurrent(expressionTrack);
+            if (current == null || current.Animation == null)
+            {
+                return false;
+            }
+
+            return !current.Loop && !current.IsComplete;
+        }
+
+        private bool IsIdleOrWalking()
+        {
+            return _currentBase == Animations.Idle
+                || _currentBase == Animations.WalkLeft
+                || _currentBase == Animations.WalkRight
+                || _currentBase == Animations.WalkTurn;
+        }
+
+        private void ScheduleNextBlink()
+        {
+            _nextBlinkTime = Time.time + UnityEngine.Random.Range(blinkIntervalRange.x, blinkIntervalRange.y);
+        }
+
+        private void ScheduleNextScratch()
+        {
+            _nextScratchTime = Time.time + UnityEngine.Random.Range(scratchIntervalRange.x, scratchIntervalRange.y);
+        }
+
         private void SetExpression(string name)
         {
             var entry = skeletonAnimation.AnimationState.SetAnimation(expressionTrack, name, true);
@@ -507,6 +591,7 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
                 StopCoroutine(_landingCoroutine);
             }
 
+            ApplyFacingFromLastMove();
             _landingCoroutine = StartCoroutine(PlayClimbLandingSequence());
         }
 
@@ -528,8 +613,8 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
 
             var sequence = new List<string>
             {
-                Animations.StaticBackHang,
-                Animations.StaticBackStand,
+                Animations.StaticFront,
+                Animations.StaticFrontEyesShut,
                 Animations.StaticFront,
                 Animations.StaticFrontEyesShut
             };
@@ -546,6 +631,21 @@ namespace ThatGameJam.Features.PlayerCharacter2D.Controllers
             }
 
             _landingCoroutine = null;
+        }
+
+        private void ApplyFacingFromLastMove()
+        {
+            if (!enableFacing || skeletonAnimation == null || skeletonAnimation.Skeleton == null)
+            {
+                return;
+            }
+
+            if (_lastMoveSign == 0)
+            {
+                return;
+            }
+
+            skeletonAnimation.Skeleton.ScaleX = _defaultScaleX * Mathf.Sign(_lastMoveSign);
         }
 
         private void CacheSkeletonData()

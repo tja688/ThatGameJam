@@ -182,6 +182,12 @@ MonoBehaviour:
   type: 1
   priority: 0
   displayName: Seed
+  interactionIconPrefab: {fileID: 8038510535901962077, guid: 5c710bab2993b524980b2c2beed0b378, type: 3}
+  interactionIconOffset: {x: 0, y: 1, z: 0}
+  iconSenseRange: 3
+  floorLayerMask:
+    serializedVersion: 2
+    m_Bits: 8
   dialogueTrigger: {fileID: 0}
   pickupItem: {fileID: 11400000, guid: f4d0dec9781ccbe468b23b9fee366e9a, type: 2}
   disableOnPickup: 1

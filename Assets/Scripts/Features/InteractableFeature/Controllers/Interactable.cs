@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using PixelCrushers.DialogueSystem.Wrappers;
 using QFramework;
 using ThatGameJam.Features.BackpackFeature.Commands;
@@ -20,6 +21,12 @@ namespace ThatGameJam.Features.InteractableFeature.Controllers
         [SerializeField] private int priority = 0;
         [SerializeField] private string displayName;
 
+        [Header("Interaction Icon")]
+        [SerializeField] private GameObject interactionIconPrefab;
+        [SerializeField] private Vector3 interactionIconOffset = Vector3.up;
+        [SerializeField] private float iconSenseRange = 3f;
+        [SerializeField] private LayerMask floorLayerMask;
+
         [Header("Dialogue")]
         [SerializeField] private DialogueSystemTrigger dialogueTrigger;
 
@@ -33,6 +40,15 @@ namespace ThatGameJam.Features.InteractableFeature.Controllers
         public string DisplayName => displayName;
         public ItemDefinition PickupItem => pickupItem;
 
+        private const float PlayerLookupInterval = 1f;
+        private const float PlayerRangeCheckInterval = 0.25f;
+        private Transform _player;
+        private GameObject _iconInstance;
+        private float _nextPlayerLookupTime;
+        private float _nextRangeCheckTime;
+        private bool _playerInRange;
+        private readonly HashSet<Collider2D> _floorContacts = new HashSet<Collider2D>();
+
         private void Awake()
         {
             var collider2D = GetComponent<Collider2D>();
@@ -40,6 +56,57 @@ namespace ThatGameJam.Features.InteractableFeature.Controllers
             {
                 LogKit.W("Interactable expects Collider2D.isTrigger = true.");
             }
+
+            if (floorLayerMask.value == 0)
+            {
+                var floorLayer = LayerMask.NameToLayer("Floor");
+                if (floorLayer >= 0)
+                {
+                    floorLayerMask = 1 << floorLayer;
+                }
+            }
+        }
+
+        private void Update()
+        {
+            UpdateInteractionIcon();
+            UpdateInteractionIconTransform();
+        }
+
+        private void OnDisable()
+        {
+            _floorContacts.Clear();
+            ClearInteractionIcon();
+        }
+
+        private void OnTriggerEnter2D(Collider2D other)
+        {
+            TryAddFloorContact(other);
+        }
+
+        private void OnTriggerExit2D(Collider2D other)
+        {
+            TryRemoveFloorContact(other);
+        }
+
+        private void OnCollisionEnter2D(Collision2D collision)
+        {
+            if (collision == null)
+            {
+                return;
+            }
+
+            TryAddFloorContact(collision.collider);
+        }
+
+        private void OnCollisionExit2D(Collision2D collision)
+        {
+            if (collision == null)
+            {
+                return;
+            }
+
+            TryRemoveFloorContact(collision.collider);
         }
 
         public bool TryInteract(Transform actor)
@@ -58,6 +125,118 @@ namespace ThatGameJam.Features.InteractableFeature.Controllers
                 default:
                     return false;
             }
+        }
+
+        private void UpdateInteractionIcon()
+        {
+            if (interactionIconPrefab == null || iconSenseRange <= 0f)
+            {
+                ClearInteractionIcon();
+                return;
+            }
+
+            if (_player == null && Time.time >= _nextPlayerLookupTime)
+            {
+                _nextPlayerLookupTime = Time.time + PlayerLookupInterval;
+                var playerObject = GameObject.FindGameObjectWithTag("Player");
+                _player = playerObject != null ? playerObject.transform : null;
+            }
+
+            if (_player == null)
+            {
+                _playerInRange = false;
+                ClearInteractionIcon();
+                return;
+            }
+
+            if (Time.time >= _nextRangeCheckTime)
+            {
+                _nextRangeCheckTime = Time.time + PlayerRangeCheckInterval;
+                var delta = (Vector2)(_player.position - transform.position);
+                _playerInRange = delta.sqrMagnitude <= iconSenseRange * iconSenseRange;
+            }
+
+            if (!_playerInRange)
+            {
+                ClearInteractionIcon();
+                return;
+            }
+
+            if (type == InteractableType.Pickup && !HasFloorContact())
+            {
+                ClearInteractionIcon();
+                return;
+            }
+
+            EnsureInteractionIcon();
+        }
+
+        private void EnsureInteractionIcon()
+        {
+            if (_iconInstance != null)
+            {
+                return;
+            }
+
+            var rotation = interactionIconPrefab.transform.rotation;
+            _iconInstance = Instantiate(interactionIconPrefab, transform.position + interactionIconOffset, rotation);
+            UpdateInteractionIconTransform();
+        }
+
+        private void ClearInteractionIcon()
+        {
+            if (_iconInstance == null)
+            {
+                return;
+            }
+
+            Destroy(_iconInstance);
+            _iconInstance = null;
+        }
+
+        private void UpdateInteractionIconTransform()
+        {
+            if (_iconInstance == null)
+            {
+                return;
+            }
+
+            _iconInstance.transform.position = transform.position + interactionIconOffset;
+        }
+
+        private void TryAddFloorContact(Collider2D other)
+        {
+            if (!IsFloor(other))
+            {
+                return;
+            }
+
+            _floorContacts.Add(other);
+        }
+
+        private void TryRemoveFloorContact(Collider2D other)
+        {
+            if (!IsFloor(other))
+            {
+                return;
+            }
+
+            _floorContacts.Remove(other);
+        }
+
+        private bool HasFloorContact()
+        {
+            return _floorContacts.Count > 0;
+        }
+
+        private bool IsFloor(Collider2D other)
+        {
+            if (other == null || floorLayerMask.value == 0)
+            {
+                return false;
+            }
+
+            return (floorLayerMask.value & (1 << other.gameObject.layer)) != 0;
         }
 
         private bool TriggerDialogue(Transform actor)

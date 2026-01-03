@@ -24,6 +24,11 @@ This doc covers the quick setup for `SpineCharacterAnimDriver` and the optional 
 - `8`: puzzled/scratch (one-shot)
 - `9`: clear expression track
 
+## Auto Expressions
+
+- Auto blink/scratch run during idle and walking.
+- Tune in `SpineCharacterAnimDriver` via `blinkIntervalRange` and `scratchIntervalRange`.
+
 ## State Inputs Used
 
 The driver reads from `IPlayerCharacter2DModel` (grounded, climbing, velocity, move input) via QFramework.
