@@ -3,13 +3,13 @@
   <ui:Style src="project://database/Assets/UI/Toolkit/USS/menus.uss" />
   <ui:Style src="project://database/Assets/UI/Toolkit/USS/components.uss" />
   <ui:VisualElement class="screen main-menu">
-    <ui:VisualElement class="menu-card">
-      <ui:Label name="TitleLabel" text="That Game Jam" class="title" />
-      <ui:VisualElement class="menu-buttons">
-        <ui:Button name="StartButton" text="Start New Game" class="menu-button" />
-        <ui:Button name="ContinueButton" text="Continue" class="menu-button" />
-        <ui:Button name="SettingsButton" text="Settings" class="menu-button" />
-        <ui:Button name="QuitButton" text="Quit" class="danger-button" />
+    <ui:VisualElement class="main-menu__content">
+      <ui:Label name="TitleLabel" text="LETTER" class="main-menu__title" />
+      <ui:VisualElement class="main-menu__buttons">
+        <ui:Button name="StartButton" text="New Game" class="menu-text-button" />
+        <ui:Button name="ContinueButton" text="Continue" class="menu-text-button" />
+        <ui:Button name="SettingsButton" text="Settings" class="menu-text-button" />
+        <ui:Button name="QuitButton" text="Quit" class="menu-text-button" />
       </ui:VisualElement>
     </ui:VisualElement>
   </ui:VisualElement>

@@ -1,23 +1,62 @@
 .screen.main-menu {
-    justify-content: center;
-    align-items: center;
+    justify-content: flex-start;
+    align-items: flex-start;
     flex-grow: 1;
+    background-color: #0c0f14;
+    background-image: url("project://database/Assets/UI/Toolkit/Textures/MainMenu_Background.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    -unity-background-scale-mode: scale-and-crop;
 }
 
-.menu-card {
-    width: 420px;
+.main-menu__content {
+    position: absolute;
+    left: 10%;
+    top: 18%;
     flex-direction: column;
-    padding: 24px;
-    border-radius: 16px;
-    background-color: #1f2631;
-    box-shadow: 0 16px 30px rgba(0, 0, 0, 0.35);
-    row-gap: 16px;
+    align-items: flex-start;
+    row-gap: 18px;
 }
 
-.menu-buttons {
+.main-menu__title {
+    font-size: 42px;
+    color: #f5f7fa;
+    unity-font-style: bold;
+    letter-spacing: 8px;
+}
+
+.main-menu__buttons {
     flex-direction: column;
-    row-gap: 10px;
-    margin-top: 10px;
+    row-gap: 6px;
+    align-items: flex-start;
+}
+
+.menu-text-button {
+    height: auto;
+    padding: 2px 4px 2px 0;
+    background-color: transparent;
+    border-width: 0;
+    color: #f5f7fa;
+    font-size: 16px;
+    -unity-text-align: middle-left;
+    align-self: flex-start;
+    transition-property: scale, color;
+    transition-duration: 0.08s;
+    transition-timing-function: ease-out;
+    transform-origin: left center;
+}
+
+.menu-text-button:hover {
+    scale: 1.04;
+    color: #ffffff;
+}
+
+.menu-text-button:active {
+    scale: 0.98;
+}
+
+.menu-text-button:focus {
+    color: #ffffff;
 }
 
 .settings-menu {
