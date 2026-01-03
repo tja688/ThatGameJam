@@ -161,15 +161,19 @@
 }
 
 .inventory-slot {
-    width: 72px;
-    height: 72px;
-    border-radius: 10px;
+    width: 84px;
+    height: 84px;
+    border-radius: 12px;
     border-width: 1px;
     border-color: rgba(255, 255, 255, 0.12);
     background-color: #273141;
     justify-content: center;
     align-items: center;
     position: relative;
+    transition-property: scale;
+    transition-duration: 0.08s;
+    transition-timing-function: ease-out;
+    transform-origin: center;
 }
 
 .inventory-slot.empty {
@@ -177,8 +181,8 @@
 }
 
 .inventory-slot__icon {
-    width: 42px;
-    height: 42px;
+    width: 52px;
+    height: 52px;
     border-radius: 8px;
     background-color: #1f2631;
 }
@@ -189,6 +193,10 @@
     right: 8px;
     font-size: 12px;
     color: #f5f7fa;
+}
+
+.inventory-slot--hover {
+    scale: 1.06;
 }
 
 .rebind-row {

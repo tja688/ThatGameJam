@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ThatGameJam.Features.BackpackFeature.Models.ItemDefinition
   id: 3
   displayName: newspaper
+  description: An old newspaper, with some news recorded on it.
   icon: {fileID: 2800000, guid: afd8977947a110240aa7793ff6a88bdb, type: 3}
   dropPrefab: {fileID: 0}
   stackable: 0

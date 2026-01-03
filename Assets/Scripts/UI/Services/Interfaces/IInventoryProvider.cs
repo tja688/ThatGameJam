@@ -6,7 +6,7 @@ namespace ThatGameJam.UI.Services.Interfaces
 {
     public interface IInventoryProvider
     {
-        IReadOnlyList<ItemStack> GetSlots(int maxSlots = 6);
+        IReadOnlyList<ItemStack> GetSlots(int maxSlots = 12);
         event Action OnInventoryChanged;
     }
 }

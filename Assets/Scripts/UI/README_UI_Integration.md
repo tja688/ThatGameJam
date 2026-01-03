@@ -23,7 +23,7 @@ Implement and register these in `UIServiceRegistry` (see `Assets/Scripts/UI/Serv
 - `IQuestLogProvider`
   - `GetQuests()` + `OnQuestChanged` for quest list + detail.
 - `IInventoryProvider`
-  - `GetSlots(maxSlots)` + `OnInventoryChanged` for 6-slot inventory.
+  - `GetSlots(maxSlots)` + `OnInventoryChanged` for 12-slot inventory.
 - `IRebindPersistence` (optional placeholder)
   - `SaveOverrides()` / `LoadOverrides()` if you want a dedicated persistence adapter.
 

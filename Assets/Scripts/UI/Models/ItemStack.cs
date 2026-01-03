@@ -8,6 +8,7 @@ namespace ThatGameJam.UI.Models
     {
         public string ItemId;
         public string DisplayName;
+        public string Description;
         public Texture2D Icon;
         public int Quantity;
     }

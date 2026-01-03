@@ -11,7 +11,7 @@ namespace ThatGameJam.UI.Mock
 
         private readonly List<ItemStack> _slots = new List<ItemStack>();
 
-        public IReadOnlyList<ItemStack> GetSlots(int maxSlots = 6)
+        public IReadOnlyList<ItemStack> GetSlots(int maxSlots = 12)
         {
             if (_slots.Count > maxSlots)
             {

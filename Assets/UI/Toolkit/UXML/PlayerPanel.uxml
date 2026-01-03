@@ -16,7 +16,15 @@
         <ui:Label name="TotalDeathsLabel" text="Deaths (Total): 0" class="stat" />
       </ui:VisualElement>
       <ui:VisualElement class="player-right">
-        <ui:VisualElement class="quest-section">
+      <ui:VisualElement class="quest-section">
+        <ui:VisualElement class="item-description">
+          <ui:Label text="Item Info" class="section-title" />
+          <ui:VisualElement class="item-description__body">
+            <ui:Label name="ItemTitle" text="Hover an item" class="item-description__title" />
+            <ui:Label name="ItemDescription" text="" class="item-description__desc" />
+          </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement class="quest-log">
           <ui:Label text="Quest Log" class="section-title" />
           <ui:VisualElement class="quest-content">
             <ui:ScrollView name="QuestList" class="quest-list" />
@@ -28,6 +36,7 @@
             </ui:VisualElement>
           </ui:VisualElement>
         </ui:VisualElement>
+      </ui:VisualElement>
         <ui:VisualElement class="inventory-section">
           <ui:Label text="Inventory" class="section-title" />
           <ui:VisualElement name="InventoryGrid" class="inventory-grid" />

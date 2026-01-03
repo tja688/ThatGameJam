@@ -32,7 +32,7 @@ namespace ThatGameJam.Features.BackpackFeature.Controllers
             }
         }
 
-        public IReadOnlyList<ItemStack> GetSlots(int maxSlots = 6)
+        public IReadOnlyList<ItemStack> GetSlots(int maxSlots = 12)
         {
             var slots = new List<ItemStack>();
             var items = this.SendQuery(new GetBackpackItemsQuery());
@@ -54,6 +54,7 @@ namespace ThatGameJam.Features.BackpackFeature.Controllers
                 {
                     ItemId = entry.Definition.Id,
                     DisplayName = entry.Definition.DisplayName,
+                    Description = entry.Definition.Description,
                     Icon = entry.Definition.Icon,
                     Quantity = entry.Quantity
                 });

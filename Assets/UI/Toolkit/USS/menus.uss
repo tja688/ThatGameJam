@@ -169,10 +169,46 @@
     border-radius: 16px;
 }
 
+.item-description {
+    flex-direction: column;
+    row-gap: 8px;
+    flex-grow: 1;
+    min-height: 0;
+}
+
+.item-description__body {
+    flex-grow: 1;
+    flex-direction: column;
+    row-gap: 6px;
+    padding: 10px;
+    border-radius: 10px;
+    background-color: #273141;
+}
+
+.item-description__title {
+    color: #f5f7fa;
+    font-size: 18px;
+    unity-font-style: bold;
+}
+
+.item-description__desc {
+    color: #f5f7fa;
+    font-size: 14px;
+    white-space: normal;
+}
+
+.quest-log {
+    flex-direction: column;
+    row-gap: 10px;
+    flex-grow: 2;
+    min-height: 0;
+}
+
 .quest-content {
     flex-direction: row;
     column-gap: 16px;
     flex-grow: 1;
+    min-height: 0;
 }
 
 .quest-list {
@@ -214,6 +250,8 @@
 .inventory-grid {
     flex-direction: row;
     flex-wrap: wrap;
-    column-gap: 10px;
-    row-gap: 10px;
+    column-gap: 14px;
+    row-gap: 14px;
+    justify-content: space-between;
+    overflow: visible;
 }

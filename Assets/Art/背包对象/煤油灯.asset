@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ThatGameJam.Features.BackpackFeature.Models.ItemDefinition
   id: 1
   displayName: 'kerosene Lamp '
+  description: A kerosene lamp, a beacon of light and hope in the blackest night.
   icon: {fileID: 2800000, guid: 6262a04eebe942343a6bd0d227993366, type: 3}
   dropPrefab: {fileID: 356797205242928593, guid: 5e607bc3d6cfef34a8a9ee37661a52b9, type: 3}
   stackable: 0

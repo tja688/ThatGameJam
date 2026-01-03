@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ThatGameJam.Features.BackpackFeature.Models.ItemDefinition
   id: 4
   displayName: Seed
+  description: A seed, destined to become a giant tree in the proper earth.
   icon: {fileID: 2800000, guid: 835e7c9f7e2773943ba322ce56ac0aa0, type: 3}
   dropPrefab: {fileID: 8345130576673642427, guid: cd136d690fcd211409fccd919a76dee6, type: 3}
   stackable: 1

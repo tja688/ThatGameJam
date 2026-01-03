@@ -133,7 +133,7 @@ namespace ThatGameJam.UI.Mock
             }
 
             var slots = new List<ItemStack>();
-            for (var i = 0; i < 6; i++)
+            for (var i = 0; i < 12; i++)
             {
                 if (UnityEngine.Random.value > 0.5f)
                 {
@@ -145,6 +145,7 @@ namespace ThatGameJam.UI.Mock
                 {
                     ItemId = $"item_{i}",
                     DisplayName = "Mock Item",
+                    Description = "A placeholder item for UI layout testing.",
                     Icon = CreateIconTexture(new Color(UnityEngine.Random.value, UnityEngine.Random.value, UnityEngine.Random.value)),
                     Quantity = UnityEngine.Random.Range(1, 4)
                 });

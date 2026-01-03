@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ThatGameJam.Features.BackpackFeature.Models.ItemDefinition
   id: 2
   displayName: Letter
+  description: A letter, from the Ministry of Defense.
   icon: {fileID: 2800000, guid: f22061ddafa315b438a5e27ed9e73eca, type: 3}
   dropPrefab: {fileID: 0}
   stackable: 0

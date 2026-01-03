@@ -8,6 +8,8 @@ namespace ThatGameJam.UI.Panels
 {
     public class PlayerPanel : UIPanel
     {
+        private const int InventorySlotCount = 12;
+
         private readonly UIRouter _router;
         private readonly UIPanelAssets _assets;
 
@@ -23,8 +25,13 @@ namespace ThatGameJam.UI.Panels
         private Label _questRequirements;
         private Label _questStatus;
 
+        private Label _itemTitle;
+        private Label _itemDescription;
+
         private VisualElement _inventoryGrid;
         private readonly List<VisualElement> _inventorySlots = new List<VisualElement>();
+        private readonly List<ItemStack> _inventoryItems = new List<ItemStack>();
+        private int _hoveredSlotIndex = -1;
 
         private IPlayerStatusProvider _playerStatus;
         private IQuestLogProvider _questLog;
@@ -52,6 +59,9 @@ namespace ThatGameJam.UI.Panels
             _questRequirements = Root.Q<Label>("QuestRequirements");
             _questStatus = Root.Q<Label>("QuestStatus");
 
+            _itemTitle = Root.Q<Label>("ItemTitle");
+            _itemDescription = Root.Q<Label>("ItemDescription");
+
             _inventoryGrid = Root.Q<VisualElement>("InventoryGrid");
 
             var closeButton = Root.Q<Button>("CloseButton");
@@ -61,6 +71,7 @@ namespace ThatGameJam.UI.Panels
             }
 
             BuildInventorySlots();
+            ApplyItemDetails(null, false);
         }
 
         public override void OnPushed()
@@ -247,13 +258,18 @@ namespace ThatGameJam.UI.Panels
 
             _inventoryGrid.Clear();
             _inventorySlots.Clear();
+            _inventoryItems.Clear();
 
-            for (var i = 0; i < 6; i++)
+            for (var i = 0; i < InventorySlotCount; i++)
             {
                 var slot = _assets.InventorySlot != null ? _assets.InventorySlot.CloneTree() : new VisualElement();
                 slot.AddToClassList("inventory-slot");
+                var slotIndex = i;
+                slot.RegisterCallback<PointerEnterEvent>(_ => OnSlotHoverEnter(slotIndex));
+                slot.RegisterCallback<PointerLeaveEvent>(_ => OnSlotHoverLeave(slotIndex));
                 _inventoryGrid.Add(slot);
                 _inventorySlots.Add(slot);
+                _inventoryItems.Add(null);
             }
         }
 
@@ -264,7 +280,7 @@ namespace ThatGameJam.UI.Panels
                 return;
             }
 
-            var slots = _inventory?.GetSlots(6);
+            var slots = _inventory?.GetSlots(InventorySlotCount);
             for (var i = 0; i < _inventorySlots.Count; i++)
             {
                 var slotRoot = _inventorySlots[i];
@@ -276,6 +292,8 @@ namespace ThatGameJam.UI.Panels
                 {
                     item = slots[i];
                 }
+
+                _inventoryItems[i] = item;
 
                 if (icon != null)
                 {
@@ -303,6 +321,57 @@ namespace ThatGameJam.UI.Panels
                     slotRoot.RemoveFromClassList("empty");
                 }
             }
+
+            if (_hoveredSlotIndex >= 0 && _hoveredSlotIndex < _inventoryItems.Count)
+            {
+                ApplyItemDetails(_inventoryItems[_hoveredSlotIndex], true);
+            }
+        }
+
+        private void OnSlotHoverEnter(int slotIndex)
+        {
+            if (slotIndex < 0 || slotIndex >= _inventorySlots.Count)
+            {
+                return;
+            }
+
+            _hoveredSlotIndex = slotIndex;
+            _inventorySlots[slotIndex].AddToClassList("inventory-slot--hover");
+            ApplyItemDetails(_inventoryItems[slotIndex], true);
+        }
+
+        private void OnSlotHoverLeave(int slotIndex)
+        {
+            if (slotIndex < 0 || slotIndex >= _inventorySlots.Count)
+            {
+                return;
+            }
+
+            _inventorySlots[slotIndex].RemoveFromClassList("inventory-slot--hover");
+
+            if (_hoveredSlotIndex == slotIndex)
+            {
+                _hoveredSlotIndex = -1;
+                ApplyItemDetails(null, false);
+            }
+        }
+
+        private void ApplyItemDetails(ItemStack item, bool isHoveringSlot)
+        {
+            if (_itemTitle == null || _itemDescription == null)
+            {
+                return;
+            }
+
+            if (item == null)
+            {
+                _itemTitle.text = isHoveringSlot ? "Empty Slot" : "Hover an item";
+                _itemDescription.text = isHoveringSlot ? "No item stored here." : string.Empty;
+                return;
+            }
+
+            _itemTitle.text = string.IsNullOrEmpty(item.DisplayName) ? "Unknown Item" : item.DisplayName;
+            _itemDescription.text = item.Description ?? string.Empty;
         }
     }
 }
