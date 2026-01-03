@@ -194,6 +194,8 @@ namespace ThatGameJam.Independents.Audio.Editor
             SerializedProperty usePitchRangeProp = configProp.FindPropertyRelative("UsePitchRange");
             SerializedProperty pitchProp = configProp.FindPropertyRelative("Pitch");
             SerializedProperty pitchRangeProp = configProp.FindPropertyRelative("PitchRange");
+            SerializedProperty clipStartProp = configProp.FindPropertyRelative("ClipStartTime");
+            SerializedProperty clipEndProp = configProp.FindPropertyRelative("ClipEndTime");
             SerializedProperty cooldownProp = configProp.FindPropertyRelative("Cooldown");
             SerializedProperty randomMinProp = configProp.FindPropertyRelative("RandomIntervalMin");
             SerializedProperty randomMaxProp = configProp.FindPropertyRelative("RandomIntervalMax");
@@ -245,6 +247,10 @@ namespace ThatGameJam.Independents.Audio.Editor
             {
                 EditorGUILayout.PropertyField(pitchProp);
             }
+
+            EditorGUILayout.Space();
+            EditorGUILayout.PropertyField(clipStartProp);
+            EditorGUILayout.PropertyField(clipEndProp);
 
             EditorGUILayout.Space();
             EditorGUILayout.PropertyField(clipsProp, true);

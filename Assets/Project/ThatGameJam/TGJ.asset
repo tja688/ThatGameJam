@@ -57,7 +57,7 @@ MonoBehaviour:
       value: Ryan
       type: 0
       typeString: 
-    portrait: {fileID: 2800000, guid: 7aae68b57d8fb284590f12158f0b138e, type: 3}
+    portrait: {fileID: 2800000, guid: 8bb45ee5226c7aa4fa262a5921e878f6, type: 3}
     spritePortrait: {fileID: 0}
     alternatePortraits: []
     spritePortraits: []
@@ -79,7 +79,7 @@ MonoBehaviour:
       value: False
       type: 2
       typeString: CustomFieldType_Boolean
-    portrait: {fileID: 2800000, guid: 2558bcba888c26a46a16b47dcecdfcd2, type: 3}
+    portrait: {fileID: 2800000, guid: bcfe2d1d2b1c6044aa9ae550a9a9a9d2, type: 3}
     spritePortrait: {fileID: 0}
     alternatePortraits: []
     spritePortraits: []
@@ -101,7 +101,7 @@ MonoBehaviour:
       value: False
       type: 2
       typeString: CustomFieldType_Boolean
-    portrait: {fileID: 2800000, guid: 8f4ecdcac1b4c6a439e98a2e1df8d54a, type: 3}
+    portrait: {fileID: 2800000, guid: 4f90f0a7bb82e5e40b2864f71e4ea9b2, type: 3}
     spritePortrait: {fileID: 0}
     alternatePortraits: []
     spritePortraits: []
@@ -123,7 +123,7 @@ MonoBehaviour:
       value: False
       type: 2
       typeString: CustomFieldType_Boolean
-    portrait: {fileID: 2800000, guid: 90491299dde2ada468ac42d29d7118c0, type: 3}
+    portrait: {fileID: 2800000, guid: 478bc5677c3fc64488cc5effe916dea2, type: 3}
     spritePortrait: {fileID: 0}
     alternatePortraits: []
     spritePortraits: []

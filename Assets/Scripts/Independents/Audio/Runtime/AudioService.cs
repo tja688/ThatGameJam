@@ -344,6 +344,8 @@ namespace ThatGameJam.Independents.Audio
                 Bus = bus,
                 Volume = baseVolume * busVolume,
                 Pitch = pitch,
+                ClipStartTime = Mathf.Max(0f, config.ClipStartTime),
+                ClipEndTime = config.ClipEndTime,
                 SpatialMode = config.SpatialMode,
                 SpatialBlend = config.SpatialBlend,
                 MinDistance = config.MinDistance,

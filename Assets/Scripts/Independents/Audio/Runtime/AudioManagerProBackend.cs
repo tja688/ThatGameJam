@@ -139,17 +139,45 @@ namespace ThatGameJam.Independents.Audio
             }
 
             ApplyParams(audio, parameters, parent);
+
+            float startTime = Mathf.Clamp(parameters.ClipStartTime, 0f, clip.length);
+            if (audio.Source != null && startTime > 0f && startTime < clip.length)
+            {
+                audio.Source.time = startTime;
+            }
+
+            float endTime = parameters.ClipEndTime > 0f
+                ? Mathf.Clamp(parameters.ClipEndTime, 0f, clip.length)
+                : -1f;
+            bool useCustomEnd = !loop && endTime > 0f && endTime > startTime;
             audio.Play();
 
             if (!loop)
             {
                 if (isMusic && musicManager != null)
                 {
-                    musicManager.SequenceEnd(audio, Mathf.Max(0f, clip.length - audio.Source.time));
+                    float remaining = clip.length;
+                    if (audio.Source != null)
+                    {
+                        remaining = Mathf.Max(0f, clip.length - audio.Source.time);
+                    }
+
+                    if (useCustomEnd)
+                    {
+                        musicManager.SequenceEnd(audio, GetPlaybackDuration(endTime - startTime, audio.Source));
+                    }
+                    else
+                    {
+                        musicManager.SequenceEnd(audio, remaining);
+                    }
                 }
                 else if (sfxManager != null)
                 {
                     sfxManager.SequenceEnd(audio);
+                    if (useCustomEnd)
+                    {
+                        StartCoroutine(StopAfterDuration(audio, GetPlaybackDuration(endTime - startTime, audio.Source), isMusic));
+                    }
                 }
             }
 
@@ -209,6 +237,51 @@ namespace ThatGameJam.Independents.Audio
             {
                 sfxManager.StopAudio(audio);
             }
+        }
+
+        private IEnumerator StopAfterDuration(AudioObject audio, float duration, bool isMusic)
+        {
+            if (audio == null || duration <= 0f)
+            {
+                yield break;
+            }
+
+            yield return new WaitForSeconds(duration);
+            if (audio == null || audio.Source == null || !audio.Source.isPlaying)
+            {
+                yield break;
+            }
+
+            if (isMusic)
+            {
+                if (musicManager != null)
+                {
+                    musicManager.StopAudio(audio);
+                }
+            }
+            else
+            {
+                if (sfxManager != null)
+                {
+                    sfxManager.StopAudio(audio);
+                }
+            }
+        }
+
+        private float GetPlaybackDuration(float duration, AudioSource source)
+        {
+            if (duration <= 0f)
+            {
+                return 0f;
+            }
+
+            float pitch = source != null ? Mathf.Abs(source.pitch) : 1f;
+            if (pitch < 0.01f)
+            {
+                pitch = 1f;
+            }
+
+            return duration / pitch;
         }
     }
 }

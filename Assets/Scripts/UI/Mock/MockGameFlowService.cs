@@ -1,3 +1,4 @@
+using ThatGameJam.UI.Services;
 using ThatGameJam.UI.Services.Interfaces;
 using UnityEngine;
 
@@ -12,7 +13,8 @@ namespace ThatGameJam.UI.Mock
 
         public void ReturnToMainMenu()
         {
-            Debug.Log("[Mock] ReturnToMainMenu called.");
+            Debug.Log("[Mock] ReturnToMainMenu called. Reloading active scene.");
+            MainMenuSceneLoader.ReturnToMainMenu();
         }
     }
 }

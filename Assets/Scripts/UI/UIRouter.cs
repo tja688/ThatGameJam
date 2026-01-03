@@ -106,10 +106,8 @@ namespace ThatGameJam.UI
             }
             else
             {
-                Debug.LogWarning("TODO(INTEGRATION): IGameFlowService not registered for ReturnToMainMenu.");
+                Services.MainMenuSceneLoader.ReturnToMainMenu();
             }
-
-            OpenMainMenu();
         }
 
         private void PushPanel(UIPanel panel)

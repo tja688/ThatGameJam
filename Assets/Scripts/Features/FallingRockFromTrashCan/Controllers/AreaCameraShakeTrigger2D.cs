@@ -102,6 +102,8 @@ namespace ThatGameJam.Features.FallingRockFromTrashCan.Controllers
                 return;
             }
 
+            CinemachineShakeAudit.Tag(this, "StartShake");
+
             var noise = GetNoiseComponent();
             if (noise == null)
             {
@@ -133,6 +135,8 @@ namespace ThatGameJam.Features.FallingRockFromTrashCan.Controllers
             {
                 return;
             }
+
+            CinemachineShakeAudit.Tag(this, "StopShake");
 
             var noise = GetNoiseComponent();
             if (noise == null)

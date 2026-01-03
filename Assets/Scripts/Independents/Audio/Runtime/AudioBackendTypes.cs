@@ -14,6 +14,8 @@ namespace ThatGameJam.Independents.Audio
         public AudioBus Bus;
         public float Volume;
         public float Pitch;
+        public float ClipStartTime;
+        public float ClipEndTime;
         public AudioSpatialMode SpatialMode;
         public float SpatialBlend;
         public float MinDistance;

@@ -19,6 +19,7 @@ MonoBehaviour:
     Bus: 0
     Clips:
     - {fileID: 8300000, guid: 74aa4e304f62b934691bb2d83f094bed, type: 3}
+    - {fileID: 8300000, guid: 61aad7d1e03718642a348808723a159a, type: 3}
     PlayMode: 1
     Loop: 0
     UseVolumeRange: 0
@@ -40,7 +41,8 @@ MonoBehaviour:
     DisplayName: "\u866B\u5B50\u8FFD\u5149\u5F00\u59CB"
     Category: 0
     Bus: 0
-    Clips: []
+    Clips:
+    - {fileID: 8300000, guid: dd5fa456c2749334da90132553f385d8, type: 3}
     PlayMode: 1
     Loop: 0
     UseVolumeRange: 0
@@ -84,7 +86,8 @@ MonoBehaviour:
     DisplayName: "\u866B\u5B50\u6293\u53D6/\u653E\u624B"
     Category: 0
     Bus: 0
-    Clips: []
+    Clips:
+    - {fileID: 8300000, guid: c5601dfd766186644a247ef4f617ebb1, type: 3}
     PlayMode: 1
     Loop: 0
     UseVolumeRange: 0
@@ -128,7 +131,8 @@ MonoBehaviour:
     DisplayName: "\u5E7D\u7075\u6F02\u6D6E\u5FAA\u73AF"
     Category: 0
     Bus: 0
-    Clips: []
+    Clips:
+    - {fileID: 8300000, guid: f67188f72e0043440a2c32fcfcd16323, type: 3}
     PlayMode: 1
     Loop: 0
     UseVolumeRange: 0
@@ -370,7 +374,9 @@ MonoBehaviour:
     DisplayName: "\u843D\u77F3\u547D\u4E2D"
     Category: 0
     Bus: 0
-    Clips: []
+    Clips:
+    - {fileID: 8300000, guid: dae6e389f9caf84499ba97b2f6dce0d2, type: 3}
+    - {fileID: 8300000, guid: c7f9bbf2f5812114eb3308a1ddeb60e3, type: 3}
     PlayMode: 1
     Loop: 0
     UseVolumeRange: 0
@@ -414,7 +420,8 @@ MonoBehaviour:
     DisplayName: "\u98CE\u94C3\u82B1\u6FC0\u6D3B/\u7184\u706D"
     Category: 0
     Bus: 0
-    Clips: []
+    Clips:
+    - {fileID: 8300000, guid: 052cf1ab8908d7b4ba7bdcda86152734, type: 3}
     PlayMode: 1
     Loop: 0
     UseVolumeRange: 0
@@ -436,7 +443,8 @@ MonoBehaviour:
     DisplayName: "\u95E8\u5F00\u5173\uFF08\u903B\u8F91\u95E8\uFF09"
     Category: 0
     Bus: 0
-    Clips: []
+    Clips:
+    - {fileID: 8300000, guid: 7897a9e77c29476419f546e30b363093, type: 3}
     PlayMode: 1
     Loop: 0
     UseVolumeRange: 0
@@ -480,7 +488,8 @@ MonoBehaviour:
     DisplayName: "\u85E4\u8513\u751F\u957F/\u56DE\u7F29"
     Category: 0
     Bus: 0
-    Clips: []
+    Clips:
+    - {fileID: 8300000, guid: 387f9ecf51989bb42a660f4b88f5f9c5, type: 3}
     PlayMode: 1
     Loop: 0
     UseVolumeRange: 0
@@ -502,7 +511,8 @@ MonoBehaviour:
     DisplayName: "\u51B0\u5757\u6D88\u878D\u5FAA\u73AF"
     Category: 0
     Bus: 0
-    Clips: []
+    Clips:
+    - {fileID: 8300000, guid: 0fe94d1c27bd3684789961a9c09b2ead, type: 3}
     PlayMode: 1
     Loop: 0
     UseVolumeRange: 0
@@ -524,7 +534,8 @@ MonoBehaviour:
     DisplayName: "\u51B0\u5757\u6D88\u878D\u5B8C\u6210/\u51DD\u7ED3"
     Category: 0
     Bus: 0
-    Clips: []
+    Clips:
+    - {fileID: 8300000, guid: 0fe94d1c27bd3684789961a9c09b2ead, type: 3}
     PlayMode: 1
     Loop: 0
     UseVolumeRange: 0
@@ -546,7 +557,8 @@ MonoBehaviour:
     DisplayName: "\u706F\u751F\u6210/\u70B9\u4EAE"
     Category: 0
     Bus: 0
-    Clips: []
+    Clips:
+    - {fileID: 8300000, guid: b3941105795304b41b689a3611665f47, type: 3}
     PlayMode: 1
     Loop: 0
     UseVolumeRange: 0
@@ -634,7 +646,9 @@ MonoBehaviour:
     DisplayName: "\u5B58\u6863\u70B9\u89E6\u53D1"
     Category: 0
     Bus: 0
-    Clips: []
+    Clips:
+    - {fileID: 8300000, guid: 3c2db4cdde641344d99ca6a49488b2ba, type: 3}
+    - {fileID: 8300000, guid: 82846b84b44acab44972685aaed13482, type: 3}
     PlayMode: 1
     Loop: 0
     UseVolumeRange: 0
@@ -656,7 +670,8 @@ MonoBehaviour:
     DisplayName: "\u5267\u60C5\u89E6\u53D1\u95E8\u5F00\u5173"
     Category: 0
     Bus: 0
-    Clips: []
+    Clips:
+    - {fileID: 8300000, guid: 7897a9e77c29476419f546e30b363093, type: 3}
     PlayMode: 1
     Loop: 0
     UseVolumeRange: 0
@@ -678,7 +693,8 @@ MonoBehaviour:
     DisplayName: "\u5267\u60C5\u89E6\u53D1\u751F\u6210\u706F"
     Category: 0
     Bus: 0
-    Clips: []
+    Clips:
+    - {fileID: 8300000, guid: b3941105795304b41b689a3611665f47, type: 3}
     PlayMode: 1
     Loop: 0
     UseVolumeRange: 0
@@ -766,7 +782,8 @@ MonoBehaviour:
     DisplayName: "\u8D77\u8DF3"
     Category: 0
     Bus: 0
-    Clips: []
+    Clips:
+    - {fileID: 8300000, guid: 0eb6496d0d8daa345ae6df7e3acb3d35, type: 3}
     PlayMode: 1
     Loop: 0
     UseVolumeRange: 0
@@ -788,7 +805,8 @@ MonoBehaviour:
     DisplayName: "\u6500\u722C\u5F00\u59CB/\u7ED3\u675F"
     Category: 0
     Bus: 0
-    Clips: []
+    Clips:
+    - {fileID: 8300000, guid: 957bb23e8e359924a9e770b7a2f16515, type: 3}
     PlayMode: 1
     Loop: 0
     UseVolumeRange: 0
@@ -810,7 +828,8 @@ MonoBehaviour:
     DisplayName: "\u6B7B\u4EA1"
     Category: 0
     Bus: 0
-    Clips: []
+    Clips:
+    - {fileID: 8300000, guid: 083a1f71733b98f46b02735a45b74151, type: 3}
     PlayMode: 1
     Loop: 0
     UseVolumeRange: 0
@@ -832,7 +851,8 @@ MonoBehaviour:
     DisplayName: "\u590D\u6D3B"
     Category: 0
     Bus: 0
-    Clips: []
+    Clips:
+    - {fileID: 8300000, guid: be2f610d4eff87649aef801d70b7b328, type: 3}
     PlayMode: 1
     Loop: 0
     UseVolumeRange: 0
@@ -854,7 +874,8 @@ MonoBehaviour:
     DisplayName: "\u4FDD\u5B58\u6309\u94AE\u70B9\u51FB"
     Category: 0
     Bus: 0
-    Clips: []
+    Clips:
+    - {fileID: 8300000, guid: 42b43617f8df4814698d12866c7d97a9, type: 3}
     PlayMode: 1
     Loop: 0
     UseVolumeRange: 0
@@ -876,7 +897,8 @@ MonoBehaviour:
     DisplayName: "\u8BFB\u53D6\u6309\u94AE\u70B9\u51FB"
     Category: 0
     Bus: 0
-    Clips: []
+    Clips:
+    - {fileID: 8300000, guid: 42b43617f8df4814698d12866c7d97a9, type: 3}
     PlayMode: 1
     Loop: 0
     UseVolumeRange: 0
@@ -898,7 +920,8 @@ MonoBehaviour:
     DisplayName: "\u5220\u9664\u6309\u94AE\u70B9\u51FB"
     Category: 0
     Bus: 0
-    Clips: []
+    Clips:
+    - {fileID: 8300000, guid: 42b43617f8df4814698d12866c7d97a9, type: 3}
     PlayMode: 1
     Loop: 0
     UseVolumeRange: 0

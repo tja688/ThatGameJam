@@ -19,6 +19,8 @@ namespace ThatGameJam.Independents.Audio
         public bool UsePitchRange;
         public float Pitch = 1f;
         public Vector2 PitchRange = new Vector2(0.95f, 1.05f);
+        public float ClipStartTime;
+        public float ClipEndTime;
         public float Cooldown;
         public float RandomIntervalMin;
         public float RandomIntervalMax;
