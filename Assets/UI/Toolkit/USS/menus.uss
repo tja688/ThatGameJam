@@ -3,10 +3,30 @@
     align-items: flex-start;
     flex-grow: 1;
     background-color: #0c0f14;
-    background-image: url("project://database/Assets/UI/Toolkit/Textures/MainMenu_Background.png");
+    background-image: url("project://database/Assets/UI/Toolkit/Image/MainMenu_Background.png");
     background-repeat: no-repeat;
     background-position: center;
     -unity-background-scale-mode: scale-and-crop;
+}
+
+.main-menu__overlay {
+    /* 1. 脱离文档流，铺满全屏 */
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    /* 2. 移除不透明背景色，只保留贴图 */
+    background-color: rgba(0, 0, 0, 0);
+
+    background-image: url("project://database/Assets/UI/Toolkit/Image/MainMenu_Background_Overlay.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    -unity-background-scale-mode: scale-to-fit;
+
+    /* 3. 确保不拦截鼠标事件（如果只是装饰层） */
+    picking-mode: ignore;
 }
 
 .main-menu__content {

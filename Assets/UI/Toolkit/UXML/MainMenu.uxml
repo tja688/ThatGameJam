@@ -1,16 +1,17 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
-  <ui:Style src="project://database/Assets/UI/Toolkit/USS/theme.uss" />
-  <ui:Style src="project://database/Assets/UI/Toolkit/USS/menus.uss" />
-  <ui:Style src="project://database/Assets/UI/Toolkit/USS/components.uss" />
-  <ui:VisualElement class="screen main-menu">
-    <ui:VisualElement class="main-menu__content">
-      <ui:Label name="TitleLabel" text="LETTER" class="main-menu__title" />
-      <ui:VisualElement class="main-menu__buttons">
-        <ui:Button name="StartButton" text="New Game" class="menu-text-button" />
-        <ui:Button name="ContinueButton" text="Continue" class="menu-text-button" />
-        <ui:Button name="SettingsButton" text="Settings" class="menu-text-button" />
-        <ui:Button name="QuitButton" text="Quit" class="menu-text-button" />
-      </ui:VisualElement>
+    <Style src="project://database/Assets/UI/Toolkit/USS/theme.uss?fileID=7433441132597879392&amp;guid=23b14707f368758419a917d74f22cee1&amp;type=3#theme"/>
+    <Style src="project://database/Assets/UI/Toolkit/USS/menus.uss?fileID=7433441132597879392&amp;guid=0d219e30ac3157943bdf31ba572dbe32&amp;type=3#menus"/>
+    <Style src="project://database/Assets/UI/Toolkit/USS/components.uss?fileID=7433441132597879392&amp;guid=f8758b466d8261245a5700c04dd3b116&amp;type=3#components"/>
+    <ui:VisualElement class="screen main-menu" style="align-items: auto; align-self: auto;">
+        <ui:VisualElement name="MainMenuOverlay" class="main-menu__overlay" picking-mode="Ignore" />
+        <ui:VisualElement class="main-menu__content" style="translate: 200px 100px; align-items: center; align-self: center;">
+            <ui:Label name="TitleLabel" text="LETTER" class="main-menu__title" style="scale: 2 2 2;"/>
+            <ui:VisualElement class="main-menu__buttons" style="align-self: center; justify-content: space-between; flex-direction: column; flex-wrap: nowrap; height: 150px; width: 117px; scale: 2 2 2; translate: 0 400px; align-items: center; align-content: flex-start;">
+                <ui:Button name="StartButton" text="New Game" class="menu-text-button" style="align-items: center; align-self: center;"/>
+                <ui:Button name="ContinueButton" text="Continue" class="menu-text-button" style="align-self: center;"/>
+                <ui:Button name="SettingsButton" text="Settings" class="menu-text-button" style="align-self: center;"/>
+                <ui:Button name="QuitButton" text="Quit" class="menu-text-button" style="align-self: center;"/>
+            </ui:VisualElement>
+        </ui:VisualElement>
     </ui:VisualElement>
-  </ui:VisualElement>
 </ui:UXML>
