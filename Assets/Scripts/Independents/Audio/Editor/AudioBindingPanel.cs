@@ -25,6 +25,14 @@ namespace ThatGameJam.Independents.Audio.Editor
         private AudioBus _batchBus = AudioBus.SFX;
         private float _batchCooldown = 0.2f;
         private AudioClip _previewClip;
+        private AudioClip _lastPreviewedClip;
+
+        private readonly Dictionary<string, int> _sequenceIndexByEvent = new Dictionary<string, int>();
+        private readonly Dictionary<string, int> _lastRandomIndexByEvent = new Dictionary<string, int>();
+
+        private const float SelectionPanelWidth = 360f;
+        private const float CategoryListMinHeight = 60f;
+        private const float CategoryListMaxHeight = 180f;
 
         [MenuItem("Tools/Audio/Audio Binding Panel")]
         public static void Open()
@@ -106,21 +114,26 @@ namespace ThatGameJam.Independents.Audio.Editor
             }
 
             EditorGUILayout.BeginHorizontal();
-
-            DrawCategoryList();
-            DrawEventList();
-
-            EditorGUILayout.EndHorizontal();
-
-            EditorGUILayout.Space();
+            DrawSelectionPanel();
+            EditorGUILayout.Space(12f);
             DrawDetailsPanel();
+            EditorGUILayout.EndHorizontal();
+        }
+
+        private void DrawSelectionPanel()
+        {
+            EditorGUILayout.BeginVertical(GUILayout.Width(SelectionPanelWidth), GUILayout.ExpandHeight(true));
+            DrawCategoryList();
+            EditorGUILayout.Space();
+            DrawEventList();
+            EditorGUILayout.EndVertical();
         }
 
         private void DrawCategoryList()
         {
-            EditorGUILayout.BeginVertical(GUILayout.Width(180));
             EditorGUILayout.LabelField("Categories", EditorStyles.boldLabel);
-            _categoryScroll = EditorGUILayout.BeginScrollView(_categoryScroll, GUILayout.Height(300));
+            float categoryHeight = Mathf.Clamp(_categories.Count * 22f + 6f, CategoryListMinHeight, CategoryListMaxHeight);
+            _categoryScroll = EditorGUILayout.BeginScrollView(_categoryScroll, GUILayout.Height(categoryHeight));
             for (int i = 0; i < _categories.Count; i++)
             {
                 bool selected = i == _selectedCategoryIndex;
@@ -130,17 +143,15 @@ namespace ThatGameJam.Independents.Audio.Editor
                 }
             }
             EditorGUILayout.EndScrollView();
-            EditorGUILayout.EndVertical();
         }
 
         private void DrawEventList()
         {
-            EditorGUILayout.BeginVertical();
             EditorGUILayout.LabelField("Events", EditorStyles.boldLabel);
             _search = EditorGUILayout.TextField("Search", _search);
 
             List<AudioEventDocParser.EventDocEntry> entries = GetFilteredEntries();
-            _eventScroll = EditorGUILayout.BeginScrollView(_eventScroll, GUILayout.Height(300));
+            _eventScroll = EditorGUILayout.BeginScrollView(_eventScroll, GUILayout.ExpandHeight(true));
             foreach (AudioEventDocParser.EventDocEntry entry in entries)
             {
                 string label = string.IsNullOrWhiteSpace(entry.DisplayName)
@@ -150,18 +161,24 @@ namespace ThatGameJam.Independents.Audio.Editor
                 bool selected = entry.Id == _selectedEventId;
                 if (GUILayout.Toggle(selected, label, "Button"))
                 {
-                    _selectedEventId = entry.Id;
+                    if (!selected)
+                    {
+                        SelectEvent(entry.Id);
+                    }
                 }
             }
             EditorGUILayout.EndScrollView();
-            EditorGUILayout.EndVertical();
         }
 
         private void DrawDetailsPanel()
         {
+            EditorGUILayout.BeginVertical(GUILayout.ExpandWidth(true));
+            EditorGUILayout.LabelField("Details", EditorStyles.boldLabel);
+
             if (string.IsNullOrWhiteSpace(_selectedEventId))
             {
                 EditorGUILayout.HelpBox("Select an event to edit its settings.", MessageType.Info);
+                EditorGUILayout.EndVertical();
                 return;
             }
 
@@ -171,6 +188,7 @@ namespace ThatGameJam.Independents.Audio.Editor
                 {
                     CreateConfigForSelected();
                 }
+                EditorGUILayout.EndVertical();
                 return;
             }
 
@@ -178,6 +196,7 @@ namespace ThatGameJam.Independents.Audio.Editor
             SerializedProperty eventsProp = serialized.FindProperty("Events");
             if (eventsProp == null || index >= eventsProp.arraySize)
             {
+                EditorGUILayout.EndVertical();
                 return;
             }
 
@@ -207,7 +226,7 @@ namespace ThatGameJam.Independents.Audio.Editor
             SerializedProperty fadeOutProp = configProp.FindPropertyRelative("FadeOutDuration");
             SerializedProperty clipsProp = configProp.FindPropertyRelative("Clips");
 
-            _detailScroll = EditorGUILayout.BeginScrollView(_detailScroll, GUILayout.Height(330));
+            _detailScroll = EditorGUILayout.BeginScrollView(_detailScroll, GUILayout.ExpandHeight(true));
             EditorGUI.BeginDisabledGroup(true);
             EditorGUILayout.PropertyField(eventIdProp);
             EditorGUI.EndDisabledGroup();
@@ -256,9 +275,46 @@ namespace ThatGameJam.Independents.Audio.Editor
             EditorGUILayout.PropertyField(clipsProp, true);
 
             EditorGUILayout.Space();
+            DrawPreviewControls(eventIdProp, playModeProp, loopProp, clipsProp);
+
+            EditorGUILayout.EndScrollView();
+
+            serialized.ApplyModifiedProperties();
+            EditorUtility.SetDirty(_database);
+            EditorGUILayout.EndVertical();
+        }
+
+        private void DrawPreviewControls(SerializedProperty eventIdProp, SerializedProperty playModeProp, SerializedProperty loopProp, SerializedProperty clipsProp)
+        {
+            EditorGUILayout.LabelField("Preview", EditorStyles.boldLabel);
+
+            List<AudioClip> clips = GetClipsFromProperty(clipsProp);
+            using (new EditorGUI.DisabledScope(clips.Count == 0))
+            {
+                EditorGUILayout.BeginHorizontal();
+                if (GUILayout.Button("Play Group"))
+                {
+                    string eventId = eventIdProp.stringValue ?? string.Empty;
+                    AudioPlayMode playMode = (AudioPlayMode)playModeProp.enumValueIndex;
+                    bool loop = loopProp.boolValue;
+                    AudioClip clip = GetPreviewClip(eventId, playMode, clips);
+                    _lastPreviewedClip = clip;
+                    AudioPreviewUtility.PlayClip(clip, loop);
+                }
+                if (GUILayout.Button("Stop"))
+                {
+                    AudioPreviewUtility.StopAllClips();
+                }
+                EditorGUILayout.EndHorizontal();
+            }
+
+            string nowPlaying = _lastPreviewedClip != null ? _lastPreviewedClip.name : "-";
+            EditorGUILayout.LabelField("Now Playing", nowPlaying);
+
+            EditorGUILayout.Space();
             _previewClip = (AudioClip)EditorGUILayout.ObjectField("Preview Clip", _previewClip, typeof(AudioClip), false);
             EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button("Play"))
+            if (GUILayout.Button("Play Clip"))
             {
                 AudioPreviewUtility.PlayClip(_previewClip);
             }
@@ -267,11 +323,96 @@ namespace ThatGameJam.Independents.Audio.Editor
                 AudioPreviewUtility.StopAllClips();
             }
             EditorGUILayout.EndHorizontal();
+        }
 
-            EditorGUILayout.EndScrollView();
+        private static List<AudioClip> GetClipsFromProperty(SerializedProperty clipsProp)
+        {
+            List<AudioClip> clips = new List<AudioClip>();
+            if (clipsProp == null)
+            {
+                return clips;
+            }
 
-            serialized.ApplyModifiedProperties();
-            EditorUtility.SetDirty(_database);
+            for (int i = 0; i < clipsProp.arraySize; i++)
+            {
+                SerializedProperty clipProp = clipsProp.GetArrayElementAtIndex(i);
+                AudioClip clip = clipProp.objectReferenceValue as AudioClip;
+                if (clip != null)
+                {
+                    clips.Add(clip);
+                }
+            }
+
+            return clips;
+        }
+
+        private AudioClip GetPreviewClip(string eventId, AudioPlayMode playMode, List<AudioClip> clips)
+        {
+            if (clips == null || clips.Count == 0)
+            {
+                return null;
+            }
+
+            string eventKey = string.IsNullOrWhiteSpace(eventId) ? "__unknown__" : eventId;
+            switch (playMode)
+            {
+                case AudioPlayMode.Single:
+                    return clips[0];
+                case AudioPlayMode.RandomOne:
+                {
+                    int index = Random.Range(0, clips.Count);
+                    _lastRandomIndexByEvent[eventKey] = index;
+                    return clips[index];
+                }
+                case AudioPlayMode.RandomNoRepeat:
+                {
+                    int lastIndex = _lastRandomIndexByEvent.TryGetValue(eventKey, out int value) ? value : -1;
+                    int index = GetNextRandomIndex(clips.Count, lastIndex);
+                    _lastRandomIndexByEvent[eventKey] = index;
+                    return clips[index];
+                }
+                case AudioPlayMode.Sequence:
+                {
+                    int index = _sequenceIndexByEvent.TryGetValue(eventKey, out int value) ? value : 0;
+                    if (index >= clips.Count)
+                    {
+                        index = 0;
+                    }
+
+                    _sequenceIndexByEvent[eventKey] = (index + 1) % clips.Count;
+                    return clips[index];
+                }
+                default:
+                    return clips[0];
+            }
+        }
+
+        private static int GetNextRandomIndex(int count, int lastIndex)
+        {
+            if (count <= 1)
+            {
+                return 0;
+            }
+
+            if (lastIndex < 0)
+            {
+                return Random.Range(0, count);
+            }
+
+            int index = Random.Range(0, count - 1);
+            if (index >= lastIndex)
+            {
+                index++;
+            }
+
+            return index;
+        }
+
+        private void SelectEvent(string eventId)
+        {
+            _selectedEventId = eventId;
+            _lastPreviewedClip = null;
+            _detailScroll = Vector2.zero;
         }
 
         private void LoadDatabase()

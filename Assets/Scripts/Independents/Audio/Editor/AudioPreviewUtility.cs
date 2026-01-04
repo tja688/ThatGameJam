@@ -12,6 +12,11 @@ namespace ThatGameJam.Independents.Audio.Editor
 
         public static void PlayClip(AudioClip clip)
         {
+            PlayClip(clip, false);
+        }
+
+        public static void PlayClip(AudioClip clip, bool loop)
+        {
             if (clip == null)
             {
                 return;
@@ -28,9 +33,13 @@ namespace ThatGameJam.Independents.Audio.Editor
             {
                 _playMethod.Invoke(null, new object[] { clip });
             }
+            else if (parameters.Length == 2)
+            {
+                _playMethod.Invoke(null, new object[] { clip, 0 });
+            }
             else if (parameters.Length >= 3)
             {
-                _playMethod.Invoke(null, new object[] { clip, 0, false });
+                _playMethod.Invoke(null, new object[] { clip, 0, loop });
             }
         }
 

@@ -6,33 +6,33 @@ using UnityEngine;
 namespace ThatGameJam.Independents
 {
     /// <summary>
-    /// UI信封演出：从下到上匀速移动，播放期间激活，结束后失活，并发送Sequencer消息。
+    /// UI envelope show: moves from bottom to top at constant speed, toggles active state, and sends a sequencer message.
     /// </summary>
     [DisallowMultipleComponent]
     public class EnvelopeReadShow : MonoBehaviour
     {
         [Header("Envelope Target")]
-        [Tooltip("需要移动的UI对象。")]
+        [Tooltip("The UI object to move.")]
         [SerializeField] private RectTransform envelopeRect;
 
-        [Tooltip("用于激活/失活的根对象。通常是信封的GameObject。")]
+        [Tooltip("Root object to activate/deactivate. Usually the envelope GameObject.")]
         [SerializeField] private GameObject envelopeRoot;
 
         [Header("Motion")]
-        [Tooltip("入场起点（anchoredPosition）。")]
+        [Tooltip("Start position (anchoredPosition).")]
         [SerializeField] private Vector2 startAnchoredPosition = new Vector2(0f, -600f);
 
-        [Tooltip("出场终点（anchoredPosition）。")]
+        [Tooltip("End position (anchoredPosition).")]
         [SerializeField] private Vector2 endAnchoredPosition = new Vector2(0f, 600f);
 
-        [Tooltip("移动配速（UI单位/秒）。")]
+        [Tooltip("Move speed (UI units per second).")]
         [SerializeField] private float moveSpeed = 600f;
 
-        [Tooltip("对话期间推荐使用不受时间缩放影响的时间。")]
+        [Tooltip("Use unscaled time for dialogue sequences.")]
         [SerializeField] private bool useUnscaledTime = true;
 
         [Header("Sequencer")]
-        [Tooltip("非空时，演出完成后发送该Sequencer消息。")]
+        [Tooltip("If not empty, send this sequencer message when the show finishes.")]
         [SerializeField] private string completionMessage = "EnvelopeReadShowDone";
 
         public event Action Completed;
@@ -151,6 +151,11 @@ namespace ThatGameJam.Independents
             if (envelopeRect == null)
             {
                 envelopeRect = GetComponent<RectTransform>();
+            }
+
+            if (envelopeRoot == null && envelopeRect != null)
+            {
+                envelopeRoot = envelopeRect.gameObject;
             }
         }
 
