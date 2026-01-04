@@ -6165,7 +6165,7 @@ MonoBehaviour:
         typeString: 
       - title: Sequence
         value: "SetDialoguePanel(false);\nCanvasGroupFade(\u9ED1\u5C4Fcanvas, 1,
-          1)\nEnvelopeReadShow(\u7ED3\u5C401\u7ED3\u675F\u5B57\u5E55,EnvelopeReadShowDone);\nReturnToMainMenu()@Message(EnvelopeReadShowDone);"
+          1);\nEnvelopeReadShow(\u7ED3\u5C401\u7ED3\u675F\u5B57\u5E55,EnvelopeReadShowDone);\nReturnToMainMenu()@Message(EnvelopeReadShowDone);"
         type: 0
         typeString: 
       conversationID: 7
@@ -6188,7 +6188,7 @@ MonoBehaviour:
         width: 160
         height: 30
     entryGroups: []
-    canvasScrollPosition: {x: 2889.3008, y: 0}
+    canvasScrollPosition: {x: 3064.1843, y: 0}
     canvasZoom: 0.43
   - id: 8
     fields:
@@ -6508,8 +6508,8 @@ MonoBehaviour:
         width: 160
         height: 30
     entryGroups: []
-    canvasScrollPosition: {x: 70.81964, y: 102.950775}
-    canvasZoom: 0.6100004
+    canvasScrollPosition: {x: 0, y: 0}
+    canvasZoom: 0.49000046
   syncInfo:
     syncActors: 0
     syncItems: 0

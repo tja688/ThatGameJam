@@ -14,18 +14,20 @@ namespace PixelCrushers.DialogueSystem.SequencerCommands
         public void Awake()
         {
             var gameFlow = UIServiceRegistry.GameFlow;
-            if (gameFlow == null)
+            if (gameFlow != null)
+            {
+                gameFlow.ReturnToMainMenu();
+            }
+            else
             {
                 if (DialogueDebug.logWarnings)
                 {
-                    Debug.LogWarning("SequencerCommandReturnToMainMenu: UIServiceRegistry.GameFlow not registered.");
+                    Debug.LogWarning("SequencerCommandReturnToMainMenu: UIServiceRegistry.GameFlow not registered, using MainMenuSceneLoader.");
                 }
 
-                Stop();
-                return;
+                MainMenuSceneLoader.ReturnToMainMenu();
             }
 
-            gameFlow.ReturnToMainMenu();
             Stop();
         }
     }
