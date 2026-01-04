@@ -210,6 +210,10 @@
     height: 200px;
     border-radius: 10px;
     background-color: #273141;
+    background-image: url("project://database/Assets/UI/Toolkit/Image/PlayerPanel_Player.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    -unity-background-scale-mode: scale-to-fit;
     margin-bottom: 10px;
 }
 

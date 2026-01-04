@@ -13,11 +13,8 @@ namespace ThatGameJam.UI.Panels
         private readonly UIRouter _router;
         private readonly UIPanelAssets _assets;
 
-        private VisualElement _portrait;
         private Label _lightLabel;
         private Label _areaLabel;
-        private Label _deathsInAreaLabel;
-        private Label _totalDeathsLabel;
 
         private ScrollView _questList;
         private Label _questTitle;
@@ -47,11 +44,8 @@ namespace ThatGameJam.UI.Panels
 
         protected override void OnBuild()
         {
-            _portrait = Root.Q<VisualElement>("PortraitImage");
             _lightLabel = Root.Q<Label>("LightValueLabel");
             _areaLabel = Root.Q<Label>("AreaLabel");
-            _deathsInAreaLabel = Root.Q<Label>("DeathsInAreaLabel");
-            _totalDeathsLabel = Root.Q<Label>("TotalDeathsLabel");
 
             _questList = Root.Q<ScrollView>("QuestList");
             _questTitle = Root.Q<Label>("QuestTitle");
@@ -125,13 +119,6 @@ namespace ThatGameJam.UI.Panels
 
         private void ApplyPlayerStatus(PlayerPanelData data)
         {
-            if (_portrait != null)
-            {
-                _portrait.style.backgroundImage = data.Portrait != null
-                    ? new StyleBackground(data.Portrait)
-                    : StyleKeyword.None;
-            }
-
             if (_lightLabel != null)
             {
                 _lightLabel.text = $"Light: {data.LightValue:0.0}";
@@ -140,16 +127,6 @@ namespace ThatGameJam.UI.Panels
             if (_areaLabel != null)
             {
                 _areaLabel.text = string.IsNullOrEmpty(data.AreaName) ? "Area: -" : $"Area: {data.AreaName}";
-            }
-
-            if (_deathsInAreaLabel != null)
-            {
-                _deathsInAreaLabel.text = $"Deaths (Area): {data.DeathsInArea}";
-            }
-
-            if (_totalDeathsLabel != null)
-            {
-                _totalDeathsLabel.text = $"Deaths (Total): {data.TotalDeaths}";
             }
         }
 

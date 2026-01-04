@@ -77,10 +77,7 @@ namespace ThatGameJam.UI.Mock
 
             var data = new PlayerPanelData
             {
-                Portrait = CreateIconTexture(new Color(0.3f, 0.6f, 0.9f)),
                 AreaName = PickOne(new[] { "Ruins", "Archive", "Underpass" }),
-                DeathsInArea = UnityEngine.Random.Range(0, 4),
-                TotalDeaths = UnityEngine.Random.Range(3, 22),
                 LightValue = UnityEngine.Random.Range(10f, 100f)
             };
 

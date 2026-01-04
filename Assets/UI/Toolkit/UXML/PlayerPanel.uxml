@@ -12,8 +12,6 @@
         <ui:VisualElement name="PortraitImage" class="portrait" />
         <ui:Label name="LightValueLabel" text="Light: 0" class="stat" />
         <ui:Label name="AreaLabel" text="Area: -" class="stat" />
-        <ui:Label name="DeathsInAreaLabel" text="Deaths (Area): 0" class="stat" />
-        <ui:Label name="TotalDeathsLabel" text="Deaths (Total): 0" class="stat" />
       </ui:VisualElement>
       <ui:VisualElement class="player-right">
       <ui:VisualElement class="quest-section">
