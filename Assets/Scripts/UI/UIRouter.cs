@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using ThatGameJam.UI.Panels;
@@ -13,6 +14,11 @@ namespace ThatGameJam.UI
         private UIPauseService _pauseService;
         private VisualElement _root;
         private bool _initialized;
+        private bool _mainMenuOnTop;
+
+        public event Action<bool> MainMenuVisibilityChanged;
+
+        public bool IsMainMenuOnTop => _stack.Count > 0 && _stack.Peek() is MainMenuPanel;
 
         public void Initialize(UIDocument document, UIPanelAssets assets, StyleSheet[] styleSheets, UIPauseService pauseService)
         {
@@ -51,6 +57,7 @@ namespace ThatGameJam.UI
             _root.RegisterCallback<KeyDownEvent>(OnKeyDown);
 
             UpdateRootVisibility();
+            UpdateMainMenuState();
             _initialized = true;
         }
 
@@ -156,6 +163,7 @@ namespace ThatGameJam.UI
             }
 
             UpdateRootVisibility();
+            UpdateMainMenuState();
         }
 
         private void UpdateRootVisibility()
@@ -166,6 +174,18 @@ namespace ThatGameJam.UI
             }
 
             _root.style.display = _stack.Count > 0 ? DisplayStyle.Flex : DisplayStyle.None;
+        }
+
+        private void UpdateMainMenuState()
+        {
+            var isOnTop = IsMainMenuOnTop;
+            if (_mainMenuOnTop == isOnTop)
+            {
+                return;
+            }
+
+            _mainMenuOnTop = isOnTop;
+            MainMenuVisibilityChanged?.Invoke(isOnTop);
         }
 
         private void OnKeyDown(KeyDownEvent evt)
