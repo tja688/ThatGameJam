@@ -6166,7 +6166,7 @@ MonoBehaviour:
         type: 0
         typeString: 
       - title: Sequence
-        value: "SetDialoguePanel(false);\nEnvelopeReadShow(\u7ED3\u5C401\u7ED3\u675F\u5B57\u5E55,EnvelopeReadShowDone);\n"
+        value: "SetDialoguePanel(false);\nEnvelopeReadShow(\u7ED3\u5C401\u7ED3\u675F\u5B57\u5E55,EnvelopeReadShowDone);\nReturnToMainMenu()@Message(EnvelopeReadShowDone);"
         type: 0
         typeString: 
       conversationID: 7
