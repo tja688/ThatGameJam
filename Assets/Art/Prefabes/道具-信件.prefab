@@ -154,6 +154,12 @@ MonoBehaviour:
   type: 1
   priority: 0
   displayName: letter
+  interactionIconPrefab: {fileID: 8038510535901962077, guid: 5c710bab2993b524980b2c2beed0b378, type: 3}
+  interactionIconOffset: {x: 0, y: 2, z: 0}
+  iconSenseRange: 4
+  floorLayerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
   dialogueTrigger: {fileID: 0}
   pickupItem: {fileID: 11400000, guid: 68e01c474dc473048befda956f44d417, type: 2}
   disableOnPickup: 1
