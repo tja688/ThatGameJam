@@ -948,8 +948,8 @@ MonoBehaviour:
     FadeOutDuration: 0
   - EventId: SFX-UI-0001
     DisplayName: "\u4FDD\u5B58\u6309\u94AE\u70B9\u51FB"
-    Category: 0
-    Bus: 0
+    Category: 2
+    Bus: 2
     Clips:
     - {fileID: 8300000, guid: 42b43617f8df4814698d12866c7d97a9, type: 3}
     PlayMode: 1
@@ -973,8 +973,8 @@ MonoBehaviour:
     FadeOutDuration: 0
   - EventId: SFX-UI-0002
     DisplayName: "\u8BFB\u53D6\u6309\u94AE\u70B9\u51FB"
-    Category: 0
-    Bus: 0
+    Category: 2
+    Bus: 2
     Clips:
     - {fileID: 8300000, guid: 42b43617f8df4814698d12866c7d97a9, type: 3}
     PlayMode: 1
@@ -998,8 +998,8 @@ MonoBehaviour:
     FadeOutDuration: 0
   - EventId: SFX-UI-0003
     DisplayName: "\u5220\u9664\u6309\u94AE\u70B9\u51FB"
-    Category: 0
-    Bus: 0
+    Category: 2
+    Bus: 2
     Clips:
     - {fileID: 8300000, guid: 42b43617f8df4814698d12866c7d97a9, type: 3}
     PlayMode: 1
@@ -1013,6 +1013,31 @@ MonoBehaviour:
     ClipStartTime: 0
     ClipEndTime: 0
     Cooldown: 0.2
+    RandomIntervalMin: 0
+    RandomIntervalMax: 0
+    SpatialMode: 0
+    SpatialBlend: 0
+    MinDistance: 1
+    MaxDistance: 500
+    StopPolicy: 1
+    FadeOutDuration: 0
+  - EventId: SFX-UI-0004
+    DisplayName: "\u6309\u94AE\u60AC\u505C"
+    Category: 2
+    Bus: 2
+    Clips:
+    - {fileID: 8300000, guid: 42b43617f8df4814698d12866c7d97a9, type: 3}
+    PlayMode: 1
+    Loop: 0
+    UseVolumeRange: 0
+    Volume: 1
+    VolumeRange: {x: 0.9, y: 1}
+    UsePitchRange: 0
+    Pitch: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    ClipStartTime: 0
+    ClipEndTime: 0
+    Cooldown: 0.05
     RandomIntervalMin: 0
     RandomIntervalMax: 0
     SpatialMode: 0

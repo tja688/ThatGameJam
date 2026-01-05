@@ -1,7 +1,9 @@
+using System.Collections;
 using System.Collections.Generic;
 using QFramework;
 using ThatGameJam.Features.AreaSystem.Queries;
 using ThatGameJam.Features.BackpackFeature.Commands;
+using ThatGameJam.Features.BackpackFeature.Events;
 using ThatGameJam.Features.BackpackFeature.Models;
 using ThatGameJam.Features.KeroseneLamp.Commands;
 using ThatGameJam.Features.KeroseneLamp.Events;
@@ -21,11 +23,15 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
         [SerializeField] private Vector3 heldLampLocalOffset;
         [SerializeField] private Vector3 heldLampLocalEulerAngles;
         [SerializeField] private bool spawnHeldLampOnStart = true;
+        [SerializeField] private float spawnRetryDelay = 0.1f;
+        [SerializeField] private int spawnRetryMaxAttempts = 30;
 
         private readonly Dictionary<int, KeroseneLampInstance> _lampInstances = new Dictionary<int, KeroseneLampInstance>();
         private readonly HashSet<KeroseneLampPreplaced> _registeredPreplaced = new HashSet<KeroseneLampPreplaced>();
         private int _nextLampId;
         private Transform _resolvedHoldPoint;
+        private Coroutine _spawnRetryRoutine;
+        private bool _loggedMissingHoldPoint;
 
         public IArchitecture GetArchitecture() => GameRootApp.Interface;
 
@@ -192,10 +198,23 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
                 return;
             }
 
+            if (FindHeldLampInstance() != null)
+            {
+                return;
+            }
+
+            PruneInvalidLampBackpackEntries();
+
             var holdPoint = ResolveHoldPoint();
             if (holdPoint == null)
             {
-                LogKit.W("KeroseneLampManager missing player hold point. Held lamp will not be spawned.");
+                if (!_loggedMissingHoldPoint)
+                {
+                    LogKit.W("KeroseneLampManager missing player hold point. Held lamp will not be spawned yet.");
+                    _loggedMissingHoldPoint = true;
+                }
+
+                ScheduleSpawnRetry();
                 return;
             }
 
@@ -265,6 +284,122 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
             {
                 this.SendCommand(new SetHeldItemCommand(addedIndex, holdPoint));
                 EnforceHeldLampAreaLimit();
+            }
+        }
+
+        private void ScheduleSpawnRetry()
+        {
+            if (_spawnRetryRoutine != null || !isActiveAndEnabled)
+            {
+                return;
+            }
+
+            _spawnRetryRoutine = StartCoroutine(SpawnRetryRoutine());
+        }
+
+        private IEnumerator SpawnRetryRoutine()
+        {
+            int attempts = 0;
+            while (attempts < spawnRetryMaxAttempts)
+            {
+                attempts++;
+                yield return new WaitForSeconds(spawnRetryDelay);
+                if (!isActiveAndEnabled)
+                {
+                    break;
+                }
+
+                var holdPoint = ResolveHoldPoint();
+                if (holdPoint != null)
+                {
+                    _spawnRetryRoutine = null;
+                    _loggedMissingHoldPoint = false;
+                    SpawnHeldLampIfNeeded();
+                    yield break;
+                }
+            }
+
+            _spawnRetryRoutine = null;
+        }
+
+        private bool PruneInvalidLampBackpackEntries()
+        {
+            var model = (BackpackModel)this.GetModel<IBackpackModel>();
+            if (model == null || model.Items.Count == 0)
+            {
+                return false;
+            }
+
+            var previousSelected = model.SelectedIndexValue;
+            var previousHeld = model.HeldIndexValue;
+            var removedAny = false;
+
+            for (var i = model.Items.Count - 1; i >= 0; i--)
+            {
+                var entry = model.Items[i];
+                if (entry == null || entry.Definition == null)
+                {
+                    continue;
+                }
+
+                if (entry.Instance != null)
+                {
+                    continue;
+                }
+
+                var prefab = entry.Definition.DropPrefab;
+                if (prefab == null || prefab.GetComponent<KeroseneLampInstance>() == null)
+                {
+                    continue;
+                }
+
+                model.Items.RemoveAt(i);
+                removedAny = true;
+            }
+
+            if (!removedAny)
+            {
+                return false;
+            }
+
+            NormalizeBackpackIndices(model);
+            this.SendEvent(new BackpackChangedEvent { Count = model.Items.Count });
+
+            if (model.SelectedIndexValue != previousSelected)
+            {
+                var selectedEntry = model.SelectedIndexValue >= 0 ? model.Items[model.SelectedIndexValue] : null;
+                this.SendEvent(new BackpackSelectionChangedEvent
+                {
+                    SelectedIndex = model.SelectedIndexValue,
+                    Definition = selectedEntry != null ? selectedEntry.Definition : null,
+                    Quantity = selectedEntry != null ? selectedEntry.Quantity : 0
+                });
+            }
+
+            if (model.HeldIndexValue != previousHeld)
+            {
+                var heldEntry = model.HeldIndexValue >= 0 ? model.Items[model.HeldIndexValue] : null;
+                this.SendEvent(new HeldItemChangedEvent
+                {
+                    HeldIndex = model.HeldIndexValue,
+                    Definition = heldEntry != null ? heldEntry.Definition : null,
+                    Quantity = heldEntry != null ? heldEntry.Quantity : 0
+                });
+            }
+
+            return true;
+        }
+
+        private static void NormalizeBackpackIndices(BackpackModel model)
+        {
+            if (model.SelectedIndexValue >= model.Items.Count)
+            {
+                model.SelectedIndexValue = model.Items.Count - 1;
+            }
+
+            if (model.HeldIndexValue >= model.Items.Count)
+            {
+                model.HeldIndexValue = -1;
             }
         }
 
@@ -344,6 +479,20 @@ namespace ThatGameJam.Features.KeroseneLamp.Controllers
             }
 
             var controller = FindObjectOfType<ThatGameJam.Features.PlayerCharacter2D.Controllers.PlatformerCharacterController>();
+            if (controller == null)
+            {
+                var candidates = Resources.FindObjectsOfTypeAll<ThatGameJam.Features.PlayerCharacter2D.Controllers.PlatformerCharacterController>();
+                for (var i = 0; i < candidates.Length; i++)
+                {
+                    var candidate = candidates[i];
+                    if (candidate != null && candidate.gameObject.scene.IsValid())
+                    {
+                        controller = candidate;
+                        break;
+                    }
+                }
+            }
+
             if (controller != null)
             {
                 _resolvedHoldPoint = controller.transform;

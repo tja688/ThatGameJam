@@ -172,5 +172,13 @@ namespace ThatGameJam.Independents
         {
             ES3.Save(SaveKey, unlocked, SaveKeys.Settings);
         }
+
+        public static void Clear()
+        {
+            if (ES3.KeyExists(SaveKey, SaveKeys.Settings))
+            {
+                ES3.DeleteKey(SaveKey, SaveKeys.Settings);
+            }
+        }
     }
 }

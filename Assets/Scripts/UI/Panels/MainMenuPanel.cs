@@ -1,3 +1,7 @@
+using ThatGameJam.Features.BackpackFeature.Commands;
+using ThatGameJam.Features.Shared;
+using ThatGameJam.Independents;
+using ThatGameJam.SaveSystem;
 using ThatGameJam.UI.Services;
 using ThatGameJam.UI.Services.Interfaces;
 using UnityEngine;
@@ -53,6 +57,17 @@ namespace ThatGameJam.UI.Panels
 
         private void OnStartClicked()
         {
+            EndingMenuUnlockState.Clear();
+
+            var saveManager = SaveManager.Instance;
+            if (saveManager != null)
+            {
+                saveManager.DeleteAll();
+            }
+
+            GameRootApp.Interface.SendCommand(new ResetBackpackCommand());
+            GameRootApp.Interface.SendEvent(new RunResetEvent());
+
             var service = UIServiceRegistry.GameFlow;
             if (service != null)
             {

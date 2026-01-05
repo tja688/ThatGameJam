@@ -179,6 +179,19 @@ namespace ThatGameJam.SaveSystem
             SaveLog.Info("Deleted save snapshot.");
         }
 
+        public void DeleteAll()
+        {
+            SaveLog.Enabled = logEnabled;
+            if (!ES3.FileExists(SaveKeys.Settings))
+            {
+                SaveLog.Warn("DeleteAll requested but no save file exists.");
+                return;
+            }
+
+            ES3.DeleteFile(SaveKeys.Settings);
+            SaveLog.Info("Deleted save file.");
+        }
+
         private List<ISaveParticipant> CollectParticipants()
         {
             var results = new List<ISaveParticipant>();

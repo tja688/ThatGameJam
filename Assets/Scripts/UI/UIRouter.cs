@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ThatGameJam.Independents.Audio;
 using ThatGameJam.UI.Panels;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -9,12 +10,17 @@ namespace ThatGameJam.UI
 {
     public class UIRouter : MonoBehaviour
     {
+        [Header("UI Audio")]
+        [SerializeField] private bool enableUiHoverSfx = true;
+        [SerializeField] private string uiHoverSfxEventId = "SFX-UI-0004";
+
         private readonly Stack<UIPanel> _stack = new Stack<UIPanel>();
         private UIPanelAssets _assets;
         private UIPauseService _pauseService;
         private VisualElement _root;
         private bool _initialized;
         private bool _mainMenuOnTop;
+        private Button _lastHoverButton;
 
         public event Action<bool> MainMenuVisibilityChanged;
 
@@ -55,6 +61,8 @@ namespace ThatGameJam.UI
             _root.focusable = true;
             _root.tabIndex = 0;
             _root.RegisterCallback<KeyDownEvent>(OnKeyDown);
+            _root.RegisterCallback<PointerEnterEvent>(OnPointerEnter, TrickleDown.TrickleDown);
+            _root.RegisterCallback<PointerLeaveEvent>(OnPointerLeave, TrickleDown.TrickleDown);
 
             UpdateRootVisibility();
             UpdateMainMenuState();
@@ -209,6 +217,66 @@ namespace ThatGameJam.UI
 
             CloseTop();
             evt.StopPropagation();
+        }
+
+        private void OnPointerEnter(PointerEnterEvent evt)
+        {
+            if (!enableUiHoverSfx || string.IsNullOrEmpty(uiHoverSfxEventId))
+            {
+                return;
+            }
+
+            if (evt.target is not VisualElement element)
+            {
+                return;
+            }
+
+            var button = FindButtonAncestor(element);
+            if (button == null || button == _lastHoverButton || !button.enabledSelf)
+            {
+                return;
+            }
+
+            _lastHoverButton = button;
+            AudioService.Play(uiHoverSfxEventId, new AudioContext
+            {
+                IsUI = true
+            });
+        }
+
+        private void OnPointerLeave(PointerLeaveEvent evt)
+        {
+            if (evt.target is not VisualElement element)
+            {
+                return;
+            }
+
+            var button = FindButtonAncestor(element);
+            if (button == null)
+            {
+                return;
+            }
+
+            if (_lastHoverButton == button)
+            {
+                _lastHoverButton = null;
+            }
+        }
+
+        private static Button FindButtonAncestor(VisualElement element)
+        {
+            var current = element;
+            while (current != null)
+            {
+                if (current is Button button)
+                {
+                    return button;
+                }
+
+                current = current.parent;
+            }
+
+            return null;
         }
     }
 }
