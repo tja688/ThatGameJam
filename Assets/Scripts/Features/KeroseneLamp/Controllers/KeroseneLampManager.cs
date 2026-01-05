@@ -13,7 +13,7 @@ using UnityEngine;
 
 namespace ThatGameJam.Features.KeroseneLamp.Controllers
 {
-    public class KeroseneLampManager : MonoBehaviour, IController
+    public class KeroseneLampManager : MonoBehaviour, IController,ICanSendEvent
     {
         [SerializeField] private GameObject lampPrefab;
         [SerializeField] private Transform lampParent;

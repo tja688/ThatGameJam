@@ -6077,7 +6077,7 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 3620
+        x: 3617.4192
         y: 105
         width: 160
         height: 30
@@ -6165,7 +6165,62 @@ MonoBehaviour:
         typeString: 
       - title: Sequence
         value: "SetDialoguePanel(false);\nCanvasGroupFade(\u9ED1\u5C4Fcanvas, 1,
-          1);\nEnvelopeReadShow(\u7ED3\u5C401\u7ED3\u675F\u5B57\u5E55,EnvelopeReadShowDone);\nReturnToMainMenu()@Message(EnvelopeReadShowDone);"
+          1);\nEnvelopeReadShow(\u7ED3\u5C401\u7ED3\u675F\u5B57\u5E55,EnvelopeReadShowDone);\nContinue()@Message(EnvelopeReadShowDone);"
+        type: 0
+        typeString: 
+      conversationID: 7
+      isRoot: 0
+      isGroup: 0
+      nodeColor: 
+      delaySimStatus: 0
+      falseConditionAction: Block
+      conditionPriority: 2
+      outgoingLinks:
+      - originConversationID: 7
+        originDialogueID: 47
+        destinationConversationID: 7
+        destinationDialogueID: 48
+        isConnector: 0
+        priority: 2
+      conditionsString: 
+      userScript: 
+      onExecute:
+        m_PersistentCalls:
+          m_Calls: []
+      canvasRect:
+        serializedVersion: 2
+        x: 3984.6511
+        y: 102.41934
+        width: 160
+        height: 30
+    - id: 48
+      fields:
+      - title: Title
+        value: 
+        type: 0
+        typeString: 
+      - title: Description
+        value: 
+        type: 0
+        typeString: 
+      - title: Actor
+        value: 8
+        type: 5
+        typeString: CustomFieldType_Actor
+      - title: Conversant
+        value: 1
+        type: 5
+        typeString: CustomFieldType_Actor
+      - title: Menu Text
+        value: 
+        type: 0
+        typeString: 
+      - title: Dialogue Text
+        value: 
+        type: 0
+        typeString: 
+      - title: Sequence
+        value: ReturnToMainMenu()
         type: 0
         typeString: 
       conversationID: 7
@@ -6183,13 +6238,13 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 3984.6511
-        y: 105
+        x: 4062.0706
+        y: 235.00002
         width: 160
         height: 30
     entryGroups: []
-    canvasScrollPosition: {x: 3134.8828, y: 0}
-    canvasZoom: 0.43
+    canvasScrollPosition: {x: 2825.2375, y: 0}
+    canvasZoom: 0.31
   - id: 8
     fields:
     - title: Title

@@ -352,7 +352,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ThatGameJam.Features.Mechanisms.Controllers.VineMechanism2D
   areaId: 
   shouldResetOnRunReset: 0
-  lightAffectRadius: 7
+  lightAffectRadius: 10
   lightRequiredSeconds: 0
   shrinkRequiredSeconds: 20
   scanInterval: 3

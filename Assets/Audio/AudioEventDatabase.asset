@@ -141,8 +141,7 @@ MonoBehaviour:
     DisplayName: "\u5E7D\u7075\u6F02\u6D6E\u5FAA\u73AF"
     Category: 0
     Bus: 0
-    Clips:
-    - {fileID: 8300000, guid: f67188f72e0043440a2c32fcfcd16323, type: 3}
+    Clips: []
     PlayMode: 1
     Loop: 0
     UseVolumeRange: 0
