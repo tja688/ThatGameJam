@@ -1,7 +1,11 @@
 using System.Collections;
+using System.Collections.Generic;
 using QFramework;
-using ThatGameJam.Independents.Audio;
 using ThatGameJam.Features.FallingRockFromTrashCan.Events;
+using ThatGameJam.Features.Shared;
+using ThatGameJam.Independents.Audio;
+using UniRx;
+using UniRx.Triggers;
 using UnityEngine;
 
 namespace ThatGameJam.Features.FallingRockFromTrashCan.Controllers
@@ -18,6 +22,7 @@ namespace ThatGameJam.Features.FallingRockFromTrashCan.Controllers
         private readonly Collider2D[] _overlapResults = new Collider2D[8];
         private ContactFilter2D _contactFilter;
         private Collider2D _triggerCollider;
+        private readonly List<GameObject> _activeProjectiles = new List<GameObject>();
         private Coroutine _spawnRoutine;
         private Coroutine _stopRoutine;
         private int _spawnIndex;
@@ -58,6 +63,28 @@ namespace ThatGameJam.Features.FallingRockFromTrashCan.Controllers
             _spawnIndex = 0;
             _missingPrefabLogged = false;
 
+            this.RegisterEvent<PlayerDiedEvent>(OnPlayerDied)
+                .UnRegisterWhenDisabled(gameObject);
+            this.RegisterEvent<PlayerRespawnedEvent>(OnPlayerRespawned)
+                .UnRegisterWhenDisabled(gameObject);
+
+            if (IsPlayerInside())
+            {
+                StartFallingEvent();
+            }
+        }
+
+        private void OnPlayerDied(PlayerDiedEvent e)
+        {
+            // Stop own event immediately
+            StopFallingEventImmediate();
+
+            // Force global stop for this sound ID just in case
+            AudioService.Stop("SFX-INT-0014");
+        }
+
+        private void OnPlayerRespawned(PlayerRespawnedEvent e)
+        {
             if (IsPlayerInside())
             {
                 StartFallingEvent();
@@ -66,8 +93,7 @@ namespace ThatGameJam.Features.FallingRockFromTrashCan.Controllers
 
         private void OnDisable()
         {
-            _eventActive = false;
-            StopSpawningImmediate();
+            StopFallingEventImmediate();
         }
 
         private void Update()
@@ -153,6 +179,29 @@ namespace ThatGameJam.Features.FallingRockFromTrashCan.Controllers
             StopSpawningImmediate();
         }
 
+        private void StopFallingEventImmediate()
+        {
+            _eventActive = false;
+            AudioService.Stop("SFX-INT-0014", new AudioContext
+            {
+                Owner = transform
+            });
+            StopSpawningImmediate();
+            CleanupActiveProjectiles();
+        }
+
+        private void CleanupActiveProjectiles()
+        {
+            for (int i = _activeProjectiles.Count - 1; i >= 0; i--)
+            {
+                if (_activeProjectiles[i] != null)
+                {
+                    Destroy(_activeProjectiles[i]);
+                }
+            }
+            _activeProjectiles.Clear();
+        }
+
         private void StopSpawningImmediate()
         {
             if (_spawnRoutine != null)
@@ -201,7 +250,16 @@ namespace ThatGameJam.Features.FallingRockFromTrashCan.Controllers
             var position = spawnTransform != null ? spawnTransform.position : transform.position;
             var rotation = spawnTransform != null ? spawnTransform.rotation : Quaternion.identity;
 
-            Instantiate(rockPrefab, position, rotation);
+            var instance = Instantiate(rockPrefab, position, rotation);
+            if (instance != null)
+            {
+                _activeProjectiles.Add(instance);
+                // Simple cleanup if it gets destroyed naturally
+                var rocks = _activeProjectiles;
+                instance.OnDestroyAsObservable()
+                    .Subscribe(_ => rocks.Remove(instance))
+                    .AddTo(instance);
+            }
         }
 
         private Transform GetNextSpawnPoint()

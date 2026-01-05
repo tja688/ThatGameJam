@@ -781,7 +781,7 @@ MonoBehaviour:
     Bus: 0
     Clips: []
     PlayMode: 1
-    Loop: 0
+    Loop: 1
     UseVolumeRange: 0
     Volume: 1
     VolumeRange: {x: 0.9, y: 1}

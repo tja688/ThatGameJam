@@ -14,7 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ThatGameJam.Features.BackpackFeature.Models.ItemDefinition
   id: 3
   displayName: newspaper
-  description: An old newspaper, with some news recorded on it.
+  description: "Forest Ranger Killed in Mudslide During Mountain Rescue \u2014 Veteran
+    forest ranger Benjamin Carter, 42, died last Saturday evening during a rescue
+    mission, according to a statement from the Forestry Department. Carter was assisting
+    a young hiker trapped in a remote section of the mountain when the incident occurred...\r\nThe
+    article details how Benjamin saved Evan Miller from a rockslide, only to be swept
+    away by a subsequent mudslide. His last words: \"Hold onto that rock! Don't let
+    go!\""
   icon: {fileID: 2800000, guid: afd8977947a110240aa7793ff6a88bdb, type: 3}
   dropPrefab: {fileID: 0}
   stackable: 0
