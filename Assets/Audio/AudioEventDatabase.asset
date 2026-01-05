@@ -68,7 +68,8 @@ MonoBehaviour:
     DisplayName: "\u866B\u5B50\u9000\u56DE\u5DE2\u7A74/\u51B7\u5374"
     Category: 0
     Bus: 0
-    Clips: []
+    Clips:
+    - {fileID: 8300000, guid: dd5fa456c2749334da90132553f385d8, type: 3}
     PlayMode: 1
     Loop: 0
     UseVolumeRange: 0
@@ -629,7 +630,8 @@ MonoBehaviour:
     DisplayName: "\u706F\u62FE\u8D77/\u653E\u4E0B"
     Category: 0
     Bus: 0
-    Clips: []
+    Clips:
+    - {fileID: 8300000, guid: 61da88adebc4cc042b2a6a3d53a73261, type: 3}
     PlayMode: 1
     Loop: 0
     UseVolumeRange: 0
@@ -825,7 +827,8 @@ MonoBehaviour:
     DisplayName: "\u5149\u91CF\u8017\u5C3D"
     Category: 0
     Bus: 0
-    Clips: []
+    Clips:
+    - {fileID: 8300000, guid: 7e492ad07b6d548eea10ccbd1962e88f, type: 3}
     PlayMode: 1
     Loop: 0
     UseVolumeRange: 0
