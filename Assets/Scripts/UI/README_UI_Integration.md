@@ -24,6 +24,8 @@ Implement and register these in `UIServiceRegistry` (see `Assets/Scripts/UI/Serv
   - `GetQuests()` + `OnQuestChanged` for quest list + detail.
 - `IInventoryProvider`
   - `GetSlots(maxSlots)` + `OnInventoryChanged` for 12-slot inventory.
+- `IOperationInstructionsProvider`
+  - `GetInstructions()` + `OnChanged` for the instructions panel body.
 - `IRebindPersistence` (optional placeholder)
   - `SaveOverrides()` / `LoadOverrides()` if you want a dedicated persistence adapter.
 
@@ -41,6 +43,12 @@ Implement and register these in `UIServiceRegistry` (see `Assets/Scripts/UI/Serv
   - Subscribes to `IPlayerStatusProvider.OnChanged`.
   - Subscribes to `IQuestLogProvider.OnQuestChanged`.
   - Subscribes to `IInventoryProvider.OnInventoryChanged`.
+- `InstructionsPanel`
+  - Subscribes to `IOperationInstructionsProvider.OnChanged`.
+
+## Instructions Text Source
+- `OperationInstructionsSource` (MonoBehaviour) implements `IOperationInstructionsProvider`.
+- Attach it to a GameObject and fill `instructions` in the inspector or call `SetInstructions`.
 
 ## Button Wiring Summary
 - Main Menu:
@@ -57,6 +65,8 @@ Implement and register these in `UIServiceRegistry` (see `Assets/Scripts/UI/Serv
   - Exit Game -> `Application.Quit()` (Editor stops play mode).
 - Player Panel:
   - Close -> closes panel (resume game).
+- Instructions Panel:
+  - Return To Game -> closes panel (resume game).
 
 ## Rebind Persistence
 - Mock implementation stores overrides in `PlayerPrefs` under `UI_MOCK_REBIND_OVERRIDES`.

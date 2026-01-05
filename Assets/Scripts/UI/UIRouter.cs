@@ -90,6 +90,11 @@ namespace ThatGameJam.UI
             PushPanel(new PlayerPanel(_assets.PlayerPanel, _assets, this));
         }
 
+        public void OpenInstructionsPanel()
+        {
+            PushPanel(new InstructionsPanel(_assets.InstructionsPanel, this));
+        }
+
         public void CloseTop()
         {
             if (_stack.Count == 0)

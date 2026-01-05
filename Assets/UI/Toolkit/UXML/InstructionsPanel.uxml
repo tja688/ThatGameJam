@@ -1,0 +1,16 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+  <ui:Style src="project://database/Assets/UI/Toolkit/USS/theme.uss" />
+  <ui:Style src="project://database/Assets/UI/Toolkit/USS/menus.uss" />
+  <ui:Style src="project://database/Assets/UI/Toolkit/USS/components.uss" />
+  <ui:VisualElement class="screen instructions-panel">
+    <ui:VisualElement class="instructions-window">
+      <ui:VisualElement class="instructions-header">
+        <ui:Label text="Instructions" class="title-small" />
+        <ui:Button name="ReturnButton" text="Return To Game" class="ghost-button" />
+      </ui:VisualElement>
+      <ui:ScrollView class="instructions-body">
+        <ui:Label name="InstructionsLabel" text="No instructions." class="instructions-text" />
+      </ui:ScrollView>
+    </ui:VisualElement>
+  </ui:VisualElement>
+</ui:UXML>

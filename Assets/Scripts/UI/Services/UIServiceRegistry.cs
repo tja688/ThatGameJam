@@ -11,6 +11,7 @@ namespace ThatGameJam.UI.Services
         public static IPlayerStatusProvider PlayerStatus { get; private set; }
         public static IQuestLogProvider QuestLog { get; private set; }
         public static IInventoryProvider Inventory { get; private set; }
+        public static IOperationInstructionsProvider OperationInstructions { get; private set; }
 
         public static void RegisterAll(
             IGameFlowService gameFlow,
@@ -19,7 +20,8 @@ namespace ThatGameJam.UI.Services
             IInputRebindService inputRebind,
             IPlayerStatusProvider playerStatus,
             IQuestLogProvider questLog,
-            IInventoryProvider inventory)
+            IInventoryProvider inventory,
+            IOperationInstructionsProvider operationInstructions = null)
         {
             GameFlow = gameFlow;
             SaveService = saveService;
@@ -28,6 +30,7 @@ namespace ThatGameJam.UI.Services
             PlayerStatus = playerStatus;
             QuestLog = questLog;
             Inventory = inventory;
+            OperationInstructions = operationInstructions;
         }
 
         public static void SetGameFlow(IGameFlowService service) => GameFlow = service;
@@ -37,6 +40,7 @@ namespace ThatGameJam.UI.Services
         public static void SetPlayerStatus(IPlayerStatusProvider service) => PlayerStatus = service;
         public static void SetQuestLog(IQuestLogProvider service) => QuestLog = service;
         public static void SetInventory(IInventoryProvider service) => Inventory = service;
+        public static void SetOperationInstructions(IOperationInstructionsProvider service) => OperationInstructions = service;
 
         public static void ClearAll()
         {
@@ -47,6 +51,7 @@ namespace ThatGameJam.UI.Services
             PlayerStatus = null;
             QuestLog = null;
             Inventory = null;
+            OperationInstructions = null;
         }
     }
 }

@@ -1,6 +1,7 @@
 using ThatGameJam.UI.Mock;
 using ThatGameJam.UI.Services;
 using ThatGameJam.UI.Services.Interfaces;
+using ThatGameJam.Independents.Audio;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -101,6 +102,15 @@ namespace ThatGameJam.UI.Panels
         public override void OnPushed()
         {
             _audioService = UIServiceRegistry.AudioSettings;
+            if (_audioService == null)
+            {
+                var audioService = AudioService.Instance;
+                if (audioService != null)
+                {
+                    _audioService = new AudioSettingsService(audioService);
+                    UIServiceRegistry.SetAudioSettings(_audioService);
+                }
+            }
             if (_audioService != null)
             {
                 _audioService.OnBgmChanged += OnBgmChanged;

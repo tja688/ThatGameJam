@@ -90,6 +90,11 @@ namespace ThatGameJam.UI
             router?.OpenPlayerPanel();
         }
 
+        public void OpenInstructionsPanel()
+        {
+            router?.OpenInstructionsPanel();
+        }
+
         public void OpenSettingsFromGame()
         {
             router?.OpenSettings(SettingsOpenedFrom.InGame);

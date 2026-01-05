@@ -13,6 +13,7 @@ namespace ThatGameJam.UI
         public VisualTreeAsset SettingsGame;
         public VisualTreeAsset RebindModal;
         public VisualTreeAsset PlayerPanel;
+        public VisualTreeAsset InstructionsPanel;
 
         public VisualTreeAsset SidebarItem;
         public VisualTreeAsset SliderRow;

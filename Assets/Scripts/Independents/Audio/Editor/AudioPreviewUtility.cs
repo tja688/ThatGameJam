@@ -9,13 +9,21 @@ namespace ThatGameJam.Independents.Audio.Editor
     {
         private static MethodInfo _playMethod;
         private static MethodInfo _stopMethod;
+        private static MethodInfo _setVolumeMethod;
+        private static MethodInfo _setPitchMethod;
+        private static bool _initialized;
 
         public static void PlayClip(AudioClip clip)
         {
-            PlayClip(clip, false);
+            PlayClip(clip, false, 1f, 1f);
         }
 
         public static void PlayClip(AudioClip clip, bool loop)
+        {
+            PlayClip(clip, loop, 1f, 1f);
+        }
+
+        public static void PlayClip(AudioClip clip, bool loop, float volume, float pitch)
         {
             if (clip == null)
             {
@@ -41,6 +49,9 @@ namespace ThatGameJam.Independents.Audio.Editor
             {
                 _playMethod.Invoke(null, new object[] { clip, 0, loop });
             }
+
+            ApplyPreviewVolume(volume);
+            ApplyPreviewPitch(pitch);
         }
 
         public static void StopAllClips()
@@ -51,21 +62,47 @@ namespace ThatGameJam.Independents.Audio.Editor
 
         private static void EnsureMethods()
         {
-            if (_playMethod != null && _stopMethod != null)
+            if (_initialized)
             {
                 return;
             }
 
+            _initialized = true;
             Type audioUtil = typeof(AudioImporter).Assembly.GetType("UnityEditor.AudioUtil");
             if (audioUtil == null)
             {
                 return;
             }
 
-            _playMethod = audioUtil.GetMethod("PlayPreviewClip", BindingFlags.Static | BindingFlags.Public)
-                           ?? audioUtil.GetMethod("PlayClip", BindingFlags.Static | BindingFlags.Public);
-            _stopMethod = audioUtil.GetMethod("StopAllPreviewClips", BindingFlags.Static | BindingFlags.Public)
-                          ?? audioUtil.GetMethod("StopAllClips", BindingFlags.Static | BindingFlags.Public);
+            BindingFlags flags = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
+            _playMethod = audioUtil.GetMethod("PlayPreviewClip", flags)
+                           ?? audioUtil.GetMethod("PlayClip", flags);
+            _stopMethod = audioUtil.GetMethod("StopAllPreviewClips", flags)
+                          ?? audioUtil.GetMethod("StopAllClips", flags);
+            _setVolumeMethod = audioUtil.GetMethod("SetPreviewVolume", flags);
+            _setPitchMethod = audioUtil.GetMethod("SetPreviewPitch", flags);
+        }
+
+        private static void ApplyPreviewVolume(float volume)
+        {
+            EnsureMethods();
+            if (_setVolumeMethod == null)
+            {
+                return;
+            }
+
+            _setVolumeMethod.Invoke(null, new object[] { Mathf.Clamp01(volume) });
+        }
+
+        private static void ApplyPreviewPitch(float pitch)
+        {
+            EnsureMethods();
+            if (_setPitchMethod == null)
+            {
+                return;
+            }
+
+            _setPitchMethod.Invoke(null, new object[] { Mathf.Clamp(pitch, 0.1f, 3f) });
         }
     }
 }

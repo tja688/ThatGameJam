@@ -26,6 +26,7 @@ namespace ThatGameJam.Independents.Audio.Editor
         private float _batchCooldown = 0.2f;
         private AudioClip _previewClip;
         private AudioClip _lastPreviewedClip;
+        private float _previewVolumeScale = 1f;
 
         private readonly Dictionary<string, int> _sequenceIndexByEvent = new Dictionary<string, int>();
         private readonly Dictionary<string, int> _lastRandomIndexByEvent = new Dictionary<string, int>();
@@ -33,6 +34,8 @@ namespace ThatGameJam.Independents.Audio.Editor
         private const float SelectionPanelWidth = 360f;
         private const float CategoryListMinHeight = 60f;
         private const float CategoryListMaxHeight = 180f;
+        private const float PreviewPitchMin = 0.1f;
+        private const float PreviewPitchMax = 3f;
 
         [MenuItem("Tools/Audio/Audio Binding Panel")]
         public static void Open()
@@ -275,7 +278,17 @@ namespace ThatGameJam.Independents.Audio.Editor
             EditorGUILayout.PropertyField(clipsProp, true);
 
             EditorGUILayout.Space();
-            DrawPreviewControls(eventIdProp, playModeProp, loopProp, clipsProp);
+            DrawPreviewControls(
+                eventIdProp,
+                playModeProp,
+                loopProp,
+                clipsProp,
+                useVolumeRangeProp,
+                volumeProp,
+                volumeRangeProp,
+                usePitchRangeProp,
+                pitchProp,
+                pitchRangeProp);
 
             EditorGUILayout.EndScrollView();
 
@@ -284,9 +297,20 @@ namespace ThatGameJam.Independents.Audio.Editor
             EditorGUILayout.EndVertical();
         }
 
-        private void DrawPreviewControls(SerializedProperty eventIdProp, SerializedProperty playModeProp, SerializedProperty loopProp, SerializedProperty clipsProp)
+        private void DrawPreviewControls(
+            SerializedProperty eventIdProp,
+            SerializedProperty playModeProp,
+            SerializedProperty loopProp,
+            SerializedProperty clipsProp,
+            SerializedProperty useVolumeRangeProp,
+            SerializedProperty volumeProp,
+            SerializedProperty volumeRangeProp,
+            SerializedProperty usePitchRangeProp,
+            SerializedProperty pitchProp,
+            SerializedProperty pitchRangeProp)
         {
             EditorGUILayout.LabelField("Preview", EditorStyles.boldLabel);
+            _previewVolumeScale = EditorGUILayout.Slider("Preview Volume", _previewVolumeScale, 0f, 1f);
 
             List<AudioClip> clips = GetClipsFromProperty(clipsProp);
             using (new EditorGUI.DisabledScope(clips.Count == 0))
@@ -299,7 +323,9 @@ namespace ThatGameJam.Independents.Audio.Editor
                     bool loop = loopProp.boolValue;
                     AudioClip clip = GetPreviewClip(eventId, playMode, clips);
                     _lastPreviewedClip = clip;
-                    AudioPreviewUtility.PlayClip(clip, loop);
+                    float previewVolume = GetPreviewVolume(useVolumeRangeProp, volumeProp, volumeRangeProp);
+                    float previewPitch = GetPreviewPitch(usePitchRangeProp, pitchProp, pitchRangeProp);
+                    AudioPreviewUtility.PlayClip(clip, loop, Mathf.Clamp01(previewVolume * _previewVolumeScale), previewPitch);
                 }
                 if (GUILayout.Button("Stop"))
                 {
@@ -316,7 +342,9 @@ namespace ThatGameJam.Independents.Audio.Editor
             EditorGUILayout.BeginHorizontal();
             if (GUILayout.Button("Play Clip"))
             {
-                AudioPreviewUtility.PlayClip(_previewClip);
+                float previewVolume = GetPreviewVolume(useVolumeRangeProp, volumeProp, volumeRangeProp);
+                float previewPitch = GetPreviewPitch(usePitchRangeProp, pitchProp, pitchRangeProp);
+                AudioPreviewUtility.PlayClip(_previewClip, false, Mathf.Clamp01(previewVolume * _previewVolumeScale), previewPitch);
             }
             if (GUILayout.Button("Stop"))
             {
@@ -406,6 +434,37 @@ namespace ThatGameJam.Independents.Audio.Editor
             }
 
             return index;
+        }
+
+        private static float GetPreviewVolume(SerializedProperty useRangeProp, SerializedProperty volumeProp, SerializedProperty rangeProp)
+        {
+            if (useRangeProp != null && useRangeProp.boolValue && rangeProp != null)
+            {
+                Vector2 range = rangeProp.vector2Value;
+                float min = Mathf.Min(range.x, range.y);
+                float max = Mathf.Max(range.x, range.y);
+                return Random.Range(min, max);
+            }
+
+            return volumeProp != null ? Mathf.Max(0f, volumeProp.floatValue) : 1f;
+        }
+
+        private static float GetPreviewPitch(SerializedProperty useRangeProp, SerializedProperty pitchProp, SerializedProperty rangeProp)
+        {
+            float pitch;
+            if (useRangeProp != null && useRangeProp.boolValue && rangeProp != null)
+            {
+                Vector2 range = rangeProp.vector2Value;
+                float min = Mathf.Min(range.x, range.y);
+                float max = Mathf.Max(range.x, range.y);
+                pitch = Random.Range(min, max);
+            }
+            else
+            {
+                pitch = pitchProp != null ? pitchProp.floatValue : 1f;
+            }
+
+            return Mathf.Clamp(pitch, PreviewPitchMin, PreviewPitchMax);
         }
 
         private void SelectEvent(string eventId)

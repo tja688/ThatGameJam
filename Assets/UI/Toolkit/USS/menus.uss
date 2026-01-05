@@ -177,6 +177,42 @@
     justify-content: flex-end;
 }
 
+.instructions-panel {
+    justify-content: center;
+    align-items: center;
+}
+
+.instructions-window {
+    width: 640px;
+    max-width: 90%;
+    max-height: 80%;
+    padding: 16px;
+    border-radius: 12px;
+    background-color: #1f2631;
+    flex-direction: column;
+    row-gap: 12px;
+}
+
+.instructions-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.instructions-body {
+    flex-grow: 1;
+    min-height: 0;
+    padding: 10px;
+    background-color: #273141;
+    border-radius: 10px;
+}
+
+.instructions-text {
+    white-space: pre-wrap;
+    color: #f5f7fa;
+    font-size: 14px;
+}
+
 .player-panel {
     flex-direction: column;
     width: 100%;
