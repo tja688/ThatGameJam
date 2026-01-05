@@ -1,4 +1,3 @@
-using ThatGameJam.UI.Mock;
 using ThatGameJam.UI.Services;
 using ThatGameJam.UI.Services.Interfaces;
 using ThatGameJam.Independents.Audio;
@@ -24,7 +23,6 @@ namespace ThatGameJam.UI.Panels
 
         private Button _closeButton;
         private Button _returnToMainMenuButton;
-        private Button _devInjectButton;
 
         private Slider _bgmSlider;
         private Label _bgmValueLabel;
@@ -58,7 +56,6 @@ namespace ThatGameJam.UI.Panels
             _contentContainer = Root.Q<VisualElement>("ContentContainer");
             _closeButton = Root.Q<Button>("CloseButton");
             _returnToMainMenuButton = Root.Q<Button>("ReturnToMainMenuButton");
-            _devInjectButton = Root.Q<Button>("DevInjectButton");
 
             _audioTabButton = GetSidebarButton("AudioTab");
             _saveTabButton = GetSidebarButton("SaveTab");
@@ -92,8 +89,6 @@ namespace ThatGameJam.UI.Panels
             {
                 _returnToMainMenuButton.clicked += () => _router.ReturnToMainMenuFromSettings();
             }
-
-            BindDevInjectButton();
 
             BuildPages();
             ShowPage(SettingsTab.Audio);
@@ -251,24 +246,6 @@ namespace ThatGameJam.UI.Panels
             SetPageVisible(_audioPage, tab == SettingsTab.Audio);
             SetPageVisible(_savePage, tab == SettingsTab.Save);
             SetPageVisible(_gamePage, tab == SettingsTab.Game);
-        }
-
-        private void BindDevInjectButton()
-        {
-            if (_devInjectButton == null)
-            {
-                return;
-            }
-
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-            _devInjectButton.clicked += () =>
-            {
-                // TODO(INTEGRATION): Hide or remove DEV button for production builds.
-                UIMockBootstrap.Instance?.InjectNow();
-            };
-#else
-            _devInjectButton.style.display = DisplayStyle.None;
-#endif
         }
 
         private void ConfigureSliderRow(

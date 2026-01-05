@@ -886,7 +886,7 @@ MonoBehaviour:
     PitchRange: {x: 0.95, y: 1.05}
     ClipStartTime: 0
     ClipEndTime: 0
-    Cooldown: 0.2
+    Cooldown: 0.3
     RandomIntervalMin: 0
     RandomIntervalMax: 0
     SpatialMode: 0

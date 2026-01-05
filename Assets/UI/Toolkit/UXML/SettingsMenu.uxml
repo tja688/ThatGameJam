@@ -6,7 +6,6 @@
     <ui:VisualElement class="settings-header">
       <ui:Label text="Settings" class="title-small" />
       <ui:VisualElement class="settings-header__actions">
-        <ui:Button name="DevInjectButton" text="[DEV] Inject Mock Data" class="dev-button" />
         <ui:Button name="CloseButton" text="Back" class="ghost-button" />
       </ui:VisualElement>
     </ui:VisualElement>
