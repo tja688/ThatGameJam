@@ -33,7 +33,7 @@ namespace ThatGameJam.UI
 
         private IAudioSettingsService _audioSettings;
         private bool _mainMenuVisible;
-        private float _desiredSfxVolume = 1f;
+        private float _desiredSfxVolume = 0.5f;
         private float _desiredAmbientVolume = 1f;
 
         private void Awake()

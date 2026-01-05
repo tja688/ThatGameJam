@@ -19,7 +19,7 @@ namespace ThatGameJam.Independents.Audio
         private readonly Dictionary<LoopKey, ActiveLoop> _activeLoops = new Dictionary<LoopKey, ActiveLoop>();
         private readonly Dictionary<AudioBus, float> _busVolumes = new Dictionary<AudioBus, float>
         {
-            { AudioBus.SFX, 1f },
+            { AudioBus.SFX, 0.5f },
             { AudioBus.Music, 1f },
             { AudioBus.UI, 1f },
             { AudioBus.Ambient, 1f }

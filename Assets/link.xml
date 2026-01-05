@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<linker>
+    <!-- Preserve all custom Dialogue System Sequencer Commands in the main Assembly-CSharp -->
+    <assembly fullname="Assembly-CSharp">
+        <!-- This preserves all classes in the SequencerCommands namespace so that 
+             Dialogue System can find them via reflection at runtime. 
+             Without this, IL2CPP/Mono Linker may strip these classes as "unused". -->
+        <namespace fullname="PixelCrushers.DialogueSystem.SequencerCommands" preserve="all"/>
+        
+        <!-- Also preserve the EnvelopeReadShow class that the command depends on -->
+        <type fullname="ThatGameJam.Independents.EnvelopeReadShow" preserve="all"/>
+    </assembly>
+    
+    <!-- Standard Dialogue System protection for plugins folder -->
+    <assembly fullname="Assembly-CSharp-firstpass">
+        <namespace fullname="PixelCrushers.DialogueSystem.SequencerCommands" preserve="all"/>
+    </assembly>
+</linker>
