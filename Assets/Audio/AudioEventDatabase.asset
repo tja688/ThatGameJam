@@ -1045,3 +1045,128 @@ MonoBehaviour:
     MaxDistance: 500
     StopPolicy: 1
     FadeOutDuration: 0
+  - EventId: BGM-MENU-0001
+    DisplayName: Main Menu BGM
+    Category: 1
+    Bus: 1
+    Clips:
+    - {fileID: 8300000, guid: 6a5c35f3c49b8b54e8074b7728dc6270, type: 3}
+    PlayMode: 0
+    Loop: 1
+    UseVolumeRange: 0
+    Volume: 1
+    VolumeRange: {x: 0.9, y: 1}
+    UsePitchRange: 0
+    Pitch: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    ClipStartTime: 0
+    ClipEndTime: 0
+    Cooldown: 0
+    RandomIntervalMin: 0
+    RandomIntervalMax: 0
+    SpatialMode: 0
+    SpatialBlend: 0
+    MinDistance: 1
+    MaxDistance: 500
+    StopPolicy: 1
+    FadeOutDuration: 0
+  - EventId: BGM-GAME-0001
+    DisplayName: Gameplay BGM
+    Category: 1
+    Bus: 1
+    Clips:
+    - {fileID: 8300000, guid: 0aba14da40f1a6141a095d7395c17549, type: 3}
+    PlayMode: 0
+    Loop: 1
+    UseVolumeRange: 0
+    Volume: 1
+    VolumeRange: {x: 0.9, y: 1}
+    UsePitchRange: 0
+    Pitch: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    ClipStartTime: 0
+    ClipEndTime: 0
+    Cooldown: 0
+    RandomIntervalMin: 0
+    RandomIntervalMax: 0
+    SpatialMode: 0
+    SpatialBlend: 0
+    MinDistance: 1
+    MaxDistance: 500
+    StopPolicy: 1
+    FadeOutDuration: 0
+  - EventId: BGM-TOWER-0001
+    DisplayName: Tower Top BGM
+    Category: 1
+    Bus: 1
+    Clips:
+    - {fileID: 8300000, guid: 46cedad57991a6b4b9fb858c66466ba7, type: 3}
+    PlayMode: 0
+    Loop: 1
+    UseVolumeRange: 0
+    Volume: 1
+    VolumeRange: {x: 0.9, y: 1}
+    UsePitchRange: 0
+    Pitch: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    ClipStartTime: 0
+    ClipEndTime: 0
+    Cooldown: 0
+    RandomIntervalMin: 0
+    RandomIntervalMax: 0
+    SpatialMode: 0
+    SpatialBlend: 0
+    MinDistance: 1
+    MaxDistance: 500
+    StopPolicy: 1
+    FadeOutDuration: 0
+  - EventId: BGM-END-0001
+    DisplayName: Ending 1 BGM
+    Category: 1
+    Bus: 1
+    Clips:
+    - {fileID: 8300000, guid: bb6b44970afaca64d988cbf268c59457, type: 3}
+    PlayMode: 0
+    Loop: 1
+    UseVolumeRange: 0
+    Volume: 1
+    VolumeRange: {x: 0.9, y: 1}
+    UsePitchRange: 0
+    Pitch: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    ClipStartTime: 0
+    ClipEndTime: 0
+    Cooldown: 0
+    RandomIntervalMin: 0
+    RandomIntervalMax: 0
+    SpatialMode: 0
+    SpatialBlend: 0
+    MinDistance: 1
+    MaxDistance: 500
+    StopPolicy: 1
+    FadeOutDuration: 0
+  - EventId: BGM-END-0002
+    DisplayName: Ending 2 BGM
+    Category: 1
+    Bus: 1
+    Clips:
+    - {fileID: 8300000, guid: 1be6fdbedf6de1c409096de69723b6a4, type: 3}
+    PlayMode: 0
+    Loop: 1
+    UseVolumeRange: 0
+    Volume: 1
+    VolumeRange: {x: 0.9, y: 1}
+    UsePitchRange: 0
+    Pitch: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    ClipStartTime: 0
+    ClipEndTime: 0
+    Cooldown: 0
+    RandomIntervalMin: 0
+    RandomIntervalMax: 0
+    SpatialMode: 0
+    SpatialBlend: 0
+    MinDistance: 1
+    MaxDistance: 500
+    StopPolicy: 1
+    FadeOutDuration: 0

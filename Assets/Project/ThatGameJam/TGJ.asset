@@ -4215,7 +4215,7 @@ MonoBehaviour:
         width: 160
         height: 30
     entryGroups: []
-    canvasScrollPosition: {x: 229.89642, y: 9.999878}
+    canvasScrollPosition: {x: 2039.8948, y: 0}
     canvasZoom: 0.40000045
   - id: 5
     fields:
@@ -4651,7 +4651,7 @@ MonoBehaviour:
         type: 0
         typeString: 
       - title: Sequence
-        value: 
+        value: PlayEndingBgm(GameSystems, 1)
         type: 0
         typeString: 
       conversationID: 7
@@ -6243,7 +6243,7 @@ MonoBehaviour:
         width: 160
         height: 30
     entryGroups: []
-    canvasScrollPosition: {x: 2825.2375, y: 0}
+    canvasScrollPosition: {x: 0, y: 0}
     canvasZoom: 0.31
   - id: 8
     fields:
@@ -6373,8 +6373,8 @@ MonoBehaviour:
         type: 0
         typeString: 
       - title: Sequence
-        value: "SetDialoguePanel(false);\nCanvasGroupFade(\u9ED1\u5C4Fcanvas, 1,
-          1);\nEnvelopeReadShow(\u7ED3\u5C402\u5B57\u5E551,EnvelopeReadShowDone);\nContinue()@Message(EnvelopeReadShowDone);"
+        value: "SetDialoguePanel(false);\nPlayEndingBgm(GameSystems, 2);\nCanvasGroupFade(\u9ED1\u5C4Fcanvas,
+          1, 1);\nEnvelopeReadShow(\u7ED3\u5C402\u5B57\u5E551,EnvelopeReadShowDone);\nContinue()@Message(EnvelopeReadShowDone);"
         type: 0
         typeString: 
       conversationID: 8

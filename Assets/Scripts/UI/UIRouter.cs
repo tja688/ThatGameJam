@@ -25,6 +25,7 @@ namespace ThatGameJam.UI
         public event Action<bool> MainMenuVisibilityChanged;
 
         public bool IsMainMenuOnTop => _stack.Count > 0 && _stack.Peek() is MainMenuPanel;
+        public bool HasOpenPanels => _stack.Count > 0;
 
         public void Initialize(UIDocument document, UIPanelAssets assets, StyleSheet[] styleSheets, UIPauseService pauseService)
         {
