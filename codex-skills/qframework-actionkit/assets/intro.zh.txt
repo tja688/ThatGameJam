@@ -1,0 +1,4 @@
+QFramework ActionKit 技能
+作用：在明确要求使用 QFramework ActionKit 时，按序列/延时/并行等动作组合组织时序逻辑。
+触发：用户明确说要用 ActionKit / QF 时序动作工具。
+注意：若用户要求 Unity 协程或禁用 QF 工具包，则不使用本技能。

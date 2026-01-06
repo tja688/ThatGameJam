@@ -1,0 +1,4 @@
+QFramework 核心架构技能
+作用：使用 QFramework 四层架构与 CQRS 规则组织代码（Controller/System/Model/Utility）。
+触发：用户提到 QFramework/QF/Architecture/CQRS/Command/Query 等关键词。
+要点：写操作必须走 Command，读操作优先 Query，状态变化用事件/BindableProperty 通知。

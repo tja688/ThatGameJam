@@ -1,0 +1,4 @@
+QFramework CoreKit Utils 技能
+作用：在明确要求使用 QF 工具集时，提供 LogKit/PoolKit/SingletonKit/BindableProperty 等工具用法。
+触发：用户明确提到这些 QFramework 工具或 API。
+注意：若用户要求 Unity 原生实现或禁用 QF 工具包，则不使用本技能。

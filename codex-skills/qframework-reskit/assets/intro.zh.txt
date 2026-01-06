@@ -1,0 +1,4 @@
+QFramework ResKit 技能
+作用：在明确要求使用 QFramework ResKit 时，按 ResKit/ResLoader 规范进行资源加载与回收。
+触发：用户明确说要用 ResKit / ResLoader / QF 资源加载流程。
+注意：若用户要求 Unity 原生资源加载或禁用 QF 工具包，则不使用本技能。

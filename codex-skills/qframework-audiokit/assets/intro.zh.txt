@@ -1,0 +1,4 @@
+QFramework AudioKit 技能
+作用：在明确要求使用 QFramework AudioKit 时，按 Music/Sound/Voice 通道与设置管理音频。
+触发：用户明确说要用 QFramework AudioKit 音频工具。
+注意：若用户要求 Unity AudioSource 或禁用 QF 工具包，则不使用本技能。

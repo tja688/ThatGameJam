@@ -1,0 +1,4 @@
+QFramework UIKit 技能
+作用：在明确要求使用 QFramework UIKit 时，按 UIKit 面板生命周期与面板栈管理组织 UI。
+触发：用户明确说要用 QFramework UIKit / UIPanel / UIRoot。
+注意：若用户要求 Unity 原生 UI 或禁用 QF 工具包，则不使用本技能。

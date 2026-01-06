@@ -1,0 +1,4 @@
+QFramework Playbook 技能（项目约束）
+作用：在本项目内强制执行 Playbook 规则与输出格式，确保禁区、日志、目录、FeatureNote、证据优先级等要求被遵守。
+触发：涉及本仓库功能开发/修改，或用户提到 QFramework/Playbook/GameRootApp。
+注意：默认使用 Unity 原生方案，只有明确要求才用 QFramework 工具包；若冲突需先澄清。

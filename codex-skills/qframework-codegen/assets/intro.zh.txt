@@ -1,0 +1,4 @@
+QFramework CodeGenKit 技能
+作用：在明确要求使用 QFramework CodeGenKit 时，按代码生成与 Designer 规则组织绑定与脚本生成。
+触发：用户明确说要用 CodeGenKit/Designer/代码生成工具。
+注意：若用户要求 Unity 原生流程或禁用 QF 工具包，则不使用本技能。
