@@ -7,6 +7,7 @@ namespace AutoGenJobs.Commands.Builtins
 {
     /// <summary>
     /// 添加组件命令
+    /// 支持 Prefab 编辑模式
     /// </summary>
     public class Cmd_AddComponent : IJobCommand
     {
@@ -52,6 +53,12 @@ namespace AutoGenJobs.Commands.Builtins
                 return CommandExecResult.Fail($"Target is not a GameObject or Component: {targetObj.GetType().Name}");
             }
 
+            // 验证对象在当前上下文中（Prefab 编辑模式检查）
+            if (!ctx.ValidateObjectInContext(go))
+            {
+                return CommandExecResult.Fail($"Object '{go.name}' is not in the current edit context (possible scene pollution)");
+            }
+
             // 解析组件类型
             var componentType = TypeResolver.ResolveType(typeName);
             if (componentType == null)
@@ -60,7 +67,8 @@ namespace AutoGenJobs.Commands.Builtins
             if (!TypeResolver.IsComponentType(componentType))
                 return CommandExecResult.Fail($"Type is not a Component: {typeName}");
 
-            ctx.Logger.Info($"Adding {componentType.Name} to {go.name}");
+            var logPrefix = ctx.IsInPrefabEditMode ? "[PrefabEdit] " : "";
+            ctx.Logger.Info($"{logPrefix}Adding {componentType.Name} to {go.name}");
 
             if (ctx.DryRun)
             {
@@ -75,7 +83,7 @@ namespace AutoGenJobs.Commands.Builtins
                 existing = go.GetComponent(componentType);
                 if (existing != null)
                 {
-                    ctx.Logger.Debug($"Component {componentType.Name} already exists on {go.name}");
+                    ctx.Logger.Debug($"{logPrefix}Component {componentType.Name} already exists on {go.name}");
                     return CommandExecResult.Ok(
                         "Component already exists",
                         new System.Collections.Generic.Dictionary<string, Object> { { "component", existing } }
@@ -83,17 +91,25 @@ namespace AutoGenJobs.Commands.Builtins
                 }
             }
 
-            // 添加组件
-            Undo.RecordObject(go, $"Add {componentType.Name}");
-            var component = go.AddComponent(componentType);
+            // 添加组件（Prefab 编辑模式下不注册 Undo）
+            Component component;
+            if (!ctx.IsInPrefabEditMode)
+            {
+                Undo.RecordObject(go, $"Add {componentType.Name}");
+            }
+
+            component = go.AddComponent(componentType);
 
             if (component == null)
                 return CommandExecResult.Fail($"Failed to add component {componentType.Name}");
 
-            Undo.RegisterCreatedObjectUndo(component, $"Add {componentType.Name}");
-            EditorUtility.SetDirty(go);
+            if (!ctx.IsInPrefabEditMode)
+            {
+                Undo.RegisterCreatedObjectUndo(component, $"Add {componentType.Name}");
+                EditorUtility.SetDirty(go);
+            }
 
-            ctx.Logger.Info($"Added {componentType.Name} to {go.name}");
+            ctx.Logger.Info($"{logPrefix}Added {componentType.Name} to {go.name}");
 
             return CommandExecResult.Ok(
                 $"Added {componentType.Name}",

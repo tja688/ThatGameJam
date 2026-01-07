@@ -7,6 +7,8 @@ namespace AutoGenJobs.Commands.Builtins
 {
     /// <summary>
     /// 创建 GameObject 命令
+    /// 修复 B：在 Prefab 编辑模式下使用上下文感知的创建
+    /// 修复 C：添加 ensure 语义，避免重复创建
     /// </summary>
     public class Cmd_CreateGameObject : IJobCommand
     {
@@ -23,7 +25,15 @@ namespace AutoGenJobs.Commands.Builtins
 
             var parentPath = args["parentPath"]?.ToString();
 
-            ctx.Logger.Info($"Creating GameObject: {name}" + (string.IsNullOrEmpty(parentPath) ? "" : $" under {parentPath}"));
+            // ensure 模式：如果对象已存在，复用而不是重复创建
+            var ensure = args["ensure"]?.ToObject<bool>() ?? false;
+
+            // 用于 ensure 查找的唯一标记
+            var ensureTag = args["ensureTag"]?.ToString();
+
+            ctx.Logger.Info($"Creating GameObject: {name}" +
+                           (string.IsNullOrEmpty(parentPath) ? "" : $" under {parentPath}") +
+                           (ensure ? " (ensure mode)" : ""));
 
             if (ctx.DryRun)
             {
@@ -31,25 +41,51 @@ namespace AutoGenJobs.Commands.Builtins
                 return CommandExecResult.Ok("DryRun: would create GameObject");
             }
 
-            // 创建 GameObject
-            var go = new GameObject(name);
-            Undo.RegisterCreatedObjectUndo(go, $"Create {name}");
+            GameObject go = null;
 
-            // 设置父对象
-            if (!string.IsNullOrEmpty(parentPath))
+            // ============================================================
+            // 修复 C: ensure 模式 - 尝试查找已存在的对象
+            // ============================================================
+            if (ensure)
             {
-                var parent = ctx.FindGameObjectByPath(parentPath);
-                if (parent == null)
+                go = TryFindExisting(ctx, name, parentPath, ensureTag);
+                if (go != null)
                 {
-                    ctx.Logger.Warning($"Parent not found: {parentPath}, creating at root");
-                }
-                else
-                {
-                    go.transform.SetParent(parent.transform, false);
+                    ctx.Logger.Info($"[Ensure] Found existing GameObject: {go.name}");
+                    // 更新 Transform（如果提供了新值）
+                    ApplyTransform(go.transform, args, ctx);
+
+                    return CommandExecResult.Ok(
+                        $"Reused existing {name}",
+                        new System.Collections.Generic.Dictionary<string, Object> { { "go", go } }
+                    );
                 }
             }
 
-            // 设置 Transform（可选）
+            // ============================================================
+            // 修复 B: 使用上下文感知的创建方法
+            // ============================================================
+            go = ctx.CreateGameObject(name, parentPath);
+
+            if (go == null)
+                return CommandExecResult.Fail("Failed to create GameObject");
+
+            // 注册 Undo
+            if (!ctx.IsInPrefabEditMode)
+            {
+                Undo.RegisterCreatedObjectUndo(go, $"Create {name}");
+            }
+
+            // 如果提供了 ensureTag，添加标记（用于后续 ensure 查找）
+            if (!string.IsNullOrEmpty(ensureTag))
+            {
+                // 使用一个隐藏组件来标记
+                var marker = go.AddComponent<AutoGenMarker>();
+                marker.tag = ensureTag;
+                marker.hideFlags = HideFlags.HideInInspector;
+            }
+
+            // 设置 Transform
             ApplyTransform(go.transform, args, ctx);
 
             ctx.Logger.Info($"Created GameObject: {go.name}");
@@ -58,6 +94,38 @@ namespace AutoGenJobs.Commands.Builtins
                 $"Created {name}",
                 new System.Collections.Generic.Dictionary<string, Object> { { "go", go } }
             );
+        }
+
+        /// <summary>
+        /// 尝试查找已存在的对象（ensure 模式）
+        /// </summary>
+        private GameObject TryFindExisting(CommandContext ctx, string name, string parentPath, string ensureTag)
+        {
+            // 优先通过 ensureTag 查找
+            if (!string.IsNullOrEmpty(ensureTag))
+            {
+                var markers = Object.FindObjectsOfType<AutoGenMarker>();
+                foreach (var marker in markers)
+                {
+                    if (marker.tag == ensureTag)
+                    {
+                        return marker.gameObject;
+                    }
+                }
+            }
+
+            // 通过路径查找
+            string fullPath;
+            if (string.IsNullOrEmpty(parentPath))
+            {
+                fullPath = name;
+            }
+            else
+            {
+                fullPath = $"{parentPath}/{name}";
+            }
+
+            return ctx.FindGameObjectByPath(fullPath);
         }
 
         private void ApplyTransform(Transform transform, JObject args, CommandContext ctx)
@@ -129,5 +197,16 @@ namespace AutoGenJobs.Commands.Builtins
 
             return null;
         }
+    }
+
+    /// <summary>
+    /// 用于 ensure 模式的标记组件
+    /// 允许通过唯一标签查找已创建的对象
+    /// </summary>
+    [AddComponentMenu("")] // 不在菜单中显示
+    public class AutoGenMarker : MonoBehaviour
+    {
+        [HideInInspector]
+        public string tag;
     }
 }

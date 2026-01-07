@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "jobId": "t_ensure_002",
+  "status": "DONE",
+  "startedAtUtc": "2026-01-07T10:03:30.6512974Z",
+  "finishedAtUtc": "2026-01-07T10:03:30.6543273Z",
+  "runnerVersion": 3,
+  "unityVersion": "6000.3.0f1",
+  "message": "ok",
+  "commandResults": [
+    {
+      "index": 0,
+      "cmd": "CreateGameObject",
+      "status": "DONE",
+      "message": "Reused existing AutoGen_EnsureRoot",
+      "outputs": {
+        "go": "SceneObject:AutoGen_EnsureRoot"
+      }
+    }
+  ]
+}

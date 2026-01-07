@@ -8,6 +8,7 @@ namespace AutoGenJobs.Commands.Builtins
     /// <summary>
     /// 设置 SerializedProperty 命令
     /// 核心通用命令，支持设置任意类型的序列化字段
+    /// 支持 Prefab 编辑模式
     /// </summary>
     public class Cmd_SetSerializedProperty : IJobCommand
     {
@@ -44,7 +45,18 @@ namespace AutoGenJobs.Commands.Builtins
             if (targetObj == null)
                 return CommandExecResult.Fail($"Target not found: {targetRef.@ref ?? targetRef.scenePath ?? targetRef.assetPath}");
 
-            ctx.Logger.Info($"Setting {propertyPath} on {targetObj.name}");
+            // 验证对象在当前上下文中（仅对场景对象验证）
+            if (targetObj is GameObject go && !ctx.ValidateObjectInContext(go))
+            {
+                return CommandExecResult.Fail($"Object '{go.name}' is not in the current edit context");
+            }
+            else if (targetObj is Component comp && !ctx.ValidateObjectInContext(comp.gameObject))
+            {
+                return CommandExecResult.Fail($"Component on '{comp.gameObject.name}' is not in the current edit context");
+            }
+
+            var logPrefix = ctx.IsInPrefabEditMode ? "[PrefabEdit] " : "";
+            ctx.Logger.Info($"{logPrefix}Setting {propertyPath} on {targetObj.name}");
 
             if (ctx.DryRun)
             {
@@ -60,7 +72,7 @@ namespace AutoGenJobs.Commands.Builtins
             {
                 if (ignoreMissing)
                 {
-                    ctx.Logger.Warning($"Property not found (ignored): {propertyPath}");
+                    ctx.Logger.Warning($"{logPrefix}Property not found (ignored): {propertyPath}");
                     return CommandExecResult.Ok("Property not found (ignored)");
                 }
                 return CommandExecResult.Fail($"Property not found: {propertyPath}");
@@ -75,19 +87,24 @@ namespace AutoGenJobs.Commands.Builtins
 
             // 应用修改
             serializedObject.ApplyModifiedProperties();
-            EditorUtility.SetDirty(targetObj);
 
-            // 如果是 Prefab 中的对象，标记为修改
-            if (PrefabUtility.IsPartOfPrefabAsset(targetObj))
+            // Prefab 编辑模式下不调用 SetDirty（由 SaveAsPrefabAsset 处理）
+            if (!ctx.IsInPrefabEditMode)
             {
-                var assetPath = AssetDatabase.GetAssetPath(targetObj);
-                if (!string.IsNullOrEmpty(assetPath))
+                EditorUtility.SetDirty(targetObj);
+
+                // 如果是 Prefab 中的对象，标记为修改
+                if (PrefabUtility.IsPartOfPrefabAsset(targetObj))
                 {
-                    AssetDatabase.SaveAssetIfDirty(targetObj);
+                    var assetPath = AssetDatabase.GetAssetPath(targetObj);
+                    if (!string.IsNullOrEmpty(assetPath))
+                    {
+                        AssetDatabase.SaveAssetIfDirty(targetObj);
+                    }
                 }
             }
 
-            ctx.Logger.Info($"Set {propertyPath} successfully");
+            ctx.Logger.Info($"{logPrefix}Set {propertyPath} successfully");
 
             return CommandExecResult.Ok($"Set {propertyPath}");
         }

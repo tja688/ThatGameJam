@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "jobId": "t_ensure_002",
+  "runnerMinVersion": 1,
+  "dryRun": false,
+  "projectWriteRoot": "Assets/AutoGen",
+  "requiresTypes": [],
+  "commands": [
+    {
+      "cmd": "CreateGameObject",
+      "args": {
+        "name": "AutoGen_EnsureRoot",
+        "ensure": true,
+        "ensureTag": "t_ensure_001.root",
+        "position": [1, 3, 0],
+        "scale": [1, 1, 1]
+      },
+      "out": { "go": "$root" }
+    }
+  ]
+}

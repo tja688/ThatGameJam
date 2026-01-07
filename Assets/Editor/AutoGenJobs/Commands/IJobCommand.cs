@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace AutoGenJobs.Commands
 {
@@ -22,6 +23,28 @@ namespace AutoGenJobs.Commands
         /// <param name="args">命令参数（JObject）</param>
         /// <returns>执行结果</returns>
         Core.CommandExecResult Execute(CommandContext ctx, JObject args);
+    }
+
+    /// <summary>
+    /// Prefab 编辑上下文
+    /// 用于隔离 Prefab 编辑时的对象查找，避免污染场景
+    /// </summary>
+    public class PrefabEditContext
+    {
+        /// <summary>
+        /// Prefab 的根对象
+        /// </summary>
+        public GameObject PrefabRoot { get; set; }
+
+        /// <summary>
+        /// Prefab 内容所在的临时场景
+        /// </summary>
+        public Scene PrefabContentsScene { get; set; }
+
+        /// <summary>
+        /// 是否处于 Prefab 编辑模式
+        /// </summary>
+        public bool IsValid => PrefabRoot != null;
     }
 
     /// <summary>
@@ -60,11 +83,46 @@ namespace AutoGenJobs.Commands
         /// </summary>
         public int CurrentCommandIndex { get; set; }
 
+        /// <summary>
+        /// Prefab 编辑上下文（当处于 CreateOrEditPrefab 的嵌套命令中时有效）
+        /// </summary>
+        public PrefabEditContext PrefabContext { get; private set; }
+
+        /// <summary>
+        /// 是否处于 Prefab 编辑模式
+        /// </summary>
+        public bool IsInPrefabEditMode => PrefabContext != null && PrefabContext.IsValid;
+
         public CommandContext(Core.JobData job, Core.JobLogger logger)
         {
             Job = job;
             Logger = logger;
             VarTable = new Dictionary<string, Object>();
+        }
+
+        /// <summary>
+        /// 进入 Prefab 编辑模式
+        /// </summary>
+        public void EnterPrefabEditMode(GameObject prefabRoot, Scene prefabContentsScene)
+        {
+            PrefabContext = new PrefabEditContext
+            {
+                PrefabRoot = prefabRoot,
+                PrefabContentsScene = prefabContentsScene
+            };
+            Logger.Debug($"Entered Prefab edit mode: {prefabRoot.name}");
+        }
+
+        /// <summary>
+        /// 退出 Prefab 编辑模式
+        /// </summary>
+        public void ExitPrefabEditMode()
+        {
+            if (PrefabContext != null)
+            {
+                Logger.Debug($"Exited Prefab edit mode");
+                PrefabContext = null;
+            }
         }
 
         /// <summary>
@@ -106,6 +164,7 @@ namespace AutoGenJobs.Commands
 
         /// <summary>
         /// 解析目标引用
+        /// 修复 B：在 Prefab 编辑模式下，限制查找范围到 Prefab 内部
         /// </summary>
         public Object ResolveTarget(Core.TargetRef target)
         {
@@ -175,12 +234,76 @@ namespace AutoGenJobs.Commands
 
         /// <summary>
         /// 通过层级路径查找 GameObject
+        /// 修复 B：在 Prefab 编辑模式下，只在 Prefab 内容中查找
         /// </summary>
         public GameObject FindGameObjectByPath(string path)
         {
             if (string.IsNullOrEmpty(path))
                 return null;
 
+            // ============================================================
+            // 修复 B: Prefab 编辑模式下，限制查找范围
+            // ============================================================
+            if (IsInPrefabEditMode)
+            {
+                return FindGameObjectInPrefab(path);
+            }
+
+            // 正常模式：在当前活动场景中查找
+            return FindGameObjectInActiveScene(path);
+        }
+
+        /// <summary>
+        /// 在 Prefab 内部查找 GameObject
+        /// 路径被解释为相对于 PrefabRoot 的路径
+        /// </summary>
+        private GameObject FindGameObjectInPrefab(string path)
+        {
+            if (PrefabContext?.PrefabRoot == null)
+            {
+                Logger.Error("PrefabEditContext is invalid");
+                return null;
+            }
+
+            var root = PrefabContext.PrefabRoot;
+
+            // 如果路径为空或是根名称，返回根对象
+            if (string.IsNullOrEmpty(path) || path == root.name)
+            {
+                return root;
+            }
+
+            // 分解路径
+            var parts = path.Split('/');
+            Transform current = root.transform;
+
+            // 检查第一个部分是否是根名称，如果是则跳过
+            int startIndex = 0;
+            if (parts.Length > 0 && parts[0] == root.name)
+            {
+                startIndex = 1;
+            }
+
+            // 从 startIndex 开始在 Prefab 内部查找
+            for (int i = startIndex; i < parts.Length; i++)
+            {
+                var child = current.Find(parts[i]);
+                if (child == null)
+                {
+                    Logger.Warning($"[PrefabEdit] Child not found in prefab: {parts[i]} (full path: {path})");
+                    return null;
+                }
+                current = child;
+            }
+
+            return current.gameObject;
+        }
+
+        /// <summary>
+        /// 在活动场景中查找 GameObject
+        /// </summary>
+        private GameObject FindGameObjectInActiveScene(string path)
+        {
             // 尝试直接查找
             var go = GameObject.Find(path);
             if (go != null)
@@ -192,7 +315,7 @@ namespace AutoGenJobs.Commands
                 return null;
 
             // 查找根对象
-            var rootObjects = UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects();
+            var rootObjects = SceneManager.GetActiveScene().GetRootGameObjects();
             GameObject current = null;
 
             foreach (var root in rootObjects)
@@ -217,6 +340,97 @@ namespace AutoGenJobs.Commands
             }
 
             return current;
+        }
+
+        /// <summary>
+        /// 创建 GameObject（考虑 Prefab 编辑模式）
+        /// 修复 B：在 Prefab 编辑模式下，新对象必须作为 Prefab 子对象创建
+        /// </summary>
+        public GameObject CreateGameObject(string name, string parentPath = null)
+        {
+            GameObject go = new GameObject(name);
+
+            if (IsInPrefabEditMode)
+            {
+                // Prefab 编辑模式：默认父对象是 PrefabRoot
+                Transform parent = PrefabContext.PrefabRoot.transform;
+
+                if (!string.IsNullOrEmpty(parentPath))
+                {
+                    var parentGo = FindGameObjectInPrefab(parentPath);
+                    if (parentGo != null)
+                    {
+                        parent = parentGo.transform;
+                    }
+                    else
+                    {
+                        Logger.Warning($"[PrefabEdit] Parent not found: {parentPath}, using prefab root");
+                    }
+                }
+
+                go.transform.SetParent(parent, false);
+                Logger.Debug($"[PrefabEdit] Created GameObject '{name}' under '{parent.name}'");
+            }
+            else
+            {
+                // 正常模式
+                if (!string.IsNullOrEmpty(parentPath))
+                {
+                    var parent = FindGameObjectByPath(parentPath);
+                    if (parent != null)
+                    {
+                        go.transform.SetParent(parent.transform, false);
+                    }
+                }
+            }
+
+            return go;
+        }
+
+        /// <summary>
+        /// 验证对象是否在当前有效上下文中
+        /// 用于防止跨上下文操作
+        /// </summary>
+        public bool ValidateObjectInContext(Object obj)
+        {
+            if (obj == null) return false;
+
+            if (IsInPrefabEditMode)
+            {
+                // 在 Prefab 编辑模式下，只允许操作 Prefab 内的对象
+                if (obj is GameObject go)
+                {
+                    return IsObjectInPrefab(go.transform);
+                }
+                else if (obj is Component comp)
+                {
+                    return IsObjectInPrefab(comp.transform);
+                }
+                // Asset 引用允许
+                return true;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// 检查对象是否在当前 Prefab 内
+        /// </summary>
+        private bool IsObjectInPrefab(Transform obj)
+        {
+            if (PrefabContext?.PrefabRoot == null) return false;
+
+            var root = PrefabContext.PrefabRoot.transform;
+            var current = obj;
+
+            while (current != null)
+            {
+                if (current == root)
+                    return true;
+                current = current.parent;
+            }
+
+            return false;
         }
 
         /// <summary>

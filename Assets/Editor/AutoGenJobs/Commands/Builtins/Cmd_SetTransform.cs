@@ -7,6 +7,7 @@ namespace AutoGenJobs.Commands.Builtins
 {
     /// <summary>
     /// 设置 Transform 命令
+    /// 支持 Prefab 编辑模式
     /// </summary>
     public class Cmd_SetTransform : IJobCommand
     {
@@ -45,10 +46,17 @@ namespace AutoGenJobs.Commands.Builtins
                 return CommandExecResult.Fail($"Target is not a GameObject or Component: {targetObj.GetType().Name}");
             }
 
+            // 验证对象在当前上下文中
+            if (!ctx.ValidateObjectInContext(transform.gameObject))
+            {
+                return CommandExecResult.Fail($"Object '{transform.gameObject.name}' is not in the current edit context");
+            }
+
             var space = args["space"]?.ToString()?.ToLower() ?? "local";
             bool isWorld = space == "world";
 
-            ctx.Logger.Info($"Setting transform for {transform.gameObject.name} (space={space})");
+            var logPrefix = ctx.IsInPrefabEditMode ? "[PrefabEdit] " : "";
+            ctx.Logger.Info($"{logPrefix}Setting transform for {transform.gameObject.name} (space={space})");
 
             if (ctx.DryRun)
             {
@@ -56,7 +64,11 @@ namespace AutoGenJobs.Commands.Builtins
                 return CommandExecResult.Ok("DryRun: would set transform");
             }
 
-            Undo.RecordObject(transform, "Set Transform");
+            // Prefab 编辑模式下不注册 Undo
+            if (!ctx.IsInPrefabEditMode)
+            {
+                Undo.RecordObject(transform, "Set Transform");
+            }
 
             // Position
             var posToken = args["position"];
@@ -70,7 +82,7 @@ namespace AutoGenJobs.Commands.Builtins
                     else
                         transform.localPosition = pos.Value;
 
-                    ctx.Logger.Debug($"Set position: {pos.Value} ({space})");
+                    ctx.Logger.Debug($"{logPrefix}Set position: {pos.Value} ({space})");
                 }
             }
 
@@ -86,7 +98,7 @@ namespace AutoGenJobs.Commands.Builtins
                     else
                         transform.localEulerAngles = rot.Value;
 
-                    ctx.Logger.Debug($"Set rotation: {rot.Value} ({space})");
+                    ctx.Logger.Debug($"{logPrefix}Set rotation: {rot.Value} ({space})");
                 }
             }
 
@@ -98,11 +110,14 @@ namespace AutoGenJobs.Commands.Builtins
                 if (scale.HasValue)
                 {
                     transform.localScale = scale.Value;
-                    ctx.Logger.Debug($"Set scale: {scale.Value}");
+                    ctx.Logger.Debug($"{logPrefix}Set scale: {scale.Value}");
                 }
             }
 
-            EditorUtility.SetDirty(transform.gameObject);
+            if (!ctx.IsInPrefabEditMode)
+            {
+                EditorUtility.SetDirty(transform.gameObject);
+            }
 
             return CommandExecResult.Ok($"Set transform for {transform.gameObject.name}");
         }

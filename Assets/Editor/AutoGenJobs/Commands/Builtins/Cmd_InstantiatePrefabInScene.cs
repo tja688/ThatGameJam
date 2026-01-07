@@ -7,6 +7,7 @@ namespace AutoGenJobs.Commands.Builtins
 {
     /// <summary>
     /// 在场景中实例化 Prefab 命令
+    /// 修复 C：添加 ensure 语义，避免重复实例化
     /// </summary>
     public class Cmd_InstantiatePrefabInScene : IJobCommand
     {
@@ -16,6 +17,12 @@ namespace AutoGenJobs.Commands.Builtins
         {
             if (args == null)
                 return CommandExecResult.Fail("Missing args");
+
+            // 检查是否在 Prefab 编辑模式（不允许）
+            if (ctx.IsInPrefabEditMode)
+            {
+                return CommandExecResult.Fail("InstantiatePrefabInScene is not allowed in Prefab edit mode");
+            }
 
             // 获取 Prefab
             var prefabGuid = args["prefabGuid"]?.ToString();
@@ -31,14 +38,51 @@ namespace AutoGenJobs.Commands.Builtins
             var parentPath = args["parentPath"]?.ToString();
             var nameOverride = args["nameOverride"]?.ToString();
 
+            // ensure 模式：如果对象已存在，复用而不是重复创建
+            var ensure = args["ensure"]?.ToObject<bool>() ?? false;
+            var ensureTag = args["ensureTag"]?.ToString();
+
+            var finalName = nameOverride ?? prefab.name;
+
             ctx.Logger.Info($"Instantiating prefab: {prefab.name}" +
                            (string.IsNullOrEmpty(parentPath) ? "" : $" under {parentPath}") +
-                           (string.IsNullOrEmpty(nameOverride) ? "" : $" as {nameOverride}"));
+                           (string.IsNullOrEmpty(nameOverride) ? "" : $" as {nameOverride}") +
+                           (ensure ? " (ensure mode)" : ""));
 
             if (ctx.DryRun)
             {
                 ctx.Logger.Info("[DryRun] Would instantiate prefab");
                 return CommandExecResult.Ok("DryRun: would instantiate prefab");
+            }
+
+            GameObject instance = null;
+
+            // ============================================================
+            // 修复 C: ensure 模式 - 尝试查找已存在的实例
+            // ============================================================
+            if (ensure)
+            {
+                instance = TryFindExisting(ctx, finalName, parentPath, ensureTag);
+                if (instance != null)
+                {
+                    ctx.Logger.Info($"[Ensure] Found existing instance: {instance.name}");
+
+                    // 更新位置（如果提供了新值）
+                    var posToken = args["position"];
+                    if (posToken != null)
+                    {
+                        var pos = ParseVector3(posToken);
+                        if (pos.HasValue)
+                        {
+                            instance.transform.localPosition = pos.Value;
+                        }
+                    }
+
+                    return CommandExecResult.Ok(
+                        $"Reused existing instance {instance.name}",
+                        new System.Collections.Generic.Dictionary<string, Object> { { "instance", instance } }
+                    );
+                }
             }
 
             // 查找父对象
@@ -57,7 +101,7 @@ namespace AutoGenJobs.Commands.Builtins
             }
 
             // 实例化
-            var instance = PrefabUtility.InstantiatePrefab(prefab) as GameObject;
+            instance = PrefabUtility.InstantiatePrefab(prefab) as GameObject;
             if (instance == null)
             {
                 // Fallback: 使用 Object.Instantiate
@@ -81,11 +125,19 @@ namespace AutoGenJobs.Commands.Builtins
                 instance.name = nameOverride;
             }
 
-            // 设置位置（可选）
-            var posToken = args["position"];
-            if (posToken != null)
+            // 如果提供了 ensureTag，添加标记
+            if (!string.IsNullOrEmpty(ensureTag))
             {
-                var pos = ParseVector3(posToken);
+                var marker = instance.AddComponent<AutoGenMarker>();
+                marker.tag = ensureTag;
+                marker.hideFlags = HideFlags.HideInInspector;
+            }
+
+            // 设置位置（可选）
+            var positionToken = args["position"];
+            if (positionToken != null)
+            {
+                var pos = ParseVector3(positionToken);
                 if (pos.HasValue)
                 {
                     instance.transform.localPosition = pos.Value;
@@ -98,6 +150,38 @@ namespace AutoGenJobs.Commands.Builtins
                 $"Instantiated {instance.name}",
                 new System.Collections.Generic.Dictionary<string, Object> { { "instance", instance } }
             );
+        }
+
+        /// <summary>
+        /// 尝试查找已存在的实例（ensure 模式）
+        /// </summary>
+        private GameObject TryFindExisting(CommandContext ctx, string name, string parentPath, string ensureTag)
+        {
+            // 优先通过 ensureTag 查找
+            if (!string.IsNullOrEmpty(ensureTag))
+            {
+                var markers = Object.FindObjectsOfType<AutoGenMarker>();
+                foreach (var marker in markers)
+                {
+                    if (marker.tag == ensureTag)
+                    {
+                        return marker.gameObject;
+                    }
+                }
+            }
+
+            // 通过路径查找
+            string fullPath;
+            if (string.IsNullOrEmpty(parentPath))
+            {
+                fullPath = name;
+            }
+            else
+            {
+                fullPath = $"{parentPath}/{name}";
+            }
+
+            return ctx.FindGameObjectByPath(fullPath);
         }
 
         private Vector3? ParseVector3(JToken token)

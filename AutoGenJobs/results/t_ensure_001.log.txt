@@ -1,0 +1,9 @@
+[2026-01-07T10:01:33.826Z][Info] Processing job: t_ensure_001
+[2026-01-07T10:01:33.831Z][Info][Cmd:0] Executing: CreateGameObject
+[2026-01-07T10:01:33.832Z][Info][Cmd:0] Creating GameObject: AutoGen_EnsureRoot (ensure mode)
+[2026-01-07T10:01:33.840Z][Debug][Cmd:0] Set position: (1.00, 2.00, 0.00)
+[2026-01-07T10:01:33.840Z][Debug][Cmd:0] Set scale: (1.00, 1.00, 1.00)
+[2026-01-07T10:01:33.840Z][Info][Cmd:0] Created GameObject: AutoGen_EnsureRoot
+[2026-01-07T10:01:33.841Z][Debug][Cmd:0] Set variable $root = AutoGen_EnsureRoot (UnityEngine.GameObject)
+[2026-01-07T10:01:33.841Z][Info][Cmd:0] Command CreateGameObject completed
+[2026-01-07T10:01:33.842Z][Info][Cmd:0] Job completed successfully

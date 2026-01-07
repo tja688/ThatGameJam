@@ -10,6 +10,7 @@ namespace AutoGenJobs.Commands.Builtins
     /// <summary>
     /// 创建或编辑 Prefab 命令
     /// 支持嵌套命令在 Prefab 内部执行
+    /// 修复 B：使用 PrefabEditContext 隔离 Prefab 编辑，防止污染场景
     /// </summary>
     public class Cmd_CreateOrEditPrefab : IJobCommand
     {
@@ -40,25 +41,7 @@ namespace AutoGenJobs.Commands.Builtins
             }
 
             // 确保目录存在
-            var directory = Path.GetDirectoryName(prefabPath);
-            if (!string.IsNullOrEmpty(directory))
-            {
-                var normalizedDir = PathUtil.NormalizeAssetPath(directory);
-                if (!AssetDatabase.IsValidFolder(normalizedDir))
-                {
-                    var parts = normalizedDir.Split('/');
-                    var currentPath = parts[0];
-                    for (int i = 1; i < parts.Length; i++)
-                    {
-                        var nextPath = currentPath + "/" + parts[i];
-                        if (!AssetDatabase.IsValidFolder(nextPath))
-                        {
-                            AssetDatabase.CreateFolder(currentPath, parts[i]);
-                        }
-                        currentPath = nextPath;
-                    }
-                }
-            }
+            EnsureDirectoryExists(prefabPath);
 
             GameObject prefabRoot = null;
             bool isNew = false;
@@ -78,7 +61,7 @@ namespace AutoGenJobs.Commands.Builtins
                 var tempGo = new GameObject(rootName);
 
                 // 先保存为 Prefab
-                prefabRoot = PrefabUtility.SaveAsPrefabAsset(tempGo, prefabPath);
+                PrefabUtility.SaveAsPrefabAsset(tempGo, prefabPath);
                 Object.DestroyImmediate(tempGo);
 
                 // 重新加载以进行编辑
@@ -91,16 +74,24 @@ namespace AutoGenJobs.Commands.Builtins
 
             try
             {
+                // ============================================================
+                // 修复 B: 进入 Prefab 编辑模式
+                // 这会改变 CommandContext 的行为，使所有对象查找限制在 Prefab 内
+                // ============================================================
+                var prefabScene = prefabRoot.scene;
+                ctx.EnterPrefabEditMode(prefabRoot, prefabScene);
+
                 // 将 prefabRoot 注入变量表
                 ctx.SetVar("$prefabRoot", prefabRoot);
 
                 // 执行嵌套编辑命令
                 if (editsToken != null && editsToken.Count > 0)
                 {
-                    ctx.Logger.Debug($"Executing {editsToken.Count} nested edits");
+                    ctx.Logger.Debug($"Executing {editsToken.Count} nested edits in Prefab context");
 
-                    foreach (var editToken in editsToken)
+                    for (int i = 0; i < editsToken.Count; i++)
                     {
+                        var editToken = editsToken[i];
                         if (editToken.Type != JTokenType.Object)
                             continue;
 
@@ -111,7 +102,14 @@ namespace AutoGenJobs.Commands.Builtins
 
                         if (string.IsNullOrEmpty(cmdName))
                         {
-                            ctx.Logger.Warning("Nested edit missing 'cmd'");
+                            ctx.Logger.Warning($"Nested edit [{i}] missing 'cmd'");
+                            continue;
+                        }
+
+                        // 禁止在 Prefab 编辑中调用某些危险命令
+                        if (IsProhibitedInPrefabEdit(cmdName))
+                        {
+                            ctx.Logger.Warning($"Command '{cmdName}' is not allowed in Prefab edit mode");
                             continue;
                         }
 
@@ -122,15 +120,18 @@ namespace AutoGenJobs.Commands.Builtins
                             continue;
                         }
 
-                        ctx.Logger.Debug($"Executing nested: {cmdName}");
+                        ctx.Logger.Debug($"[PrefabEdit] Executing nested [{i}]: {cmdName}");
                         var result = command.Execute(ctx, cmdArgs);
 
                         if (!result.Success)
                         {
+                            // 退出 Prefab 编辑模式
+                            ctx.ExitPrefabEditMode();
+
                             // 保存当前状态并报告错误
                             PrefabUtility.SaveAsPrefabAsset(prefabRoot, prefabPath);
                             PrefabUtility.UnloadPrefabContents(prefabRoot);
-                            return CommandExecResult.Fail($"Nested command {cmdName} failed: {result.Message}", result.Exception);
+                            return CommandExecResult.Fail($"Nested command [{i}] {cmdName} failed: {result.Message}", result.Exception);
                         }
 
                         // 处理输出变量
@@ -154,8 +155,16 @@ namespace AutoGenJobs.Commands.Builtins
             }
             finally
             {
+                // ============================================================
+                // 修复 B: 退出 Prefab 编辑模式
+                // ============================================================
+                ctx.ExitPrefabEditMode();
+
                 // 卸载 Prefab 内容
-                PrefabUtility.UnloadPrefabContents(prefabRoot);
+                if (prefabRoot != null)
+                {
+                    PrefabUtility.UnloadPrefabContents(prefabRoot);
+                }
             }
 
             // 重新加载以获取最终资产引用
@@ -165,6 +174,49 @@ namespace AutoGenJobs.Commands.Builtins
                 isNew ? $"Created prefab {prefabPath}" : $"Edited prefab {prefabPath}",
                 new Dictionary<string, Object> { { "prefab", finalPrefab } }
             );
+        }
+
+        /// <summary>
+        /// 确保目录存在
+        /// </summary>
+        private void EnsureDirectoryExists(string assetPath)
+        {
+            var directory = Path.GetDirectoryName(assetPath);
+            if (!string.IsNullOrEmpty(directory))
+            {
+                var normalizedDir = PathUtil.NormalizeAssetPath(directory);
+                if (!AssetDatabase.IsValidFolder(normalizedDir))
+                {
+                    var parts = normalizedDir.Split('/');
+                    var currentPath = parts[0];
+                    for (int i = 1; i < parts.Length; i++)
+                    {
+                        var nextPath = currentPath + "/" + parts[i];
+                        if (!AssetDatabase.IsValidFolder(nextPath))
+                        {
+                            AssetDatabase.CreateFolder(currentPath, parts[i]);
+                        }
+                        currentPath = nextPath;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// 检查命令是否在 Prefab 编辑模式中被禁止
+        /// </summary>
+        private bool IsProhibitedInPrefabEdit(string cmdName)
+        {
+            // 这些命令操作场景或外部资产，在 Prefab 编辑中禁止
+            var prohibited = new HashSet<string>(System.StringComparer.OrdinalIgnoreCase)
+            {
+                "InstantiatePrefabInScene",  // 会操作场景
+                "CreateOrEditPrefab",         // 不允许嵌套 Prefab 编辑
+                "SaveAssets",                 // 可能导致意外保存
+                "ImportAssets",               // 与 Prefab 编辑无关
+            };
+
+            return prohibited.Contains(cmdName);
         }
     }
 }

@@ -19,6 +19,10 @@ namespace AutoGenJobs.Core
         private static bool _initialized;
         private static int _jobsProcessedThisTick;
 
+        // 崩溃恢复：最大重试次数和超时阈值
+        private const int MAX_ATTEMPTS = 3;
+        private static readonly TimeSpan STALE_JOB_TIMEOUT = TimeSpan.FromMinutes(5);
+
         static JobRunner()
         {
             Initialize();
@@ -37,12 +41,8 @@ namespace AutoGenJobs.Core
             // 确保目录存在
             AutoGenSettings.EnsureDirectoriesExist();
 
-            // 恢复 working 中的 Job
-            var recovered = _queue.RecoverWorkingJobs();
-            if (recovered > 0)
-            {
-                AutoGenLog.Info($"Recovered {recovered} jobs from working directory");
-            }
+            // 恢复 working 中的 Job（带状态检查）
+            RecoverWorkingJobsWithState();
 
             // 注册 Tick
             EditorApplication.update -= Tick;
@@ -50,6 +50,107 @@ namespace AutoGenJobs.Core
 
             _initialized = true;
             AutoGenLog.Info($"JobRunner initialized (version {AutoGenSettings.RUNNER_VERSION})");
+        }
+
+        /// <summary>
+        /// 带状态检查的崩溃恢复
+        /// </summary>
+        private static void RecoverWorkingJobsWithState()
+        {
+            var workingJobs = _queue.GetWorkingJobs();
+            int recovered = 0;
+            int deadLettered = 0;
+
+            foreach (var jobFile in workingJobs)
+            {
+                var fileName = Path.GetFileNameWithoutExtension(jobFile);
+                var stateFile = Path.Combine(AutoGenSettings.WorkingPath, $"{fileName}.state.json");
+
+                // 检查状态文件
+                if (File.Exists(stateFile))
+                {
+                    try
+                    {
+                        var stateJson = File.ReadAllText(stateFile);
+                        var state = JobState.FromJson(stateJson);
+
+                        // 检查重试次数
+                        if (state.attempt >= MAX_ATTEMPTS)
+                        {
+                            AutoGenLog.Warning($"Job {state.jobId} exceeded max attempts ({MAX_ATTEMPTS}), moving to dead");
+                            WriteRecoveryFailResult(state.jobId, $"Exceeded max attempts ({MAX_ATTEMPTS})");
+                            _queue.MoveToDead(jobFile);
+                            File.Delete(stateFile);
+                            deadLettered++;
+                            continue;
+                        }
+
+                        // 检查是否超时（可能死锁）
+                        if (state.startedAtUtc != null)
+                        {
+                            var started = DateTime.Parse(state.startedAtUtc);
+                            if (DateTime.UtcNow - started > STALE_JOB_TIMEOUT)
+                            {
+                                AutoGenLog.Warning($"Job {state.jobId} timed out (started at {state.startedAtUtc}), moving to dead");
+                                WriteRecoveryFailResult(state.jobId, $"Job timed out after {STALE_JOB_TIMEOUT.TotalMinutes} minutes");
+                                _queue.MoveToDead(jobFile);
+                                File.Delete(stateFile);
+                                deadLettered++;
+                                continue;
+                            }
+                        }
+
+                        // 增加重试次数并恢复
+                        state.attempt++;
+                        File.WriteAllText(stateFile, state.ToJson());
+
+                        if (_queue.MoveBackToInbox(jobFile))
+                        {
+                            // 状态文件也移动
+                            var inboxStateFile = Path.Combine(AutoGenSettings.InboxPath, $"{fileName}.state.json");
+                            if (File.Exists(stateFile))
+                                File.Move(stateFile, inboxStateFile);
+
+                            recovered++;
+                            AutoGenLog.Info($"Recovered job {state.jobId} (attempt {state.attempt})");
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        AutoGenLog.Error($"Failed to process state file for {jobFile}: {e.Message}");
+                        _queue.MoveToDead(jobFile);
+                        deadLettered++;
+                    }
+                }
+                else
+                {
+                    // 没有状态文件，创建一个并恢复
+                    var state = new JobState { attempt = 1 };
+
+                    if (_queue.MoveBackToInbox(jobFile))
+                    {
+                        recovered++;
+                        AutoGenLog.Info($"Recovered job without state: {Path.GetFileName(jobFile)}");
+                    }
+                }
+            }
+
+            if (recovered > 0 || deadLettered > 0)
+            {
+                AutoGenLog.Info($"Recovery: {recovered} jobs recovered, {deadLettered} dead-lettered");
+            }
+        }
+
+        /// <summary>
+        /// 写入恢复失败的结果
+        /// </summary>
+        private static void WriteRecoveryFailResult(string jobId, string reason)
+        {
+            if (string.IsNullOrEmpty(jobId)) return;
+
+            var result = new JobResult(jobId);
+            result.SetFailed("RECOVERY_FAILED", reason);
+            _queue.WriteResult(result);
         }
 
         /// <summary>
@@ -102,6 +203,7 @@ namespace AutoGenJobs.Core
 
         /// <summary>
         /// 处理单个 Job
+        /// 关键修复：先认领（move）再读取，避免半写入问题
         /// </summary>
         private static void ProcessJob(string jobFilePath)
         {
@@ -109,17 +211,54 @@ namespace AutoGenJobs.Core
             JobData job = null;
             JobLogger logger = null;
             JobResult result = null;
+            string stateFilePath = null;
 
             try
             {
-                // 读取 Job 文件
-                var json = File.ReadAllText(jobFilePath);
-                job = JobData.FromJson(json);
+                // ============================================================
+                // 修复 A: 先认领（move 到 working），再读取文件
+                // 这样可以避免读取到半写入的文件
+                // ============================================================
+                if (!_queue.MoveToWorking(jobFilePath, out workingPath))
+                {
+                    // 移动失败 - 可能被其他进程锁定（文件正在写入）或已被处理
+                    AutoGenLog.Debug($"Failed to claim job (likely still being written): {Path.GetFileName(jobFilePath)}");
+                    return;
+                }
+
+                // 从 working 目录读取文件（而非原 inbox）
+                string json;
+                try
+                {
+                    json = File.ReadAllText(workingPath);
+                }
+                catch (Exception e)
+                {
+                    AutoGenLog.Error($"Failed to read job file from working: {e.Message}");
+                    _queue.MoveToDead(workingPath);
+                    return;
+                }
+
+                // 解析 JSON
+                try
+                {
+                    job = JobData.FromJson(json);
+                }
+                catch (Exception e)
+                {
+                    AutoGenLog.Error($"Failed to parse job JSON: {e.Message}");
+                    // 写入解析失败的结果
+                    var parseResult = new JobResult("unknown_" + Path.GetFileNameWithoutExtension(workingPath));
+                    parseResult.SetFailed("JSON_PARSE_ERROR", e.Message);
+                    _queue.WriteResult(parseResult);
+                    _queue.MoveToDead(workingPath);
+                    return;
+                }
 
                 if (job == null)
                 {
-                    AutoGenLog.Error($"Failed to parse job file: {jobFilePath}");
-                    _queue.MoveToDead(jobFilePath);
+                    AutoGenLog.Error($"Parsed job is null: {workingPath}");
+                    _queue.MoveToDead(workingPath);
                     return;
                 }
 
@@ -128,11 +267,24 @@ namespace AutoGenJobs.Core
 
                 logger.Info($"Processing job: {job.jobId}");
 
+                // ============================================================
+                // 修复 C: 写入状态文件，用于崩溃恢复
+                // ============================================================
+                stateFilePath = Path.Combine(AutoGenSettings.WorkingPath, $"{job.jobId}.state.json");
+                var existingState = LoadJobState(stateFilePath);
+                var state = existingState ?? new JobState();
+                state.jobId = job.jobId;
+                state.status = "RUNNING";
+                state.startedAtUtc = DateTime.UtcNow.ToString("o");
+                state.currentCommandIndex = 0;
+                SaveJobState(stateFilePath, state);
+
                 // 检查是否已完成（幂等检查）
                 if (_queue.IsJobCompleted(job.jobId))
                 {
                     logger.Info("Job already completed, skipping");
-                    File.Delete(jobFilePath);
+                    CleanupStateFile(stateFilePath);
+                    File.Delete(workingPath);
                     return;
                 }
 
@@ -143,7 +295,8 @@ namespace AutoGenJobs.Core
                     result.SetFailed("SCHEMA_ERROR", $"Unsupported schema version: {job.schemaVersion}");
                     _queue.WriteResult(result);
                     _queue.WriteLog(logger);
-                    _queue.MoveToDead(jobFilePath);
+                    CleanupStateFile(stateFilePath);
+                    _queue.MoveToDead(workingPath);
                     return;
                 }
 
@@ -153,10 +306,22 @@ namespace AutoGenJobs.Core
                 {
                     if (check.IsWaiting)
                     {
-                        // WAITING 状态：不移动文件，等待下次处理
+                        // WAITING 状态：移回 inbox，等待下次处理
                         logger.Info($"Job waiting: {check.FailReason}");
                         result.SetWaiting(check.WaitReason.Value, check.FailReason);
                         _queue.WriteResult(result);
+
+                        // 保持状态文件，移回 inbox
+                        state.status = "WAITING";
+                        SaveJobState(stateFilePath, state);
+                        _queue.MoveBackToInbox(workingPath);
+
+                        // 状态文件也移回
+                        var inboxStatePath = Path.Combine(AutoGenSettings.InboxPath, $"{job.jobId}.state.json");
+                        if (File.Exists(stateFilePath))
+                        {
+                            try { File.Move(stateFilePath, inboxStatePath); } catch { }
+                        }
                         return;
                     }
                     else
@@ -166,16 +331,10 @@ namespace AutoGenJobs.Core
                         result.SetFailed("PRECONDITION_FAILED", check.FailReason);
                         _queue.WriteResult(result);
                         _queue.WriteLog(logger);
-                        _queue.MoveToDead(jobFilePath);
+                        CleanupStateFile(stateFilePath);
+                        _queue.MoveToDead(workingPath);
                         return;
                     }
-                }
-
-                // 移动到 working
-                if (!_queue.MoveToWorking(jobFilePath, out workingPath))
-                {
-                    logger.Warning("Failed to move job to working (may be locked by another process)");
-                    return;
                 }
 
                 // 创建执行上下文
@@ -188,6 +347,10 @@ namespace AutoGenJobs.Core
                     var cmdData = job.commands[i];
                     ctx.CurrentCommandIndex = i;
                     logger.SetCurrentCommand(i);
+
+                    // 更新状态文件中的当前命令索引
+                    state.currentCommandIndex = i;
+                    SaveJobState(stateFilePath, state);
 
                     // 获取命令
                     var command = CommandRegistry.GetCommand(cmdData.cmd);
@@ -256,7 +419,8 @@ namespace AutoGenJobs.Core
                 _queue.WriteResult(result);
                 _queue.WriteLog(logger);
 
-                // 移动到 done
+                // 清理状态文件并移动到 done
+                CleanupStateFile(stateFilePath);
                 if (workingPath != null)
                 {
                     _queue.MoveToDone(workingPath);
@@ -278,6 +442,9 @@ namespace AutoGenJobs.Core
                     _queue.WriteLog(logger);
                 }
 
+                // 清理状态文件
+                CleanupStateFile(stateFilePath);
+
                 // 移动到 dead
                 if (workingPath != null && File.Exists(workingPath))
                 {
@@ -288,6 +455,52 @@ namespace AutoGenJobs.Core
                     _queue.MoveToDead(jobFilePath);
                 }
             }
+        }
+
+        /// <summary>
+        /// 加载 Job 状态文件
+        /// </summary>
+        private static JobState LoadJobState(string path)
+        {
+            if (!File.Exists(path)) return null;
+            try
+            {
+                var json = File.ReadAllText(path);
+                return JobState.FromJson(json);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 保存 Job 状态文件
+        /// </summary>
+        private static void SaveJobState(string path, JobState state)
+        {
+            try
+            {
+                File.WriteAllText(path, state.ToJson());
+            }
+            catch (Exception e)
+            {
+                AutoGenLog.Warning($"Failed to save job state: {e.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 清理状态文件
+        /// </summary>
+        private static void CleanupStateFile(string path)
+        {
+            if (string.IsNullOrEmpty(path)) return;
+            try
+            {
+                if (File.Exists(path))
+                    File.Delete(path);
+            }
+            catch { }
         }
 
         /// <summary>
@@ -314,6 +527,29 @@ namespace AutoGenJobs.Core
             if (EditorApplication.isUpdating)
                 return "Updating...";
             return "Running";
+        }
+    }
+
+    /// <summary>
+    /// Job 状态（用于崩溃恢复）
+    /// </summary>
+    [Serializable]
+    public class JobState
+    {
+        public string jobId;
+        public string status;
+        public string startedAtUtc;
+        public int currentCommandIndex;
+        public int attempt;
+
+        public string ToJson()
+        {
+            return UnityEngine.JsonUtility.ToJson(this, true);
+        }
+
+        public static JobState FromJson(string json)
+        {
+            return UnityEngine.JsonUtility.FromJson<JobState>(json);
         }
     }
 }
