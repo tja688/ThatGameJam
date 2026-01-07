@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "jobType": "AutoGen",
+  "jobId": "example_create_sprite_001",
+  "createdAtUtc": "2026-01-07T12:00:00Z",
+  "runnerMinVersion": 3,
+  "requiresTypes": ["UnityEngine.SpriteRenderer"],
+  "projectWriteRoot": "Assets/AutoGen",
+  "dryRun": false,
+  "commands": [
+    {
+      "cmd": "CreateGameObject",
+      "args": {
+        "name": "AutoGen_SpriteObject",
+        "position": [0, 0, 0]
+      },
+      "out": {
+        "go": "$spriteGO"
+      }
+    },
+    {
+      "cmd": "AddComponent",
+      "args": {
+        "target": { "ref": "$spriteGO" },
+        "type": "UnityEngine.SpriteRenderer"
+      },
+      "out": {
+        "component": "$sr"
+      }
+    },
+    {
+      "cmd": "SetSerializedProperty",
+      "args": {
+        "target": { "ref": "$sr" },
+        "propertyPath": "m_Color",
+        "value": [1, 0.5, 0, 1]
+      }
+    },
+    {
+      "cmd": "PingObject",
+      "args": {
+        "target": { "ref": "$spriteGO" }
+      }
+    }
+  ],
+  "meta": {
+    "author": "example",
+    "note": "Create a sprite game object with orange color"
+  }
+}

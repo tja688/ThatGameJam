@@ -1,5 +1,13 @@
 {
   "dependencies": {
+    "com.autogen.jobs": {
+      "version": "file:com.autogen.jobs",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {
+        "com.unity.nuget.newtonsoft-json": "3.2.1"
+      }
+    },
     "com.kybernetik.animancer": {
       "version": "file:com.kybernetik.animancer",
       "depth": 0,
