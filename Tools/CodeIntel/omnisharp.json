@@ -1,0 +1,19 @@
+{
+  "RoslynExtensionsOptions": {
+    "EnableDecompilationSupport": true,
+    "EnableAnalyzersSupport": false
+  },
+  "FormattingOptions": {
+    "EnableEditorConfigSupport": true
+  },
+  "FileOptions": {
+    "SystemExcludeSearchPatterns": [
+      "**/Library/**",
+      "**/Temp/**",
+      "**/Obj/**",
+      "**/Build/**",
+      "**/Logs/**",
+      "**/UserSettings/**"
+    ]
+  }
+}
