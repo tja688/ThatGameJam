@@ -31,7 +31,7 @@ namespace UnityCodeIntel.Editor
             if (_isRunning) return;
 
             _config = config;
-            Port = config.bridgePort > 0 ? config.bridgePort : 8080; // Default to 8080 or random
+            Port = config.bridgePort > 0 ? config.bridgePort : 8080;
             if (config.bridgePort == 0) Port = UnityEngine.Random.Range(30000, 40000);
 
             _listener = new HttpListener();
@@ -65,7 +65,6 @@ namespace UnityCodeIntel.Editor
             }
             if (_serverThread != null && _serverThread.IsAlive)
             {
-                // _serverThread.Abort(); // Obsolete, let it finish naturally via _isRunning check or exception
                 _serverThread = null;
             }
             Debug.Log("[CodeIntel] Bridge Server stopped.");
@@ -82,7 +81,6 @@ namespace UnityCodeIntel.Editor
                 }
                 catch (HttpListenerException)
                 {
-                    // Listener stopped
                     break;
                 }
                 catch (Exception e)
@@ -105,7 +103,6 @@ namespace UnityCodeIntel.Editor
             {
                 if (path == "/health" && request.HttpMethod == "GET")
                 {
-                    // ... Health ...
                     var health = new HealthApiResponse
                     {
                         ok = true,
@@ -119,28 +116,45 @@ namespace UnityCodeIntel.Editor
                     };
                     responseJson = JsonUtility.ToJson(health);
                 }
-                else if (path == "/v1/definition" && request.HttpMethod == "POST")
-                {
-                    var req = ReadJsonBody<LocationRequest>(request);
-                    var locations = Task.Run(() => _omnisharp.GetDefinition(req.file, req.line, req.col)).Result;
-                    responseJson = JsonUtility.ToJson(new CodeLocationApiResponse { ok = true, data = locations });
-                }
-                else if (path == "/v1/references" && request.HttpMethod == "POST")
-                {
-                    var req = ReadJsonBody<ReferencesRequest>(request);
-                    var locations = Task.Run(() => _omnisharp.GetReferences(req.file, req.line, req.col, req.includeDeclaration)).Result;
-                    responseJson = JsonUtility.ToJson(new CodeLocationApiResponse { ok = true, data = locations });
-                }
-                else if (path == "/v1/symbols" && request.HttpMethod == "POST")
-                {
-                    var req = ReadJsonBody<SymbolsRequest>(request);
-                    var locations = Task.Run(() => _omnisharp.GetSymbols(req.query)).Result;
-                    responseJson = JsonUtility.ToJson(new CodeLocationApiResponse { ok = true, data = locations });
-                }
                 else
                 {
-                    statusCode = 404;
-                    responseJson = "{\"ok\":false, \"error\":{\"code\":\"NOT_FOUND\"}}";
+                    // Fault Tolerance Check
+                    if (_omnisharp.Status != ServiceStatus.Running)
+                    {
+                        statusCode = 503;
+                        responseJson = JsonUtility.ToJson(new ApiResponse<object> 
+                        { 
+                            ok = false, 
+                            error = new ApiError 
+                            { 
+                                code = "OMNISHARP_DOWN", 
+                                message = $"OmniSharp backend is not ready. Current Status: {_omnisharp.Status}. Please wait or restart services." 
+                            } 
+                        });
+                    }
+                    else if (path == "/v1/definition" && request.HttpMethod == "POST")
+                    {
+                        var req = ReadJsonBody<LocationRequest>(request);
+                        var locations = Task.Run(() => _omnisharp.GetDefinition(req.file, req.line, req.col)).Result;
+                        responseJson = JsonUtility.ToJson(new CodeLocationApiResponse { ok = true, data = locations });
+                    }
+                    else if (path == "/v1/references" && request.HttpMethod == "POST")
+                    {
+                        var req = ReadJsonBody<ReferencesRequest>(request);
+                        var locations = Task.Run(() => _omnisharp.GetReferences(req.file, req.line, req.col, req.includeDeclaration)).Result;
+                        responseJson = JsonUtility.ToJson(new CodeLocationApiResponse { ok = true, data = locations });
+                    }
+                    else if (path == "/v1/symbols" && request.HttpMethod == "POST")
+                    {
+                        var req = ReadJsonBody<SymbolsRequest>(request);
+                        var locations = Task.Run(() => _omnisharp.GetSymbols(req.query)).Result;
+                        responseJson = JsonUtility.ToJson(new CodeLocationApiResponse { ok = true, data = locations });
+                    }
+                    else
+                    {
+                        statusCode = 404;
+                        responseJson = "{\"ok\":false, \"error\":{\"code\":\"NOT_FOUND\"}}";
+                    }
                 }
             }
             catch (Exception e)
@@ -174,7 +188,6 @@ namespace UnityCodeIntel.Editor
             }
         }
         
-        // Helper class for JsonUtility serialization
         [Serializable]
         private class HealthApiResponse : ApiResponse<HealthData> { }
 

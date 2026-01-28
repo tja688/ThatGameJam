@@ -55,14 +55,31 @@ namespace UnityCodeIntel.Editor
             using (new EditorGUILayout.HorizontalScope())
             {
                 EditorGUILayout.PrefixLabel("OmniSharp:");
-                if (omnisharp.IsRunning)
+                
+                var status = omnisharp.Status;
+                if (status == ServiceStatus.Running)
+                {
                     GUILayout.Label($"Running (PID: {omnisharp.Pid}, Port: {omnisharp.Port})", EditorStyles.wordWrappedLabel);
+                }
+                else if (status == ServiceStatus.Starting)
+                {
+                    GUILayout.Label("Starting... (Verifying Health)", EditorStyles.wordWrappedLabel);
+                }
+                else if (status == ServiceStatus.Error)
+                {
+                    Color oldColor = GUI.color;
+                    GUI.color = Color.red;
+                    GUILayout.Label("Error / Unhealthy", EditorStyles.wordWrappedLabel);
+                    GUI.color = oldColor;
+                }
                 else
+                {
                     GUILayout.Label("Stopped", EditorStyles.wordWrappedLabel);
+                }
             }
             
             // Health Check Status (Last successful ping)
-            if (omnisharp.IsRunning)
+            if (omnisharp.Status == ServiceStatus.Running || omnisharp.Status == ServiceStatus.Starting)
             {
                  long lastOk = omnisharp.LastOkTimestamp;
                  string lastOkStr = lastOk > 0 ? DateTimeOffset.FromUnixTimeMilliseconds(lastOk).LocalDateTime.ToString("HH:mm:ss") : "Never";
@@ -95,7 +112,7 @@ namespace UnityCodeIntel.Editor
             
             if (GUILayout.Button("Check Health"))
             {
-                _ = CodeIntelManager.OmniSharp.CheckHealthAsync();
+                _ = CodeIntelManager.OmniSharp.CheckHealthAsync(force: true);
             }
         }
 

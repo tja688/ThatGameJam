@@ -33,7 +33,6 @@ MonoBehaviour:
     - Assembly-CSharp
     - Assembly-CSharp-firstpass
     - AudioKit
-    - Documents.Editor
     - DOTween.Modules
     - DOTweenPro.Scripts
     - Kybernetik.Animancer

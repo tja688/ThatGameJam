@@ -1,9 +1,10 @@
-// Triggering restart after full package deployment
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
+using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
 using UnityCodeIntel.Editor.Models;
@@ -12,6 +13,14 @@ using Debug = UnityEngine.Debug;
 
 namespace UnityCodeIntel.Editor
 {
+    public enum ServiceStatus
+    {
+        Stopped,
+        Starting,
+        Running,
+        Error
+    }
+
     public class OmniSharpProcess
     {
         private Process _process;
@@ -21,10 +30,15 @@ namespace UnityCodeIntel.Editor
 
         public int Port { get; private set; }
         public int Pid => _process?.Id ?? 0;
-        public bool IsRunning => _process != null && !_process.HasExited;
+        
+        public ServiceStatus Status { get; private set; } = ServiceStatus.Stopped;
+        public bool IsRunning => Status == ServiceStatus.Running;
+        
         public string BaseUrl => $"http://127.0.0.1:{Port}";
         public long LastOkTimestamp { get; private set; }
         public string LogFilePath { get; private set; }
+
+        private readonly string[] _requiredFiles = { "OmniSharp.dll", "OmniSharp.deps.json" };
 
         public OmniSharpProcess()
         {
@@ -34,9 +48,9 @@ namespace UnityCodeIntel.Editor
 
         public void Start(string projectRoot, BridgeConfig config)
         {
-            if (IsRunning)
+            if (Status == ServiceStatus.Starting || Status == ServiceStatus.Running)
             {
-                Debug.LogWarning("[CodeIntel] OmniSharp is already running.");
+                Debug.LogWarning("[CodeIntel] OmniSharp is already running or starting.");
                 return;
             }
 
@@ -45,46 +59,42 @@ namespace UnityCodeIntel.Editor
 
             // Resolve paths
             string exePath = Path.GetFullPath(Path.Combine(projectRoot, config.omnisharpExePath));
+            
+            // 1. Pre-flight Checks
+            if (!CheckRequiredFiles(exePath))
+            {
+                Status = ServiceStatus.Error;
+                return;
+            }
+
             string slnPath = string.IsNullOrEmpty(config.solutionPath)
                 ? FindSolutionFile(projectRoot)
                 : Path.GetFullPath(Path.Combine(projectRoot, config.solutionPath));
 
-            if (!File.Exists(exePath))
-            {
-                Debug.LogError($"[CodeIntel] OmniSharp executable not found at: {exePath}");
-                return;
-            }
-
-            // Check for OmniSharp.dll (common failure point if packaging is incomplete)
-            string dllPath = Path.Combine(Path.GetDirectoryName(exePath), "OmniSharp.dll");
-            if (!File.Exists(dllPath))
-            {
-                Debug.LogError($"[CodeIntel] OmniSharp.dll missing at: {dllPath}. Please ensure you have downloaded the full OmniSharp package, not just the bootstrapper.");
-                return;
-            }
-
             if (string.IsNullOrEmpty(slnPath) || !File.Exists(slnPath))
             {
                 Debug.LogError($"[CodeIntel] Solution file not found. Project root: {projectRoot}");
+                Status = ServiceStatus.Error;
                 return;
             }
 
             // Determine port
             Port = config.omnisharpPort > 0 ? config.omnisharpPort : GetAvailablePort();
 
+            // 2. Port Occupancy Check
+            if (IsPortOccupied(Port))
+            {
+                Debug.LogError($"[CodeIntel] Port {Port} is already in use. Cannot start OmniSharp.");
+                Status = ServiceStatus.Error;
+                return;
+            }
+
             // Prepare arguments
-            // -s {sln} -p {port} --hostPID {pid} --encoding utf-8
             string args = $"-s \"{slnPath}\" -p {Port} --hostPID {Process.GetCurrentProcess().Id} --encoding utf-8";
 
             if (!string.IsNullOrEmpty(config.omnisharpJsonPath))
             {
-                string configPath = Path.GetFullPath(Path.Combine(projectRoot, config.omnisharpJsonPath));
-                if (File.Exists(configPath))
-                {
-                    // Some OmniSharp versions support --config
-                    // But usually it picks up omnisharp.json from working dir.
-                    // We will set WorkingDirectory to where omnisharp.json is, or project root.
-                }
+                // Config handling if needed
             }
 
             ProcessStartInfo startInfo = new ProcessStartInfo
@@ -105,6 +115,7 @@ namespace UnityCodeIntel.Editor
             LogFilePath = logFile;
 
             _process = new Process { StartInfo = startInfo };
+            _process.EnableRaisingEvents = true;
 
             _process.OutputDataReceived += (sender, e) =>
             {
@@ -114,30 +125,129 @@ namespace UnityCodeIntel.Editor
             {
                 if (!string.IsNullOrEmpty(e.Data)) File.AppendAllText(logFile, $"[STDERR] {e.Data}\n");
             };
+            
+            _process.Exited += (sender, e) => 
+            {
+                HandleProcessExit();
+            };
 
             try
             {
                 _process.Start();
                 _process.BeginOutputReadLine();
                 _process.BeginErrorReadLine();
-                Debug.Log($"[CodeIntel] OmniSharp started on port {Port}. PID: {_process.Id}");
+                
+                Status = ServiceStatus.Starting;
+                Debug.Log($"[CodeIntel] OmniSharp process started (PID: {_process.Id}). Verifying service readiness...");
+                
+                // 3. Post-Start Verification
+                _ = PostStartVerificationAsync();
             }
             catch (Exception e)
             {
                 Debug.LogError($"[CodeIntel] Failed to start OmniSharp: {e.Message}");
+                Status = ServiceStatus.Error;
                 _process = null;
             }
         }
 
+        private bool CheckRequiredFiles(string exePath)
+        {
+            if (!File.Exists(exePath))
+            {
+                Debug.LogError($"[CodeIntel] OmniSharp executable not found at: {exePath}");
+                return false;
+            }
+
+            string dir = Path.GetDirectoryName(exePath);
+            foreach (var file in _requiredFiles)
+            {
+                string path = Path.Combine(dir, file);
+                if (!File.Exists(path))
+                {
+                    Debug.LogError($"[CodeIntel] Missing required dependency: {file}. Please ensure the full OmniSharp package is installed.");
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private bool IsPortOccupied(int port)
+        {
+            var ipGlobalProperties = IPGlobalProperties.GetIPGlobalProperties();
+            var tcpConnInfoArray = ipGlobalProperties.GetActiveTcpListeners();
+            return tcpConnInfoArray.Any(e => e.Port == port);
+        }
+
+        private async Task PostStartVerificationAsync()
+        {
+            int maxRetries = 30; // 30 seconds
+            int attempt = 0;
+
+            while (attempt < maxRetries)
+            {
+                // If process died during verification
+                if (_process == null || _process.HasExited)
+                {
+                    Debug.LogError("[CodeIntel] OmniSharp process exited during startup verification.");
+                    Status = ServiceStatus.Error;
+                    return;
+                }
+
+                // Check health
+                if (await CheckHealthAsync(force: true))
+                {
+                    Status = ServiceStatus.Running;
+                    Debug.Log("[CodeIntel] Service is READY.");
+                    return;
+                }
+
+                await Task.Delay(1000);
+                attempt++;
+            }
+
+            Debug.LogError($"[CodeIntel] OmniSharp failed to respond within {maxRetries} seconds. Killing process.");
+            Stop();
+            Status = ServiceStatus.Error;
+        }
+
+        private void HandleProcessExit()
+        {
+             if (Status == ServiceStatus.Stopped) return; // Intentional stop
+
+             int exitCode = _process?.ExitCode ?? -1;
+             Status = ServiceStatus.Error;
+             
+             Debug.LogError($"[CodeIntel] OmniSharp process exited unexpectedly with code: {exitCode}");
+             
+             // 4. Log Backtracking
+             if (exitCode != 0 && !string.IsNullOrEmpty(LogFilePath) && File.Exists(LogFilePath))
+             {
+                 try 
+                 {
+                     var lines = File.ReadLines(LogFilePath).Reverse().Take(5).Reverse();
+                     Debug.LogError("[CodeIntel] Last 5 lines of log:\n" + string.Join("\n", lines));
+                 }
+                 catch {}
+                 
+                 // Smart ExitCode suggestions
+                 if (exitCode == -2147450751 || exitCode == -2147450749)
+                 {
+                     Debug.LogError("[CodeIntel] Hint: Exit code suggests missing .NET Runtime. Please install .NET 6.0 SDK or Runtime.");
+                 }
+             }
+        }
+
         public void Stop()
         {
+            Status = ServiceStatus.Stopped;
             if (_process == null) return;
 
             try
             {
                 if (!_process.HasExited)
                 {
-                    _process.Kill(); // For now, just kill. Graceful shutdown can be added later.
+                    _process.Kill();
                     _process.WaitForExit(2000);
                 }
             }
@@ -152,13 +262,21 @@ namespace UnityCodeIntel.Editor
             }
         }
 
-        public async Task<bool> CheckHealthAsync()
+        public void MarkAsUnhealthy()
         {
-            if (!IsRunning) return false;
+            if (Status == ServiceStatus.Running)
+            {
+                Status = ServiceStatus.Error;
+            }
+        }
+
+        public async Task<bool> CheckHealthAsync(bool force = false)
+        {
+            if (!force && Status != ServiceStatus.Running && Status != ServiceStatus.Starting) return false;
 
             try
             {
-                var response = await _httpClient.GetAsync($"{BaseUrl}/checkaliveness"); // OmniSharp endpoint
+                var response = await _httpClient.GetAsync($"{BaseUrl}/checkaliveness");
                 if (response.IsSuccessStatusCode)
                 {
                     LastOkTimestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
@@ -180,9 +298,6 @@ namespace UnityCodeIntel.Editor
 
         private int GetAvailablePort()
         {
-            // Simple random port for now, or finding a free one.
-            // Using 0 in HttpListener lets OS pick, but for OmniSharp we need to pass it.
-            // Let's pick a random one in range.
             return UnityEngine.Random.Range(20000, 30000);
         }
 
@@ -252,7 +367,6 @@ namespace UnityCodeIntel.Editor
                 if (response.IsSuccessStatusCode)
                 {
                     string respJson = await response.Content.ReadAsStringAsync();
-                    // OmniSharp can return null or empty for some things
                     if (string.IsNullOrEmpty(respJson)) return default;
                     return JsonUtility.FromJson<T>(respJson);
                 }
