@@ -44,9 +44,9 @@ namespace UnityCodeIntel.Editor
             // Bridge Status
             using (new EditorGUILayout.HorizontalScope())
             {
-                EditorGUILayout.PrefixLabel("Bridge Server:");
+                EditorGUILayout.PrefixLabel(new GUIContent("Bridge Server:", "The endpoint for AI Agents to connect to."));
                 if (bridge.IsRunning)
-                    GUILayout.Label($"Running (Port: {bridge.Port})", EditorStyles.wordWrappedLabel);
+                    GUILayout.Label($"Running (External API Port: {bridge.Port})", EditorStyles.wordWrappedLabel);
                 else
                     GUILayout.Label("Stopped", EditorStyles.wordWrappedLabel);
             }
@@ -54,12 +54,12 @@ namespace UnityCodeIntel.Editor
             // OmniSharp Status
             using (new EditorGUILayout.HorizontalScope())
             {
-                EditorGUILayout.PrefixLabel("OmniSharp:");
+                EditorGUILayout.PrefixLabel(new GUIContent("OmniSharp Backend:", "Internal code analysis process."));
                 
                 var status = omnisharp.Status;
                 if (status == ServiceStatus.Running)
                 {
-                    GUILayout.Label($"Running (PID: {omnisharp.Pid}, Port: {omnisharp.Port})", EditorStyles.wordWrappedLabel);
+                    GUILayout.Label($"Running (PID: {omnisharp.Pid}, Internal Port: {omnisharp.Port})", EditorStyles.wordWrappedLabel);
                 }
                 else if (status == ServiceStatus.Starting)
                 {

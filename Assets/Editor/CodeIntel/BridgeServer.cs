@@ -189,9 +189,23 @@ namespace UnityCodeIntel.Editor
         }
         
         [Serializable]
-        private class HealthApiResponse : ApiResponse<HealthData> { }
+        private class HealthApiResponse
+        {
+            public bool ok;
+            public string traceId;
+            public long elapsedMs;
+            public HealthData data;
+            public ApiError error;
+        }
 
         [Serializable]
-        private class CodeLocationApiResponse : ApiResponse<CodeLocation[]> { }
+        private class CodeLocationApiResponse
+        {
+            public bool ok;
+            public string traceId;
+            public long elapsedMs;
+            public CodeLocation[] data;
+            public ApiError error;
+        }
     }
 }

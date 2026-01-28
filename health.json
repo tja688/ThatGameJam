@@ -1,0 +1,1 @@
+{"ok":true,"traceId":"abec0459-df11-44d1-9fe4-2fb3e4d6637b","elapsedMs":0,"data":{"bridge":{"version":"0.1.0","uptimeSeconds":336.3854907,"port":32204},"omnisharp":{"reachable":true,"pid":52548,"baseUrl":"http://127.0.0.1:23202","lastOkTimestamp":1769603968931},"unity":{"isCompiling":false,"lastCompileTimestamp":0,"domainReloadCount":0}},"error":{"code":"","message":""}}
