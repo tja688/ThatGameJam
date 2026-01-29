@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEditor;
 using UnityCodeIntel.Editor.Models;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
@@ -27,6 +28,7 @@ namespace UnityCodeIntel.Editor
         private BridgeConfig _config;
         private string _projectRoot;
         private HttpClient _httpClient;
+        private readonly object _logLock = new object();
 
         public int Port { get; private set; }
         public int Pid => _process?.Id ?? 0;
@@ -37,6 +39,7 @@ namespace UnityCodeIntel.Editor
         public string BaseUrl => $"http://127.0.0.1:{Port}";
         public long LastOkTimestamp { get; private set; }
         public string LogFilePath { get; private set; }
+        public event Action<int, string> UnexpectedExited;
 
         private readonly string[] _requiredFiles = { "OmniSharp.dll", "OmniSharp.deps.json" };
 
@@ -59,6 +62,9 @@ namespace UnityCodeIntel.Editor
 
             // Resolve paths
             string exePath = Path.GetFullPath(Path.Combine(projectRoot, config.omnisharpExePath));
+            string jsonPath = string.IsNullOrEmpty(config.omnisharpJsonPath)
+                ? null
+                : Path.GetFullPath(Path.Combine(projectRoot, config.omnisharpJsonPath));
             
             // 1. Pre-flight Checks
             if (!CheckRequiredFiles(exePath))
@@ -90,23 +96,26 @@ namespace UnityCodeIntel.Editor
             }
 
             // Prepare arguments
-            string args = $"-s \"{slnPath}\" -p {Port} --hostPID {Process.GetCurrentProcess().Id} --encoding utf-8";
+            string args = $"-s \"{slnPath}\" -p {Port} -i 127.0.0.1 --hostPID {Process.GetCurrentProcess().Id} --encoding utf-8";
 
-            if (!string.IsNullOrEmpty(config.omnisharpJsonPath))
+            string workingDir = projectRoot;
+            if (!string.IsNullOrEmpty(jsonPath) && File.Exists(jsonPath))
             {
-                // Config handling if needed
+                workingDir = Path.GetDirectoryName(jsonPath);
             }
 
             ProcessStartInfo startInfo = new ProcessStartInfo
             {
                 FileName = exePath,
                 Arguments = args,
-                WorkingDirectory = projectRoot,
+                WorkingDirectory = workingDir,
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 CreateNoWindow = true
             };
+            startInfo.StandardOutputEncoding = Encoding.UTF8;
+            startInfo.StandardErrorEncoding = Encoding.UTF8;
 
             // Setup logging
             string logDir = Path.Combine(projectRoot, config.logDir);
@@ -119,11 +128,11 @@ namespace UnityCodeIntel.Editor
 
             _process.OutputDataReceived += (sender, e) =>
             {
-                if (!string.IsNullOrEmpty(e.Data)) File.AppendAllText(logFile, $"[STDOUT] {e.Data}\n");
+                if (!string.IsNullOrEmpty(e.Data)) AppendLogLine(logFile, $"[STDOUT] {e.Data}");
             };
             _process.ErrorDataReceived += (sender, e) =>
             {
-                if (!string.IsNullOrEmpty(e.Data)) File.AppendAllText(logFile, $"[STDERR] {e.Data}\n");
+                if (!string.IsNullOrEmpty(e.Data)) AppendLogLine(logFile, $"[STDERR] {e.Data}");
             };
             
             _process.Exited += (sender, e) => 
@@ -138,6 +147,7 @@ namespace UnityCodeIntel.Editor
                 _process.BeginErrorReadLine();
                 
                 Status = ServiceStatus.Starting;
+                AppendLogLine(logFile, $"[BRIDGE] Started by Unity PID={Process.GetCurrentProcess().Id}, OmniSharp PID={_process.Id}, Port={Port}, Source={slnPath}, WorkingDir={workingDir}, IsCompiling={EditorApplication.isCompiling}");
                 Debug.Log($"[CodeIntel] OmniSharp process started (PID: {_process.Id}). Verifying service readiness...");
                 
                 // 3. Post-Start Verification
@@ -148,6 +158,20 @@ namespace UnityCodeIntel.Editor
                 Debug.LogError($"[CodeIntel] Failed to start OmniSharp: {e.Message}");
                 Status = ServiceStatus.Error;
                 _process = null;
+            }
+        }
+
+        private void AppendLogLine(string logFile, string line)
+        {
+            try
+            {
+                lock (_logLock)
+                {
+                    File.AppendAllText(logFile, line + "\n");
+                }
+            }
+            catch
+            {
             }
         }
 
@@ -197,9 +221,19 @@ namespace UnityCodeIntel.Editor
                 // Check health
                 if (await CheckHealthAsync(force: true))
                 {
-                    Status = ServiceStatus.Running;
-                    Debug.Log("[CodeIntel] Service is READY.");
-                    return;
+                    await Task.Delay(600);
+                    if (_process == null || _process.HasExited)
+                    {
+                        Debug.LogError("[CodeIntel] OmniSharp process exited immediately after reporting healthy.");
+                        Status = ServiceStatus.Error;
+                        return;
+                    }
+                    if (await CheckHealthAsync(force: true))
+                    {
+                        Status = ServiceStatus.Running;
+                        Debug.Log("[CodeIntel] Service is READY.");
+                        return;
+                    }
                 }
 
                 await Task.Delay(1000);
@@ -215,7 +249,8 @@ namespace UnityCodeIntel.Editor
         {
              if (Status == ServiceStatus.Stopped) return; // Intentional stop
 
-             int exitCode = _process?.ExitCode ?? -1;
+             int exitCode = -1;
+             try { if (_process != null) exitCode = _process.ExitCode; } catch {}
              Status = ServiceStatus.Error;
              
              Debug.LogError($"[CodeIntel] OmniSharp process exited unexpectedly with code: {exitCode}");
@@ -225,8 +260,9 @@ namespace UnityCodeIntel.Editor
              {
                  try 
                  {
-                     var lines = File.ReadLines(LogFilePath).Reverse().Take(5).Reverse();
-                     Debug.LogError("[CodeIntel] Last 5 lines of log:\n" + string.Join("\n", lines));
+                     var lines = File.ReadLines(LogFilePath).Reverse().Take(50).Reverse().ToArray();
+                     Debug.LogError("[CodeIntel] Last 50 lines of log:\n" + string.Join("\n", lines));
+                     UnexpectedExited?.Invoke(exitCode, string.Join("\n", lines));
                  }
                  catch {}
                  
@@ -235,6 +271,10 @@ namespace UnityCodeIntel.Editor
                  {
                      Debug.LogError("[CodeIntel] Hint: Exit code suggests missing .NET Runtime. Please install .NET 6.0 SDK or Runtime.");
                  }
+             }
+             else
+             {
+                 try { UnexpectedExited?.Invoke(exitCode, ""); } catch {}
              }
         }
 
@@ -293,7 +333,16 @@ namespace UnityCodeIntel.Editor
         private string FindSolutionFile(string root)
         {
             string[] slns = Directory.GetFiles(root, "*.sln");
-            return slns.Length > 0 ? slns[0] : null;
+            if (slns.Length == 0) return null;
+
+            string rootName = new DirectoryInfo(root).Name;
+            var matching = slns.FirstOrDefault(s =>
+                string.Equals(Path.GetFileNameWithoutExtension(s), rootName, StringComparison.OrdinalIgnoreCase));
+            if (!string.IsNullOrEmpty(matching)) return matching;
+
+            return slns
+                .OrderByDescending(File.GetLastWriteTimeUtc)
+                .FirstOrDefault();
         }
 
         private int GetAvailablePort()

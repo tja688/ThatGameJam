@@ -118,6 +118,31 @@ namespace UnityCodeIntel.Editor
                 }
                 else
                 {
+                    if (!string.IsNullOrEmpty(_config.token))
+                    {
+                        string provided = request.Headers["X-CodeIntel-Token"];
+                        if (string.IsNullOrEmpty(provided))
+                        {
+                            string auth = request.Headers["Authorization"];
+                            if (!string.IsNullOrEmpty(auth) && auth.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                            {
+                                provided = auth.Substring("Bearer ".Length).Trim();
+                            }
+                        }
+
+                        if (!string.Equals(provided, _config.token, StringComparison.Ordinal))
+                        {
+                            statusCode = 401;
+                            responseJson = JsonUtility.ToJson(new ApiResponse<object>
+                            {
+                                ok = false,
+                                error = new ApiError { code = "UNAUTHORIZED", message = "Missing or invalid token." }
+                            });
+                            WriteResponse(response, statusCode, responseJson);
+                            return;
+                        }
+                    }
+
                     // Fault Tolerance Check
                     if (_omnisharp.Status != ServiceStatus.Running)
                     {
@@ -162,21 +187,25 @@ namespace UnityCodeIntel.Editor
                 statusCode = 500;
                 responseJson = JsonUtility.ToJson(new ApiResponse<object> { ok = false, error = new ApiError { code = "INTERNAL_ERROR", message = e.Message } });
             }
-
-            byte[] buffer = Encoding.UTF8.GetBytes(responseJson);
-            response.ContentLength64 = buffer.Length;
-            response.StatusCode = statusCode;
-            response.ContentType = "application/json";
             
             try
             {
-                response.OutputStream.Write(buffer, 0, buffer.Length);
-                response.OutputStream.Close();
+                WriteResponse(response, statusCode, responseJson);
             }
             catch (Exception e)
             {
                 Debug.LogWarning($"[CodeIntel] Failed to write response: {e.Message}");
             }
+        }
+
+        private void WriteResponse(HttpListenerResponse response, int statusCode, string responseJson)
+        {
+            byte[] buffer = Encoding.UTF8.GetBytes(responseJson);
+            response.ContentLength64 = buffer.Length;
+            response.StatusCode = statusCode;
+            response.ContentType = "application/json";
+            response.OutputStream.Write(buffer, 0, buffer.Length);
+            response.OutputStream.Close();
         }
         
         private T ReadJsonBody<T>(HttpListenerRequest request)
