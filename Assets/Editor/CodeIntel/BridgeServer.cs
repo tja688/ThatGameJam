@@ -5,6 +5,7 @@ using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using UnityEditor;
 using UnityEngine;
 using UnityCodeIntel.Editor.Models;
@@ -18,6 +19,8 @@ namespace UnityCodeIntel.Editor
         private Thread _serverThread;
         private volatile bool _isRunning;
         private BridgeConfig _config;
+        private SynchronizationContext _unityContext;
+        private int _unityThreadId;
 
         public int Port { get; private set; }
         public bool IsRunning => _isRunning;
@@ -36,6 +39,8 @@ namespace UnityCodeIntel.Editor
             if (_isRunning) return;
 
             _config = config;
+            _unityContext = SynchronizationContext.Current;
+            _unityThreadId = Thread.CurrentThread.ManagedThreadId;
             int configuredPort = config.bridgePort > 0 ? config.bridgePort : 0;
 
             int preferredPort = configuredPort;
@@ -61,6 +66,7 @@ namespace UnityCodeIntel.Editor
                     _isRunning = true;
                     StartTime = DateTime.Now;
                     _serverThread = new Thread(HandleRequests);
+                    _serverThread.IsBackground = true;
                     _serverThread.Start();
                     EditorPrefs.SetInt(LAST_PORT_KEY, Port);
                     WriteRuntimeState(isRunning: true, bridgeBaseUrl: prefix);
@@ -94,8 +100,22 @@ namespace UnityCodeIntel.Editor
                 _listener.Close();
                 _listener = null;
             }
-            if (_serverThread != null && _serverThread.IsAlive)
+            if (_serverThread != null)
             {
+                try
+                {
+                    if (_serverThread.IsAlive)
+                    {
+                        if (!_serverThread.Join(1500))
+                        {
+                            _serverThread.Interrupt();
+                            _serverThread.Join(500);
+                        }
+                    }
+                }
+                catch
+                {
+                }
                 _serverThread = null;
             }
             WriteRuntimeState(isRunning: false, bridgeBaseUrl: "");
@@ -117,7 +137,7 @@ namespace UnityCodeIntel.Editor
                 }
                 catch (Exception e)
                 {
-                    Debug.LogError($"[CodeIntel] Server Error: {e.Message}");
+                    PostToUnityThread(() => Debug.LogError($"[CodeIntel] Server Error: {e.Message}"));
                 }
             }
         }
@@ -143,10 +163,10 @@ namespace UnityCodeIntel.Editor
                         {
                             bridge = new BridgeHealth { version = "0.1.0", uptimeSeconds = (DateTime.Now - StartTime).TotalSeconds, port = Port },
                             omnisharp = new OmniSharpHealth { reachable = _omnisharp.IsRunning, pid = _omnisharp.Pid, baseUrl = _omnisharp.BaseUrl, lastOkTimestamp = _omnisharp.LastOkTimestamp },
-                            unity = new UnityHealth { isCompiling = UnityEditor.EditorApplication.isCompiling }
+                            unity = new UnityHealth { isCompiling = UnityCompilationWatcher.IsCompiling }
                         }
                     };
-                    responseJson = JsonUtility.ToJson(health);
+                    responseJson = JsonConvert.SerializeObject(health);
                 }
                 else
                 {
@@ -165,7 +185,7 @@ namespace UnityCodeIntel.Editor
                         if (!string.Equals(provided, _config.token, StringComparison.Ordinal))
                         {
                             statusCode = 401;
-                            responseJson = JsonUtility.ToJson(new ApiResponse<object>
+                            responseJson = JsonConvert.SerializeObject(new ApiResponse<object>
                             {
                                 ok = false,
                                 error = new ApiError { code = "UNAUTHORIZED", message = "Missing or invalid token." }
@@ -179,7 +199,7 @@ namespace UnityCodeIntel.Editor
                     if (_omnisharp.Status != ServiceStatus.Running)
                     {
                         statusCode = 503;
-                        responseJson = JsonUtility.ToJson(new ApiResponse<object> 
+                        responseJson = JsonConvert.SerializeObject(new ApiResponse<object> 
                         { 
                             ok = false, 
                             error = new ApiError 
@@ -193,19 +213,19 @@ namespace UnityCodeIntel.Editor
                     {
                         var req = ReadJsonBody<LocationRequest>(request);
                         var locations = Task.Run(() => _omnisharp.GetDefinition(req.file, req.line, req.col)).Result;
-                        responseJson = JsonUtility.ToJson(new CodeLocationApiResponse { ok = true, data = locations });
+                        responseJson = JsonConvert.SerializeObject(new CodeLocationApiResponse { ok = true, data = locations });
                     }
                     else if (path == "/v1/references" && request.HttpMethod == "POST")
                     {
                         var req = ReadJsonBody<ReferencesRequest>(request);
                         var locations = Task.Run(() => _omnisharp.GetReferences(req.file, req.line, req.col, req.includeDeclaration)).Result;
-                        responseJson = JsonUtility.ToJson(new CodeLocationApiResponse { ok = true, data = locations });
+                        responseJson = JsonConvert.SerializeObject(new CodeLocationApiResponse { ok = true, data = locations });
                     }
                     else if (path == "/v1/symbols" && request.HttpMethod == "POST")
                     {
                         var req = ReadJsonBody<SymbolsRequest>(request);
                         var locations = Task.Run(() => _omnisharp.GetSymbols(req.query)).Result;
-                        responseJson = JsonUtility.ToJson(new CodeLocationApiResponse { ok = true, data = locations });
+                        responseJson = JsonConvert.SerializeObject(new CodeLocationApiResponse { ok = true, data = locations });
                     }
                     else
                     {
@@ -217,7 +237,7 @@ namespace UnityCodeIntel.Editor
             catch (Exception e)
             {
                 statusCode = 500;
-                responseJson = JsonUtility.ToJson(new ApiResponse<object> { ok = false, error = new ApiError { code = "INTERNAL_ERROR", message = e.Message } });
+                responseJson = JsonConvert.SerializeObject(new ApiResponse<object> { ok = false, error = new ApiError { code = "INTERNAL_ERROR", message = e.Message } });
             }
             
             try
@@ -226,7 +246,7 @@ namespace UnityCodeIntel.Editor
             }
             catch (Exception e)
             {
-                Debug.LogWarning($"[CodeIntel] Failed to write response: {e.Message}");
+                PostToUnityThread(() => Debug.LogWarning($"[CodeIntel] Failed to write response: {e.Message}"));
             }
         }
 
@@ -245,7 +265,7 @@ namespace UnityCodeIntel.Editor
             using (var reader = new StreamReader(request.InputStream, request.ContentEncoding))
             {
                 string json = reader.ReadToEnd();
-                return JsonUtility.FromJson<T>(json);
+                return JsonConvert.DeserializeObject<T>(json);
             }
         }
 
@@ -296,11 +316,25 @@ namespace UnityCodeIntel.Editor
                     }
                 };
 
-                File.WriteAllText(statePath, JsonUtility.ToJson(state, true));
+                File.WriteAllText(statePath, JsonConvert.SerializeObject(state, Formatting.Indented));
             }
             catch
             {
             }
+        }
+
+        private void PostToUnityThread(Action action)
+        {
+            if (action == null) return;
+            if (_unityThreadId != 0 && Thread.CurrentThread.ManagedThreadId == _unityThreadId)
+            {
+                action();
+                return;
+            }
+
+            var ctx = _unityContext;
+            if (ctx == null) return;
+            try { ctx.Post(_ => action(), null); } catch {}
         }
         
         [Serializable]

@@ -6,7 +6,9 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.NetworkInformation;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using UnityEditor;
 using UnityCodeIntel.Editor.Models;
 using UnityEngine;
@@ -29,6 +31,10 @@ namespace UnityCodeIntel.Editor
         private string _projectRoot;
         private HttpClient _httpClient;
         private readonly object _logLock = new object();
+        private CancellationTokenSource _lifetimeCts;
+        private SynchronizationContext _unityContext;
+        private int _unityThreadId;
+        private volatile bool _isStopping;
 
         public int Port { get; private set; }
         public int Pid => _process?.Id ?? 0;
@@ -59,6 +65,12 @@ namespace UnityCodeIntel.Editor
 
             _projectRoot = projectRoot;
             _config = config;
+            _isStopping = false;
+            _unityContext = SynchronizationContext.Current;
+            _unityThreadId = Thread.CurrentThread.ManagedThreadId;
+            try { _lifetimeCts?.Cancel(); } catch {}
+            try { _lifetimeCts?.Dispose(); } catch {}
+            _lifetimeCts = new CancellationTokenSource();
 
             // Resolve paths
             string exePath = Path.GetFullPath(Path.Combine(projectRoot, config.omnisharpExePath));
@@ -207,13 +219,16 @@ namespace UnityCodeIntel.Editor
         {
             int maxRetries = 30; // 30 seconds
             int attempt = 0;
+            var token = _lifetimeCts?.Token ?? CancellationToken.None;
 
             while (attempt < maxRetries)
             {
+                if (_isStopping || token.IsCancellationRequested) return;
+
                 // If process died during verification
                 if (_process == null || _process.HasExited)
                 {
-                    Debug.LogError("[CodeIntel] OmniSharp process exited during startup verification.");
+                    PostToUnityThread(() => Debug.LogError("[CodeIntel] OmniSharp process exited during startup verification."));
                     Status = ServiceStatus.Error;
                     return;
                 }
@@ -221,26 +236,26 @@ namespace UnityCodeIntel.Editor
                 // Check health
                 if (await CheckHealthAsync(force: true))
                 {
-                    await Task.Delay(600);
+                    try { await Task.Delay(600, token); } catch { return; }
                     if (_process == null || _process.HasExited)
                     {
-                        Debug.LogError("[CodeIntel] OmniSharp process exited immediately after reporting healthy.");
+                        PostToUnityThread(() => Debug.LogError("[CodeIntel] OmniSharp process exited immediately after reporting healthy."));
                         Status = ServiceStatus.Error;
                         return;
                     }
                     if (await CheckHealthAsync(force: true))
                     {
                         Status = ServiceStatus.Running;
-                        Debug.Log("[CodeIntel] Service is READY.");
+                        PostToUnityThread(() => Debug.Log("[CodeIntel] Service is READY."));
                         return;
                     }
                 }
 
-                await Task.Delay(1000);
+                try { await Task.Delay(1000, token); } catch { return; }
                 attempt++;
             }
 
-            Debug.LogError($"[CodeIntel] OmniSharp failed to respond within {maxRetries} seconds. Killing process.");
+            PostToUnityThread(() => Debug.LogError($"[CodeIntel] OmniSharp failed to respond within {maxRetries} seconds. Killing process."));
             Stop();
             Status = ServiceStatus.Error;
         }
@@ -251,36 +266,43 @@ namespace UnityCodeIntel.Editor
 
              int exitCode = -1;
              try { if (_process != null) exitCode = _process.ExitCode; } catch {}
-             Status = ServiceStatus.Error;
-             
-             Debug.LogError($"[CodeIntel] OmniSharp process exited unexpectedly with code: {exitCode}");
-             
-             // 4. Log Backtracking
+             string logTail = "";
              if (exitCode != 0 && !string.IsNullOrEmpty(LogFilePath) && File.Exists(LogFilePath))
              {
-                 try 
+                 try
                  {
                      var lines = File.ReadLines(LogFilePath).Reverse().Take(50).Reverse().ToArray();
-                     Debug.LogError("[CodeIntel] Last 50 lines of log:\n" + string.Join("\n", lines));
-                     UnexpectedExited?.Invoke(exitCode, string.Join("\n", lines));
+                     logTail = string.Join("\n", lines);
                  }
-                 catch {}
-                 
-                 // Smart ExitCode suggestions
+                 catch
+                 {
+                 }
+             }
+
+             PostToUnityThread(() =>
+             {
+                 if (Status == ServiceStatus.Stopped) return;
+                 Status = ServiceStatus.Error;
+
+                 Debug.LogError($"[CodeIntel] OmniSharp process exited unexpectedly with code: {exitCode}");
+                 if (!string.IsNullOrEmpty(logTail))
+                 {
+                     Debug.LogError("[CodeIntel] Last 50 lines of log:\n" + logTail);
+                 }
+                 try { UnexpectedExited?.Invoke(exitCode, logTail ?? ""); } catch {}
+
                  if (exitCode == -2147450751 || exitCode == -2147450749)
                  {
                      Debug.LogError("[CodeIntel] Hint: Exit code suggests missing .NET Runtime. Please install .NET 6.0 SDK or Runtime.");
                  }
-             }
-             else
-             {
-                 try { UnexpectedExited?.Invoke(exitCode, ""); } catch {}
-             }
+             });
         }
 
         public void Stop()
         {
             Status = ServiceStatus.Stopped;
+            _isStopping = true;
+            try { _lifetimeCts?.Cancel(); } catch {}
             if (_process == null) return;
 
             try
@@ -409,7 +431,7 @@ namespace UnityCodeIntel.Editor
 
             try
             {
-                string json = JsonUtility.ToJson(payload);
+                string json = JsonConvert.SerializeObject(payload);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
                 var response = await _httpClient.PostAsync($"{BaseUrl}{endpoint}", content);
 
@@ -417,12 +439,12 @@ namespace UnityCodeIntel.Editor
                 {
                     string respJson = await response.Content.ReadAsStringAsync();
                     if (string.IsNullOrEmpty(respJson)) return default;
-                    return JsonUtility.FromJson<T>(respJson);
+                    return JsonConvert.DeserializeObject<T>(respJson);
                 }
             }
             catch (Exception e)
             {
-                Debug.LogWarning($"[CodeIntel] OmniSharp request failed: {e.Message}");
+                PostToUnityThread(() => Debug.LogWarning($"[CodeIntel] OmniSharp request failed: {e.Message}"));
             }
             return default;
         }
@@ -462,6 +484,22 @@ namespace UnityCodeIntel.Editor
                 return path.Substring(_projectRoot.Length).TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar).Replace("\\", "/");
             }
             return path;
+        }
+
+        private void PostToUnityThread(Action action)
+        {
+            if (action == null) return;
+            if (_isStopping) return;
+
+            if (_unityThreadId != 0 && Thread.CurrentThread.ManagedThreadId == _unityThreadId)
+            {
+                action();
+                return;
+            }
+
+            var ctx = _unityContext;
+            if (ctx == null) return;
+            try { ctx.Post(_ => { if (!_isStopping) action(); }, null); } catch {}
         }
     }
 }

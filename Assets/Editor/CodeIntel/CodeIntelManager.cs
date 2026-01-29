@@ -44,7 +44,7 @@ namespace UnityCodeIntel.Editor
             Bridge = new BridgeServer(OmniSharp);
 
             EditorApplication.quitting += Shutdown;
-            AppDomain.CurrentDomain.DomainUnload += OnDomainUnload;
+            AssemblyReloadEvents.beforeAssemblyReload += BeforeAssemblyReload;
             EditorApplication.update += OnUpdate;
             CompilationPipeline.compilationFinished += OnCompilationFinished;
             
@@ -72,6 +72,21 @@ namespace UnityCodeIntel.Editor
             OmniSharp?.Stop();
             EditorPrefs.DeleteKey(PID_KEY);
         }
+
+        public static void BatchSmoke_StartServicesAndQuit()
+        {
+            StartServices();
+            double startedAt = EditorApplication.timeSinceStartup;
+            EditorApplication.CallbackFunction tick = null;
+            tick = () =>
+            {
+                if (EditorApplication.timeSinceStartup - startedAt < 10.0) return;
+                EditorApplication.update -= tick;
+                StopServices();
+                EditorApplication.Exit(0);
+            };
+            EditorApplication.update += tick;
+        }
         
         private static string GetRuntimeStatePath()
         {
@@ -83,10 +98,14 @@ namespace UnityCodeIntel.Editor
         private static void Shutdown()
         {
             _isShuttingDown = true;
+            EditorApplication.update -= OnUpdate;
+            CompilationPipeline.compilationFinished -= OnCompilationFinished;
+            AssemblyReloadEvents.beforeAssemblyReload -= BeforeAssemblyReload;
+            EditorApplication.quitting -= Shutdown;
             StopServices();
         }
 
-        private static void OnDomainUnload(object sender, EventArgs e)
+        private static void BeforeAssemblyReload()
         {
             _isShuttingDown = true;
             StopServices();
@@ -119,9 +138,11 @@ namespace UnityCodeIntel.Editor
 
         private static async void CheckHeartbeat()
         {
+            if (_isShuttingDown) return;
             if (OmniSharp.Status == ServiceStatus.Running)
             {
                 bool alive = await OmniSharp.CheckHealthAsync();
+                if (_isShuttingDown) return;
                 if (!alive)
                 {
                     Debug.LogWarning("[CodeIntel] OmniSharp heartbeat failed. Service marked as unhealthy.");
