@@ -13,9 +13,14 @@ namespace UnityCodeIntel.Editor
         public static OmniSharpProcess OmniSharp { get; private set; }
         public static BridgeServer Bridge { get; private set; }
         public static BridgeConfig Config { get; private set; }
+        public static string BridgeBaseUrl => Bridge != null && Bridge.IsRunning && Config != null
+            ? $"http://{Config.bindAddress}:{Bridge.Port}/"
+            : "";
+        public static string RuntimeStatePath => GetRuntimeStatePath();
         
         private static string _projectRoot;
         private const string PID_KEY = "CodeIntel_OmniSharp_PID";
+        private const string RUNTIME_STATE_FILENAME = "codeintel-endpoints.json";
         
         private static double _lastHeartbeatTime;
         private static readonly List<double> _restartTimestamps = new List<double>();
@@ -66,6 +71,13 @@ namespace UnityCodeIntel.Editor
             Bridge?.Stop();
             OmniSharp?.Stop();
             EditorPrefs.DeleteKey(PID_KEY);
+        }
+        
+        private static string GetRuntimeStatePath()
+        {
+            string projectRoot = _projectRoot;
+            string logDirRel = string.IsNullOrEmpty(Config?.logDir) ? "Library/CodeIntelLogs" : Config.logDir;
+            return Path.Combine(projectRoot, logDirRel, RUNTIME_STATE_FILENAME);
         }
 
         private static void Shutdown()

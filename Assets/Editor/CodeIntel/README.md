@@ -58,6 +58,15 @@
    - 手动：点击 `Start Services`
 4. 外部工具访问：`http://127.0.0.1:{BridgePort}/...`
 
+### 端口发现（Port Discovery）
+
+当 `bridgePort=0`（随机端口）时，为了避免外部工具/脚本需要 `netstat` 或反复猜端口，Bridge 会在启动后写入一个固定位置的运行时状态文件，供外部读取。
+
+- 运行时状态文件：`{ProjectRoot}/{logDir}/codeintel-endpoints.json`（默认：`Library/CodeIntelLogs/codeintel-endpoints.json`）
+- 内容包含：Bridge 的 `baseUrl/port`、是否需要 token，以及 OmniSharp 的 `baseUrl/port/pid`
+- Dashboard：会显示 `Bridge Base URL`，并提供 Copy；同时显示该运行时状态文件路径并可 Reveal
+- 当 `bridgePort=0` 时：会优先复用上次成功启动的端口；若端口被占用则自动换一个端口重试
+
 ## HTTP API
 
 ### `GET /health`

@@ -50,6 +50,31 @@ namespace UnityCodeIntel.Editor
                 else
                     GUILayout.Label("Stopped", EditorStyles.wordWrappedLabel);
             }
+            
+            if (bridge.IsRunning)
+            {
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    EditorGUILayout.PrefixLabel(new GUIContent("Bridge Base URL:", "Base URL for external tools."));
+                    string url = CodeIntelManager.BridgeBaseUrl;
+                    GUILayout.Label(url, EditorStyles.wordWrappedLabel);
+                    if (GUILayout.Button("Copy", GUILayout.Width(60)))
+                    {
+                        EditorGUIUtility.systemCopyBuffer = url;
+                    }
+                }
+                
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    EditorGUILayout.PrefixLabel(new GUIContent("Runtime State:", "File written for port discovery by external tools."));
+                    string statePath = CodeIntelManager.RuntimeStatePath;
+                    GUILayout.Label(statePath, EditorStyles.wordWrappedLabel);
+                    if (GUILayout.Button("Reveal", GUILayout.Width(60)))
+                    {
+                        if (File.Exists(statePath)) EditorUtility.RevealInFinder(statePath);
+                    }
+                }
+            }
 
             // OmniSharp Status
             using (new EditorGUILayout.HorizontalScope())

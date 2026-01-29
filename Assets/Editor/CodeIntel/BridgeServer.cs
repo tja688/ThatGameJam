@@ -1,9 +1,11 @@
 using System;
 using System.IO;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using UnityEditor;
 using UnityEngine;
 using UnityCodeIntel.Editor.Models;
 
@@ -20,6 +22,9 @@ namespace UnityCodeIntel.Editor
         public int Port { get; private set; }
         public bool IsRunning => _isRunning;
         public DateTime StartTime { get; private set; }
+        
+        private const string LAST_PORT_KEY = "CodeIntel_Bridge_LastPort";
+        private const string RUNTIME_STATE_FILENAME = "codeintel-endpoints.json";
 
         public BridgeServer(OmniSharpProcess omnisharp)
         {
@@ -31,27 +36,53 @@ namespace UnityCodeIntel.Editor
             if (_isRunning) return;
 
             _config = config;
-            Port = config.bridgePort > 0 ? config.bridgePort : 8080;
-            if (config.bridgePort == 0) Port = UnityEngine.Random.Range(30000, 40000);
+            int configuredPort = config.bridgePort > 0 ? config.bridgePort : 0;
 
-            _listener = new HttpListener();
-            string prefix = $"http://{config.bindAddress}:{Port}/";
-            _listener.Prefixes.Add(prefix);
-            
-            try
+            int preferredPort = configuredPort;
+            if (configuredPort == 0)
             {
-                _listener.Start();
-                _isRunning = true;
-                StartTime = DateTime.Now;
-                _serverThread = new Thread(HandleRequests);
-                _serverThread.Start();
-                Debug.Log($"[CodeIntel] Bridge Server started at {prefix}");
+                int lastPort = EditorPrefs.GetInt(LAST_PORT_KEY, 0);
+                preferredPort = lastPort > 0 ? lastPort : UnityEngine.Random.Range(30000, 40000);
             }
-            catch (Exception e)
+
+            int maxAttempts = configuredPort == 0 ? 30 : 1;
+            for (int attempt = 0; attempt < maxAttempts; attempt++)
             {
-                Debug.LogError($"[CodeIntel] Failed to start Bridge Server: {e.Message}");
-                _listener = null;
+                Port = attempt == 0 ? preferredPort : UnityEngine.Random.Range(30000, 40000);
+                if (IsPortOccupied(Port)) continue;
+
+                _listener = new HttpListener();
+                string prefix = $"http://{config.bindAddress}:{Port}/";
+                _listener.Prefixes.Add(prefix);
+
+                try
+                {
+                    _listener.Start();
+                    _isRunning = true;
+                    StartTime = DateTime.Now;
+                    _serverThread = new Thread(HandleRequests);
+                    _serverThread.Start();
+                    EditorPrefs.SetInt(LAST_PORT_KEY, Port);
+                    WriteRuntimeState(isRunning: true, bridgeBaseUrl: prefix);
+                    Debug.Log($"[CodeIntel] Bridge Server started at {prefix}");
+                    return;
+                }
+                catch (Exception e)
+                {
+                    Debug.LogWarning($"[CodeIntel] Failed to start Bridge Server on port {Port}: {e.Message}");
+                    try
+                    {
+                        _listener?.Stop();
+                        _listener?.Close();
+                    }
+                    catch
+                    {
+                    }
+                    _listener = null;
+                }
             }
+
+            Debug.LogError("[CodeIntel] Failed to start Bridge Server after multiple attempts.");
         }
 
         public void Stop()
@@ -67,6 +98,7 @@ namespace UnityCodeIntel.Editor
             {
                 _serverThread = null;
             }
+            WriteRuntimeState(isRunning: false, bridgeBaseUrl: "");
             Debug.Log("[CodeIntel] Bridge Server stopped.");
         }
 
@@ -216,6 +248,60 @@ namespace UnityCodeIntel.Editor
                 return JsonUtility.FromJson<T>(json);
             }
         }
+
+        private static bool IsPortOccupied(int port)
+        {
+            try
+            {
+                var ipGlobalProperties = IPGlobalProperties.GetIPGlobalProperties();
+                var tcpConnInfoArray = ipGlobalProperties.GetActiveTcpListeners();
+                foreach (var ep in tcpConnInfoArray)
+                {
+                    if (ep.Port == port) return true;
+                }
+            }
+            catch
+            {
+            }
+            return false;
+        }
+        
+        private void WriteRuntimeState(bool isRunning, string bridgeBaseUrl)
+        {
+            try
+            {
+                string projectRoot = Directory.GetCurrentDirectory();
+                string logDirRel = string.IsNullOrEmpty(_config?.logDir) ? "Library/CodeIntelLogs" : _config.logDir;
+                string logDirAbs = Path.Combine(projectRoot, logDirRel);
+                Directory.CreateDirectory(logDirAbs);
+
+                string statePath = Path.Combine(logDirAbs, RUNTIME_STATE_FILENAME);
+                var state = new RuntimeState
+                {
+                    generatedAtUtc = DateTime.UtcNow.ToString("o"),
+                    bridge = new RuntimeBridgeState
+                    {
+                        isRunning = isRunning,
+                        bindAddress = _config?.bindAddress ?? "127.0.0.1",
+                        port = isRunning ? Port : 0,
+                        baseUrl = isRunning ? bridgeBaseUrl : "",
+                        tokenRequired = !string.IsNullOrEmpty(_config?.token)
+                    },
+                    omnisharp = new RuntimeOmniSharpState
+                    {
+                        isRunning = _omnisharp != null && _omnisharp.IsRunning,
+                        pid = _omnisharp?.Pid ?? 0,
+                        port = _omnisharp?.Port ?? 0,
+                        baseUrl = _omnisharp?.BaseUrl ?? ""
+                    }
+                };
+
+                File.WriteAllText(statePath, JsonUtility.ToJson(state, true));
+            }
+            catch
+            {
+            }
+        }
         
         [Serializable]
         private class HealthApiResponse
@@ -235,6 +321,33 @@ namespace UnityCodeIntel.Editor
             public long elapsedMs;
             public CodeLocation[] data;
             public ApiError error;
+        }
+        
+        [Serializable]
+        private class RuntimeState
+        {
+            public string generatedAtUtc;
+            public RuntimeBridgeState bridge;
+            public RuntimeOmniSharpState omnisharp;
+        }
+
+        [Serializable]
+        private class RuntimeBridgeState
+        {
+            public bool isRunning;
+            public string bindAddress;
+            public int port;
+            public string baseUrl;
+            public bool tokenRequired;
+        }
+
+        [Serializable]
+        private class RuntimeOmniSharpState
+        {
+            public bool isRunning;
+            public int pid;
+            public int port;
+            public string baseUrl;
         }
     }
 }
