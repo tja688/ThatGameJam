@@ -1,6 +1,34 @@
 # Unity Code Intel Service（Unity 代码智能桥接服务）
 
-把 Unity Editor 的 C# 工程语义能力（OmniSharp）通过本地 HTTP 暴露给外部 Agent/工具，用于“转定义 / 找引用 / 符号搜索”等自动化代码检索场景。
+把 Unity Editor 的 C# 工程语义能力（OmniSharp）通过本地 HTTP 暴露给外部 Agent/工具，用于"转定义 / 找引用 / 符号搜索"等自动化代码检索场景。
+
+## 版本 0.2.0 更新亮点
+
+本版本实现了针对 AI Agent 友好的重大改进：
+
+### P0 改进（核心 - 让 AI 不再需要读文件算列号）
+
+1. **`/v1/symbols` 返回增强的 `SymbolInfo[]`**
+   - 新增 `symbolId`: 稳定 ID，可直接用于 `/v1/references` 查询
+   - 新增 `qualifiedName`: 全限定名，如 `Namespace.Class.Method`
+   - 新增 `nameSpan`: 标识符 token 的精确位置（startLine/startColumn）
+   - 新增 `kind`: 符号类型（Method/Class/Property/Field 等）
+
+2. **`/v1/references` 支持 `symbolId` 查询**
+   - 推荐方式：使用 symbols 返回的 `symbolId`，无需 file/line/col
+   - 返回增强结构：包含 `symbol`（符号信息）和 `references[]`（引用列表）
+
+### P1 改进（体验升级）
+
+1. **增强 `/health` 响应**
+   - 新增 `unity.isOmniSharpReady`: 明确的就绪状态
+   - 新增 `unity.lastRestartReason`: 上次重启原因
+
+2. **可机读错误码**
+   - `CODEINTEL_NOT_READY`: OmniSharp 未就绪
+   - `CODEINTEL_COMPILING`: Unity 正在编译中
+
+---
 
 ## 组成与数据流
 
@@ -67,45 +95,172 @@
 - Dashboard：会显示 `Bridge Base URL`，并提供 Copy；同时显示该运行时状态文件路径并可 Reveal
 - 当 `bridgePort=0` 时：会优先复用上次成功启动的端口；若端口被占用则自动换一个端口重试
 
+---
+
 ## HTTP API
 
 ### `GET /health`
 
 用于探测 Bridge 是否存活、OmniSharp 是否可用、Unity 是否正在编译。
 
-示例：
+**响应结构：**
 
-```bash
-curl http://127.0.0.1:PORT/health
+```json
+{
+  "ok": true,
+  "traceId": "uuid",
+  "data": {
+    "bridge": { "version": "0.2.0", "uptimeSeconds": 123.4, "port": 32204 },
+    "omnisharp": { "reachable": true, "pid": 12345, "baseUrl": "http://127.0.0.1:20000", "lastOkTimestamp": 1706600000000 },
+    "unity": { 
+      "isCompiling": false, 
+      "isOmniSharpReady": true,
+      "lastRestartReason": ""
+    }
+  }
+}
 ```
+
+### `POST /v1/symbols` ⭐ AI 友好
+
+按名字/关键字搜索符号，返回增强的 `SymbolInfo[]`。
+
+**请求体：**
+
+```json
+{ "query": "PlayerController", "limit": 50 }
+```
+
+**响应结构：**
+
+```json
+{
+  "ok": true,
+  "data": [
+    {
+      "symbolId": "C:/Project/Assets/Scripts/Player.cs|10|12|PlayerController",
+      "qualifiedName": "Game.PlayerController",
+      "kind": "Class",
+      "containerName": "Game",
+      "fileAbs": "C:/Project/Assets/Scripts/Player.cs",
+      "fileRel": "Assets/Scripts/Player.cs",
+      "nameSpan": { "startLine": 10, "startColumn": 12, "endLine": 10, "endColumn": 28 },
+      "declSpan": { "startLine": 10, "startColumn": 1, "endLine": 50, "endColumn": 1 },
+      "text": "public class PlayerController : MonoBehaviour"
+    }
+  ]
+}
+```
+
+**关键字段说明：**
+
+- `symbolId`: 稳定 ID，可直接传给 `/v1/references` 的 `symbolId` 参数
+- `nameSpan.startLine/startColumn`: 标识符 token 起点，可用于精确的 line/col 查询
+- `qualifiedName`: 全限定名，方便 AI 理解符号层级
+
+### `POST /v1/references` ⭐ AI 友好
+
+查找符号的所有引用位置。**推荐使用 `symbolId` 方式**。
+
+**请求体（推荐 - 使用 symbolId）：**
+
+```json
+{ 
+  "symbolId": "C:/Project/Assets/Scripts/Player.cs|10|12|PlayerController",
+  "includeDeclaration": true 
+}
+```
+
+**请求体（传统 - 使用 file/line/col）：**
+
+```json
+{ 
+  "file": "Assets/Scripts/Player.cs", 
+  "line": 10, 
+  "col": 12, 
+  "includeDeclaration": true 
+}
+```
+
+**响应结构：**
+
+```json
+{
+  "ok": true,
+  "data": {
+    "symbol": {
+      "symbolId": "...",
+      "qualifiedName": "Game.PlayerController",
+      "kind": "Class",
+      ...
+    },
+    "references": [
+      {
+        "fileAbs": "C:/Project/Assets/Scripts/GameManager.cs",
+        "fileRel": "Assets/Scripts/GameManager.cs",
+        "range": { "startLine": 15, "startColumn": 8, "endLine": 15, "endColumn": 24 },
+        "nameSpan": { "startLine": 15, "startColumn": 8, "endLine": 15, "endColumn": 24 },
+        "text": "private PlayerController player;"
+      }
+    ]
+  }
+}
+```
+
+**关键改进：**
+
+- `symbol`: 让 AI 复核"我查到的到底是谁"
+- `references`: 每条包含精确的 range 和 text
 
 ### `POST /v1/definition`
 
-请求体：
+给定"文件+位置"，转到定义。
+
+**请求体：**
 
 ```json
 { "file": "Assets/Scripts/Foo.cs", "line": 10, "col": 15 }
 ```
 
-示例：
-
-```bash
-curl -X POST http://127.0.0.1:PORT/v1/definition ^
-  -H "Content-Type: application/json" ^
-  -d "{\"file\":\"Assets/Scripts/Foo.cs\",\"line\":10,\"col\":15}"
-```
-
-### `POST /v1/references`
+**响应结构：**
 
 ```json
-{ "file": "Assets/Scripts/Foo.cs", "line": 10, "col": 15, "includeDeclaration": true }
+{
+  "ok": true,
+  "data": [
+    {
+      "fileAbs": "C:/Project/Assets/Scripts/Player.cs",
+      "fileRel": "Assets/Scripts/Player.cs",
+      "range": { "startLine": 10, "startColumn": 1, "endLine": 10, "endColumn": 50 },
+      "text": "public class PlayerController : MonoBehaviour"
+    }
+  ]
+}
 ```
 
-### `POST /v1/symbols`
+---
 
-```json
-{ "query": "PlayerController" }
-```
+## 错误码
+
+| 错误码 | HTTP 状态 | 说明 |
+|--------|-----------|------|
+| `CODEINTEL_NOT_READY` | 503 | OmniSharp 未就绪，请等待或重启服务 |
+| `CODEINTEL_COMPILING` | 503 | Unity 正在编译，请等待编译完成 |
+| `UNAUTHORIZED` | 401 | 缺少或无效的 Token |
+| `NOT_FOUND` | 404 | 未知的 API 路径 |
+| `INTERNAL_ERROR` | 500 | 内部错误 |
+
+---
+
+## AI Agent 推荐工作流
+
+1. **首先检查 `/health`**，确认 `unity.isOmniSharpReady == true`
+2. **搜索符号**：`POST /v1/symbols { "query": "目标符号名" }`
+3. **获取 symbolId**：从返回的 `data[].symbolId` 选择目标符号
+4. **查找引用**：`POST /v1/references { "symbolId": "...", "includeDeclaration": true }`
+5. **无需读文件算列号**：所有位置信息都由 API 提供
+
+---
 
 ## Token 鉴权
 
@@ -128,7 +283,7 @@ curl -X POST http://127.0.0.1:PORT/v1/definition ^
 
 ### 常见问题
 
-#### 1) Unity 显示 “Service is READY” 后又立刻退出（偶发）
+#### 1) Unity 显示 "Service is READY" 后又立刻退出（偶发）
 
 这类情况通常发生在 Unity 启动/编译阶段，`.sln/.csproj` 正在生成或被刷新，OmniSharp 在加载工程时容易出现短时不稳定。
 

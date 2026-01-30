@@ -6,9 +6,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using UnityCodeIntel.Editor.Models;
 using UnityEditor;
 using UnityEngine;
-using UnityCodeIntel.Editor.Models;
 
 namespace UnityCodeIntel.Editor
 {
@@ -25,7 +25,12 @@ namespace UnityCodeIntel.Editor
         public int Port { get; private set; }
         public bool IsRunning => _isRunning;
         public DateTime StartTime { get; private set; }
-        
+
+        // P1 改进: 用于 health 响应的重启原因
+
+        private static string _lastRestartReason = "";
+        public static void SetRestartReason(string reason) => _lastRestartReason = reason;
+
         private const string LAST_PORT_KEY = "CodeIntel_Bridge_LastPort";
         private const string RUNTIME_STATE_FILENAME = "codeintel-endpoints.json";
 
@@ -151,19 +156,27 @@ namespace UnityCodeIntel.Editor
             string responseJson = "";
             int statusCode = 200;
 
-            try 
+            try
+
             {
                 if (path == "/health" && request.HttpMethod == "GET")
                 {
+                    // P1 改进: 增强 health 响应，包含更多可机读状态
                     var health = new HealthApiResponse
                     {
                         ok = true,
                         traceId = Guid.NewGuid().ToString(),
                         data = new HealthData
                         {
-                            bridge = new BridgeHealth { version = "0.1.0", uptimeSeconds = (DateTime.Now - StartTime).TotalSeconds, port = Port },
+                            bridge = new BridgeHealth { version = "0.2.0", uptimeSeconds = (DateTime.Now - StartTime).TotalSeconds, port = Port },
                             omnisharp = new OmniSharpHealth { reachable = _omnisharp.IsRunning, pid = _omnisharp.Pid, baseUrl = _omnisharp.BaseUrl, lastOkTimestamp = _omnisharp.LastOkTimestamp },
-                            unity = new UnityHealth { isCompiling = UnityCompilationWatcher.IsCompiling }
+                            unity = new UnityHealth
+                            {
+
+                                isCompiling = UnityCompilationWatcher.IsCompiling,
+                                isOmniSharpReady = _omnisharp.Status == ServiceStatus.Running,
+                                lastRestartReason = _lastRestartReason
+                            }
                         }
                     };
                     responseJson = JsonConvert.SerializeObject(health);
@@ -195,18 +208,24 @@ namespace UnityCodeIntel.Editor
                         }
                     }
 
-                    // Fault Tolerance Check
+                    // P1 改进: Fault Tolerance Check with machine-readable error codes
                     if (_omnisharp.Status != ServiceStatus.Running)
                     {
                         statusCode = 503;
-                        responseJson = JsonConvert.SerializeObject(new ApiResponse<object> 
-                        { 
-                            ok = false, 
-                            error = new ApiError 
-                            { 
-                                code = "OMNISHARP_DOWN", 
-                                message = $"OmniSharp backend is not ready. Current Status: {_omnisharp.Status}. Please wait or restart services." 
-                            } 
+                        string errorCode = UnityCompilationWatcher.IsCompiling ? "CODEINTEL_COMPILING" : "CODEINTEL_NOT_READY";
+                        responseJson = JsonConvert.SerializeObject(new ApiResponse<object>
+                        {
+
+                            ok = false,
+
+                            error = new ApiError
+                            {
+
+                                code = errorCode,
+
+                                message = $"OmniSharp backend is not ready. Current Status: {_omnisharp.Status}. IsCompiling: {UnityCompilationWatcher.IsCompiling}. Please wait or restart services."
+                            }
+
                         });
                     }
                     else if (path == "/v1/definition" && request.HttpMethod == "POST")
@@ -217,15 +236,29 @@ namespace UnityCodeIntel.Editor
                     }
                     else if (path == "/v1/references" && request.HttpMethod == "POST")
                     {
+                        // P0 改进: 支持 symbolId 和增强响应
                         var req = ReadJsonBody<ReferencesRequest>(request);
-                        var locations = Task.Run(() => _omnisharp.GetReferences(req.file, req.line, req.col, req.includeDeclaration)).Result;
-                        responseJson = JsonConvert.SerializeObject(new CodeLocationApiResponse { ok = true, data = locations });
+                        ReferencesResult result;
+
+
+                        if (!string.IsNullOrEmpty(req.symbolId))
+                        {
+                            // 使用 symbolId 查询（推荐方式）
+                            result = Task.Run(() => _omnisharp.GetReferencesBySymbolId(req.symbolId, req.includeDeclaration)).Result;
+                        }
+                        else
+                        {
+                            // 传统 file/line/col 方式
+                            result = Task.Run(() => _omnisharp.GetReferencesEnhanced(req.file, req.line, req.col, req.includeDeclaration)).Result;
+                        }
+                        responseJson = JsonConvert.SerializeObject(new ReferencesApiResponse { ok = true, data = result });
                     }
                     else if (path == "/v1/symbols" && request.HttpMethod == "POST")
                     {
+                        // P0 改进: 返回增强的 SymbolInfo[]
                         var req = ReadJsonBody<SymbolsRequest>(request);
-                        var locations = Task.Run(() => _omnisharp.GetSymbols(req.query)).Result;
-                        responseJson = JsonConvert.SerializeObject(new CodeLocationApiResponse { ok = true, data = locations });
+                        var symbols = Task.Run(() => _omnisharp.GetSymbols(req.query, req.limit > 0 ? req.limit : 50)).Result;
+                        responseJson = JsonConvert.SerializeObject(new SymbolsApiResponse { ok = true, data = symbols });
                     }
                     else
                     {
@@ -239,7 +272,8 @@ namespace UnityCodeIntel.Editor
                 statusCode = 500;
                 responseJson = JsonConvert.SerializeObject(new ApiResponse<object> { ok = false, error = new ApiError { code = "INTERNAL_ERROR", message = e.Message } });
             }
-            
+
+
             try
             {
                 WriteResponse(response, statusCode, responseJson);
@@ -259,7 +293,8 @@ namespace UnityCodeIntel.Editor
             response.OutputStream.Write(buffer, 0, buffer.Length);
             response.OutputStream.Close();
         }
-        
+
+
         private T ReadJsonBody<T>(HttpListenerRequest request)
         {
             using (var reader = new StreamReader(request.InputStream, request.ContentEncoding))
@@ -285,7 +320,8 @@ namespace UnityCodeIntel.Editor
             }
             return false;
         }
-        
+
+
         private void WriteRuntimeState(bool isRunning, string bridgeBaseUrl)
         {
             try
@@ -334,9 +370,10 @@ namespace UnityCodeIntel.Editor
 
             var ctx = _unityContext;
             if (ctx == null) return;
-            try { ctx.Post(_ => action(), null); } catch {}
+            try { ctx.Post(_ => action(), null); } catch { }
         }
-        
+
+
         [Serializable]
         private class HealthApiResponse
         {
@@ -356,7 +393,32 @@ namespace UnityCodeIntel.Editor
             public CodeLocation[] data;
             public ApiError error;
         }
-        
+
+        // P0 改进: 专门的 Symbols 响应类型
+
+        [Serializable]
+        private class SymbolsApiResponse
+        {
+            public bool ok;
+            public string traceId;
+            public long elapsedMs;
+            public SymbolInfo[] data;
+            public ApiError error;
+        }
+
+        // P0 改进: 专门的 References 响应类型
+
+        [Serializable]
+        private class ReferencesApiResponse
+        {
+            public bool ok;
+            public string traceId;
+            public long elapsedMs;
+            public ReferencesResult data;
+            public ApiError error;
+        }
+
+
         [Serializable]
         private class RuntimeState
         {
