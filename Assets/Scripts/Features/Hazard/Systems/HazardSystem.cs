@@ -26,7 +26,7 @@ namespace ThatGameJam.Features.Hazard.Systems
                 return;
             }
 
-            this.SendCommand(new ConsumeLightCommand(amount, reason));
+            this.SendCommand(new ConsumeLightCommand(amount, reason, this));
         }
 
         public void ApplyLightDrainRatio(float ratioPerSecond, float deltaTime, ELightConsumeReason reason)
@@ -42,7 +42,7 @@ namespace ThatGameJam.Features.Hazard.Systems
                 return;
             }
 
-            this.SendCommand(new ConsumeLightCommand(amount, reason));
+            this.SendCommand(new ConsumeLightCommand(amount, reason, this));
         }
 
         private float GetLightAmountFromRatio(float ratio)

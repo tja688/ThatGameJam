@@ -56,7 +56,7 @@ namespace ThatGameJam.Features.Darkness.Systems
                 return;
             }
 
-            this.SendCommand(new ConsumeLightCommand(amount, ELightConsumeReason.Darkness));
+            this.SendCommand(new ConsumeLightCommand(amount, ELightConsumeReason.Darkness, this));
         }
 
         private void OnSafeZoneStateChanged(SafeZoneStateChangedEvent e)

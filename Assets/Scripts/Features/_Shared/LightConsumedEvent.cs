@@ -4,5 +4,6 @@ namespace ThatGameJam.Features.Shared
     {
         public float Amount;
         public ELightConsumeReason Reason;
+        public object Requester;
     }
 }

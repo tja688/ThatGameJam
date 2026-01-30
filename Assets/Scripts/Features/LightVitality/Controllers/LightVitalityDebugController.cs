@@ -26,18 +26,18 @@ namespace ThatGameJam.Features.LightVitality.Controllers
         {
             if (Input.GetKeyDown(addKey))
             {
-                this.SendCommand(new AddLightCommand(addAmount));
+                this.SendCommand(new AddLightCommand(addAmount, this));
             }
 
             if (Input.GetKeyDown(consumeKey))
             {
-                this.SendCommand(new ConsumeLightCommand(consumeAmount, ELightConsumeReason.Debug));
+                this.SendCommand(new ConsumeLightCommand(consumeAmount, ELightConsumeReason.Debug, this));
             }
 
             if (Input.GetKeyDown(setToMaxKey))
             {
                 var max = this.SendQuery(new GetMaxLightQuery());
-                this.SendCommand(new SetLightCommand(max));
+                this.SendCommand(new SetLightCommand(max, this));
             }
         }
 

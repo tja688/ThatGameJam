@@ -42,8 +42,8 @@ namespace ThatGameJam.SaveSystem.Adapters
                 return;
             }
 
-            this.SendCommand(new SetMaxLightCommand(data.maxLight, false));
-            this.SendCommand(new SetLightCommand(data.currentLight));
+            this.SendCommand(new SetMaxLightCommand(data.maxLight, false, this));
+            this.SendCommand(new SetLightCommand(data.currentLight, this));
         }
     }
 }

@@ -107,7 +107,7 @@ namespace ThatGameJam.Features.IceBlock.Controllers
 
             // 申请扣除玩家光亮值
 
-            this.SendCommand(new ConsumeLightCommand(amountToDeduct, ELightConsumeReason.Script));
+            this.SendCommand(new ConsumeLightCommand(amountToDeduct, ELightConsumeReason.Script, this));
 
             UpdateVisuals();
 

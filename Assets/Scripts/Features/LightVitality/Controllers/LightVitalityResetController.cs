@@ -32,7 +32,7 @@ namespace ThatGameJam.Features.LightVitality.Controllers
         private void ResetLightToMax()
         {
             var max = this.SendQuery(new GetMaxLightQuery());
-            this.SendCommand(new SetLightCommand(max));
+            this.SendCommand(new SetLightCommand(max, this));
         }
     }
 }

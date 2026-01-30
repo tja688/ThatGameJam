@@ -9,11 +9,13 @@ namespace ThatGameJam.Features.LightVitality.Commands
     {
         private readonly float _max;
         private readonly bool _clampCurrent;
+        private readonly object _requester;
 
-        public SetMaxLightCommand(float max, bool clampCurrent)
+        public SetMaxLightCommand(float max, bool clampCurrent, object requester)
         {
             _max = max;
             _clampCurrent = clampCurrent;
+            _requester = requester;
         }
 
         protected override void OnExecute()
@@ -44,12 +46,16 @@ namespace ThatGameJam.Features.LightVitality.Commands
                 this.SendEvent(new LightChangedEvent
                 {
                     Current = newCurrent,
-                    Max = sanitizedMax
+                    Max = sanitizedMax,
+                    Requester = _requester
                 });
 
                 if (previousCurrent > 0f && newCurrent <= 0f)
                 {
-                    this.SendEvent(new LightDepletedEvent());
+                    this.SendEvent(new LightDepletedEvent
+                    {
+                        Requester = _requester
+                    });
                 }
             }
         }

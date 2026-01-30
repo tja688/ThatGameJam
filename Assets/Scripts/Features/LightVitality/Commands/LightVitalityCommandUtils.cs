@@ -8,7 +8,7 @@ namespace ThatGameJam.Features.LightVitality.Commands
 {
     internal static class LightVitalityCommandUtils
     {
-        public static void ApplyCurrentLight(LightVitalityModel model, float newValue, ICanSendEvent sender)
+        public static void ApplyCurrentLight(LightVitalityModel model, float newValue, ICanSendEvent sender, object requester)
         {
             var max = model.MaxValue;
             var clamped = Mathf.Clamp(newValue, 0f, max);
@@ -23,12 +23,16 @@ namespace ThatGameJam.Features.LightVitality.Commands
             sender.SendEvent(new LightChangedEvent
             {
                 Current = clamped,
-                Max = max
+                Max = max,
+                Requester = requester
             });
 
             if (previous > 0f && clamped <= 0f)
             {
-                sender.SendEvent(new LightDepletedEvent());
+                sender.SendEvent(new LightDepletedEvent
+                {
+                    Requester = requester
+                });
                 AudioService.Play("SFX-META-0002");
             }
         }

@@ -9,11 +9,13 @@ namespace ThatGameJam.Features.LightVitality.Commands
     {
         private readonly float _amount;
         private readonly ELightConsumeReason _reason;
+        private readonly object _requester;
 
-        public ConsumeLightCommand(float amount, ELightConsumeReason reason)
+        public ConsumeLightCommand(float amount, ELightConsumeReason reason, object requester)
         {
             _amount = amount;
             _reason = reason;
+            _requester = requester;
         }
 
         protected override void OnExecute()
@@ -23,13 +25,14 @@ namespace ThatGameJam.Features.LightVitality.Commands
             var next = model.CurrentValue - safeAmount;
 
 
-            LightVitalityCommandUtils.ApplyCurrentLight(model, next, this);
+            LightVitalityCommandUtils.ApplyCurrentLight(model, next, this, _requester);
 
 
             this.SendEvent(new LightConsumedEvent
             {
                 Amount = safeAmount,
-                Reason = _reason
+                Reason = _reason,
+                Requester = _requester
             });
         }
     }

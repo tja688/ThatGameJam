@@ -119,7 +119,7 @@ namespace ThatGameJam.Features._Prototype.UI
 
         public void UI_AddLight()
         {
-            this.SendCommand(new AddLightCommand(addLightAmount));
+            this.SendCommand(new AddLightCommand(addLightAmount, this));
             AppendLog($"SendCommand(AddLightCommand, +{addLightAmount})");
             // LightChangedEvent will refresh
         }
@@ -127,7 +127,7 @@ namespace ThatGameJam.Features._Prototype.UI
         public void UI_ConsumeLight_Debug()
         {
             // Use Debug reason for demo. (Your branch already fixed reason pipeline.)
-            this.SendCommand(new ConsumeLightCommand(consumeLightAmount, ELightConsumeReason.Debug));
+            this.SendCommand(new ConsumeLightCommand(consumeLightAmount, ELightConsumeReason.Debug, this));
             AppendLog($"SendCommand(ConsumeLightCommand, -{consumeLightAmount}, reason=Debug)");
             // LightChangedEvent will refresh
         }
@@ -135,7 +135,7 @@ namespace ThatGameJam.Features._Prototype.UI
         public void UI_SetLightToMax()
         {
             var model = this.GetModel<ILightVitalityModel>();
-            this.SendCommand(new SetLightCommand(model.MaxLight.Value));
+            this.SendCommand(new SetLightCommand(model.MaxLight.Value, this));
             AppendLog("SendCommand(SetLightCommand, value=Max)");
         }
 

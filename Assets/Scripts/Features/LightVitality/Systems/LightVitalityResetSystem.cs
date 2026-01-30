@@ -27,7 +27,7 @@ namespace ThatGameJam.Features.LightVitality.Systems
         private void ResetLightToMax()
         {
             var model = this.GetModel<ILightVitalityModel>();
-            this.SendCommand(new SetLightCommand(model.MaxLight.Value));
+            this.SendCommand(new SetLightCommand(model.MaxLight.Value, this));
         }
     }
 }

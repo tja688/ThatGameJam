@@ -231,7 +231,7 @@ namespace ThatGameJam.Features.Mechanisms.Controllers
 
             var amount = extraConsumePerSecond * dt;
             // Per LightVitality note, other features integrate by sending ConsumeLightCommand. :contentReference[oaicite:2]{index=2}
-            this.SendCommand(new ConsumeLightCommand(amount, consumeReason));
+            this.SendCommand(new ConsumeLightCommand(amount, consumeReason, this));
         }
 
         private void BeginHalfCycle(bool forceResetToEdge)

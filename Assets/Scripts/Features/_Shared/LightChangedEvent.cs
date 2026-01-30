@@ -4,5 +4,6 @@ namespace ThatGameJam.Features.Shared
     {
         public float Current;
         public float Max;
+        public object Requester;
     }
 }

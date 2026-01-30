@@ -138,7 +138,7 @@ namespace ThatGameJam.Features.LightVitality.Controllers
                 return;
             }
 
-            this.SendCommand(new ConsumeLightCommand(adjustedDamage, ELightConsumeReason.Fall));
+            this.SendCommand(new ConsumeLightCommand(adjustedDamage, ELightConsumeReason.Fall, this));
         }
     }
 }

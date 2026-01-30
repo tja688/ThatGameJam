@@ -46,7 +46,7 @@ namespace ThatGameJam.Features.SafeZone.Systems
                 return;
             }
 
-            this.SendCommand(new AddLightCommand(amount));
+            this.SendCommand(new AddLightCommand(amount, this));
         }
     }
 }
